@@ -10,3 +10,4 @@ Errors:
 
 Internal features:
 - added `matchBraces()`
+- added `matchVar()`
