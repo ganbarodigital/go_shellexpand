@@ -42,24 +42,6 @@ type bracePair struct {
 	end   int
 }
 
-// bracePairs is a list of bracePair structs
-type bracePairs []bracePair
-
-// Len is used for sorting the brace pairs so that nested pairs come first
-func (e bracePairs) Len() int {
-	return len(e)
-}
-
-// Less is used for sorting the brace pairs so that nested pairs come first
-func (e bracePairs) Less(i, j int) bool {
-	return (e[i].end <= e[j].end)
-}
-
-// Swap is used for sorting the brace pairs so that nested pairs come first
-func (e bracePairs) Swap(i, j int) {
-	e[i], e[j] = e[j], e[i]
-}
-
 // matchBraces searches a string to find all the braces that match
 //
 // nested braces are returned earlier than outer braces
