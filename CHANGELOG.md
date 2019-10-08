@@ -9,5 +9,6 @@ Errors:
 - added `ErrMismatchedClosingBrace`
 
 Internal features:
+- added `expandBraces()`
 - added `matchBraces()`
 - added `matchVar()`
