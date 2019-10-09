@@ -55,7 +55,7 @@ func TestExpandTildeHomedir(t *testing.T) {
 		return "invalid key", true
 	}
 	homeLookup := func(key string) (string, bool) {
-		return "should not be called", false
+		return "should not be called", true
 	}
 	testData := "~/path/to/folder"
 	expectedResult := "/home/stuart/path/to/folder"
@@ -85,7 +85,7 @@ func TestExpandTildePwd(t *testing.T) {
 		return "invalid key", true
 	}
 	homeLookup := func(key string) (string, bool) {
-		return "should not be called", false
+		return "should not be called", true
 	}
 	testData := "~+/path/to/folder"
 	expectedResult := "/tmp/path/to/folder"
@@ -115,7 +115,7 @@ func TestExpandTildeOldPwd(t *testing.T) {
 		return "invalid key", true
 	}
 	homeLookup := func(key string) (string, bool) {
-		return "should not be called", false
+		return "should not be called", true
 	}
 	testData := "~-/path/to/folder"
 	expectedResult := "/tmp/path/to/folder"
@@ -138,7 +138,7 @@ func TestExpandTildeUserHomedir(t *testing.T) {
 	// setup your test
 
 	varLookup := func(key string) (string, bool) {
-		return "should not be called", false
+		return "should not be called", true
 	}
 	homeLookup := func(key string) (string, bool) {
 		if key == "stuart" {
@@ -148,6 +148,188 @@ func TestExpandTildeUserHomedir(t *testing.T) {
 	}
 	testData := "~stuart/path/to/folder"
 	expectedResult := "/home/stuart/path/to/folder"
+
+	// ----------------------------------------------------------------
+	// perform the change
+
+	actualResult := ExpandTilde(testData, varLookup, homeLookup)
+
+	// ----------------------------------------------------------------
+	// test the results
+
+	assert.Equal(t, expectedResult, actualResult)
+}
+
+func TestExpandTildeDoesNotModifyStringsWithoutTildePrefixes(t *testing.T) {
+	t.Parallel()
+
+	// ----------------------------------------------------------------
+	// setup your test
+
+	varLookup := func(key string) (string, bool) {
+		return "invalid key", true
+	}
+	homeLookup := func(key string) (string, bool) {
+		return "should not be called", true
+	}
+	testData := "/path/to/folder"
+	expectedResult := "/path/to/folder"
+
+	// ----------------------------------------------------------------
+	// perform the change
+
+	actualResult := ExpandTilde(testData, varLookup, homeLookup)
+
+	// ----------------------------------------------------------------
+	// test the results
+
+	assert.Equal(t, expectedResult, actualResult)
+}
+
+func TestExpandTildeIgnoresTildeInsideVars(t *testing.T) {
+	t.Parallel()
+
+	// ----------------------------------------------------------------
+	// setup your test
+
+	varLookup := func(key string) (string, bool) {
+		return "invalid key", true
+	}
+	homeLookup := func(key string) (string, bool) {
+		return "should not be called", true
+	}
+	testData := "${VAR1:~VAR2}"
+	expectedResult := testData
+
+	// ----------------------------------------------------------------
+	// perform the change
+
+	actualResult := ExpandTilde(testData, varLookup, homeLookup)
+
+	// ----------------------------------------------------------------
+	// test the results
+
+	assert.Equal(t, expectedResult, actualResult)
+}
+
+func TestExpandTildeIgnoresEscapedTilde(t *testing.T) {
+	t.Parallel()
+
+	// ----------------------------------------------------------------
+	// setup your test
+
+	varLookup := func(key string) (string, bool) {
+		return "invalid key", true
+	}
+	homeLookup := func(key string) (string, bool) {
+		return "should not be called", true
+	}
+	testData := "\\~/path"
+	expectedResult := testData
+
+	// ----------------------------------------------------------------
+	// perform the change
+
+	actualResult := ExpandTilde(testData, varLookup, homeLookup)
+
+	// ----------------------------------------------------------------
+	// test the results
+
+	assert.Equal(t, expectedResult, actualResult)
+}
+
+func TestExpandTildeIgnoresWhenHomedirNotSet(t *testing.T) {
+	t.Parallel()
+
+	// ----------------------------------------------------------------
+	// setup your test
+
+	varLookup := func(key string) (string, bool) {
+		return "invalid key", false
+	}
+	homeLookup := func(key string) (string, bool) {
+		return "should not be called", true
+	}
+	testData := "~/path"
+	expectedResult := testData
+
+	// ----------------------------------------------------------------
+	// perform the change
+
+	actualResult := ExpandTilde(testData, varLookup, homeLookup)
+
+	// ----------------------------------------------------------------
+	// test the results
+
+	assert.Equal(t, expectedResult, actualResult)
+}
+
+func TestExpandTildeIgnoresWhenPwdNotSet(t *testing.T) {
+	t.Parallel()
+
+	// ----------------------------------------------------------------
+	// setup your test
+
+	varLookup := func(key string) (string, bool) {
+		return "invalid key", false
+	}
+	homeLookup := func(key string) (string, bool) {
+		return "should not be called", true
+	}
+	testData := "~+/path"
+	expectedResult := testData
+
+	// ----------------------------------------------------------------
+	// perform the change
+
+	actualResult := ExpandTilde(testData, varLookup, homeLookup)
+
+	// ----------------------------------------------------------------
+	// test the results
+
+	assert.Equal(t, expectedResult, actualResult)
+}
+
+func TestExpandTildeIgnoresWhenOldPwdNotSet(t *testing.T) {
+	t.Parallel()
+
+	// ----------------------------------------------------------------
+	// setup your test
+
+	varLookup := func(key string) (string, bool) {
+		return "invalid key", false
+	}
+	homeLookup := func(key string) (string, bool) {
+		return "should not be called", true
+	}
+	testData := "~-/path"
+	expectedResult := testData
+
+	// ----------------------------------------------------------------
+	// perform the change
+
+	actualResult := ExpandTilde(testData, varLookup, homeLookup)
+
+	// ----------------------------------------------------------------
+	// test the results
+
+	assert.Equal(t, expectedResult, actualResult)
+}
+
+func TestExpandTildeIgnoresWhenUsernameNotKnown(t *testing.T) {
+	t.Parallel()
+
+	// ----------------------------------------------------------------
+	// setup your test
+
+	varLookup := func(key string) (string, bool) {
+		return "should not be called", true
+	}
+	homeLookup := func(key string) (string, bool) {
+		return "invalid key", false
+	}
+	testData := "~user/path"
+	expectedResult := testData
 
 	// ----------------------------------------------------------------
 	// perform the change
@@ -388,5 +570,32 @@ func TestMatchTildePrefixIgnoresEscapedSlashes(t *testing.T) {
 	// test the results
 
 	assert.True(t, ok)
+	assert.Equal(t, expectedResult, actualResult)
+}
+
+func TestMatchAndExpandTildeIgnoresNonPrefix(t *testing.T) {
+	t.Parallel()
+
+	// ----------------------------------------------------------------
+	// setup your test
+
+	varLookup := func(key string) (string, bool) {
+		return "invalid key", true
+	}
+	homeLookup := func(key string) (string, bool) {
+		return "should not be called", true
+	}
+	testData := "/path"
+	expectedResult := testData
+
+	// ----------------------------------------------------------------
+	// perform the change
+
+	actualResult, ok := matchAndExpandTilde(testData, 0, varLookup, homeLookup)
+
+	// ----------------------------------------------------------------
+	// test the results
+
+	assert.False(t, ok)
 	assert.Equal(t, expectedResult, actualResult)
 }

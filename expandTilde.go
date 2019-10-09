@@ -82,13 +82,13 @@ func matchAndExpandTilde(input string, start int, lookupVar, lookupHomeDir Looku
 		return input, false
 	}
 
-	// is it really a prefix though?
-	tildePrefix, ok := parseTildePrefix(input[start : prefixEnd+1])
-	if !ok {
-		return input, false
-	}
+	// what kind of prefix are we looking at?
+	tildePrefix, _ := parseTildePrefix(input[start : prefixEnd+1])
 
+	// this will hold our replacement
 	var repl string
+
+	// build the replacement
 	switch tildePrefix.kind {
 	case tildePrefixHome:
 		repl, ok = lookupVar("HOME")
