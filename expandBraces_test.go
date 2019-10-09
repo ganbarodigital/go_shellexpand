@@ -61,6 +61,26 @@ func TestExpandBracesSingleSet(t *testing.T) {
 	assert.Equal(t, expectedResult, actualResult)
 }
 
+func TestExpandBracesSingleSetWithEmptyPart(t *testing.T) {
+	t.Parallel()
+
+	// ----------------------------------------------------------------
+	// setup your test
+
+	testData := "/var/log/kern.log{,.bak}"
+	expectedResult := "/var/log/kern.log /var/log/kern.log.bak"
+
+	// ----------------------------------------------------------------
+	// perform the change
+
+	actualResult := expandBraces(testData)
+
+	// ----------------------------------------------------------------
+	// test the results
+
+	assert.Equal(t, expectedResult, actualResult)
+}
+
 func TestExpandBracesNestedSet(t *testing.T) {
 	t.Parallel()
 
@@ -328,6 +348,27 @@ func TestParsePatternNestedSet(t *testing.T) {
 
 	testData := "{ucb/{ex,edit}/tmp1,lib/{ex?.?*,how_ex}/tmp2}"
 	expectedResult := []string{"ucb/{ex,edit}/tmp1", "lib/{ex?.?*,how_ex}/tmp2"}
+
+	// ----------------------------------------------------------------
+	// perform the change
+
+	actualResult, ok := parsePattern(testData)
+
+	// ----------------------------------------------------------------
+	// test the results
+
+	assert.True(t, ok)
+	assert.Equal(t, expectedResult, actualResult)
+}
+
+func TestParsePatternWithEmptyPart(t *testing.T) {
+	t.Parallel()
+
+	// ----------------------------------------------------------------
+	// setup your test
+
+	testData := "{,.bak}"
+	expectedResult := []string{"", ".bak"}
 
 	// ----------------------------------------------------------------
 	// perform the change

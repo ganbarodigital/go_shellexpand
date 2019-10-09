@@ -236,13 +236,6 @@ func parsePattern(pattern string) ([]string, bool) {
 		return []string{}, false
 	}
 
-	// make sure no parts are empty
-	for _, part := range parts {
-		if len(part) == 0 {
-			return []string{}, false
-		}
-	}
-
 	// all done
 	return parts, true
 }
