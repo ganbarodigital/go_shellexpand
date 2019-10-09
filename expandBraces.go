@@ -35,7 +35,10 @@
 
 package shellexpand
 
-import "strings"
+import (
+	"strconv"
+	"strings"
+)
 
 func expandBraces(input string) string {
 	// we expand in a strictly left-to-right manner
@@ -238,4 +241,96 @@ func parsePattern(pattern string) ([]string, bool) {
 
 	// all done
 	return parts, true
+}
+
+type braceSequence struct {
+	// are we rendering characters?
+	//
+	// if false, we are rendering integers
+	chars bool
+
+	// what number are we starting on?
+	start int
+
+	// what number are we ending on?
+	end int
+
+	// are we going up or down, and by how much?
+	incr int
+}
+
+func parseSequence(pattern string) (braceSequence, bool) {
+	var retval braceSequence
+
+	// sequences are (relatively!) simple ... we can use strings.Split()
+	// here to get started
+	parts := strings.Split(pattern[1:len(pattern)-1], "..")
+
+	// did we get enough parts?
+	if len(parts) < 2 || len(parts) > 3 {
+		return retval, false
+	}
+
+	// the first two parts are the start and end of the sequence
+	//
+	// they can be single chars or integers, as long as both are the same
+	isNumericStart := isNumericString(parts[0])
+	isNumericEnd := isNumericString(parts[1])
+
+	if len(parts[0]) == 1 && len(parts[1]) == 1 {
+		// we have chars or all-numbers
+		if isNumericStart && isNumericEnd {
+			// all numbers
+			retval.start, _ = strconv.Atoi(parts[0])
+			retval.end, _ = strconv.Atoi(parts[1])
+		} else {
+			// must be chars
+			retval.chars = true
+			retval.start = int(parts[0][0])
+			retval.end = int(parts[1][0])
+		}
+	} else {
+		// if we get here, both parts must be numbers
+		if !isNumericStart || !isNumericEnd {
+			return braceSequence{}, false
+		}
+
+		retval.start, _ = strconv.Atoi(parts[0])
+		retval.end, _ = strconv.Atoi(parts[1])
+	}
+
+	// do we have an incr element?
+	if len(parts) == 3 {
+		incr, err := strconv.Atoi(parts[2])
+		if err != nil {
+			return braceSequence{}, false
+		}
+		retval.incr = incr
+	} else {
+		// no we do not, so we must set it ourselves
+		if retval.start < retval.end {
+			// low to high
+			retval.incr = 1
+		} else {
+			// high to low
+			retval.incr = -1
+		}
+	}
+
+	// all done
+	return retval, true
+}
+
+func isNumericChar(char byte) bool {
+	return '0' <= char && char <= '9'
+}
+
+func isNumericString(input string) bool {
+	for i := 0; i < len(input); i++ {
+		if !isNumericChar(input[i]) {
+			return false
+		}
+	}
+
+	return true
 }

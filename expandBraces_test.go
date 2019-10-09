@@ -381,3 +381,129 @@ func TestParsePatternWithEmptyPart(t *testing.T) {
 	assert.True(t, ok)
 	assert.Equal(t, expectedResult, actualResult)
 }
+
+func TestParseSequenceSingleSetWithLowerCaseChars(t *testing.T) {
+	t.Parallel()
+
+	// ----------------------------------------------------------------
+	// setup your test
+
+	testData := "{a..z}"
+	expectedResult := braceSequence{true, 97, 122, 1}
+
+	// ----------------------------------------------------------------
+	// perform the change
+
+	actualResult, ok := parseSequence(testData)
+
+	// ----------------------------------------------------------------
+	// test the results
+
+	assert.True(t, ok)
+	assert.Equal(t, expectedResult, actualResult)
+}
+
+func TestParseSequenceSingleSetWithUpperCaseChars(t *testing.T) {
+	t.Parallel()
+
+	// ----------------------------------------------------------------
+	// setup your test
+
+	testData := "{A..Z}"
+	expectedResult := braceSequence{true, 65, 90, 1}
+
+	// ----------------------------------------------------------------
+	// perform the change
+
+	actualResult, ok := parseSequence(testData)
+
+	// ----------------------------------------------------------------
+	// test the results
+
+	assert.True(t, ok)
+	assert.Equal(t, expectedResult, actualResult)
+}
+
+func TestParseSequenceSingleSetWithNumbers(t *testing.T) {
+	t.Parallel()
+
+	// ----------------------------------------------------------------
+	// setup your test
+
+	testData := "{1..99}"
+	expectedResult := braceSequence{false, 1, 99, 1}
+
+	// ----------------------------------------------------------------
+	// perform the change
+
+	actualResult, ok := parseSequence(testData)
+
+	// ----------------------------------------------------------------
+	// test the results
+
+	assert.True(t, ok)
+	assert.Equal(t, expectedResult, actualResult)
+}
+
+func TestParseSequenceSingleSetWithIterator(t *testing.T) {
+	t.Parallel()
+
+	// ----------------------------------------------------------------
+	// setup your test
+
+	testData := "{1..99..3}"
+	expectedResult := braceSequence{false, 1, 99, 3}
+
+	// ----------------------------------------------------------------
+	// perform the change
+
+	actualResult, ok := parseSequence(testData)
+
+	// ----------------------------------------------------------------
+	// test the results
+
+	assert.True(t, ok)
+	assert.Equal(t, expectedResult, actualResult)
+}
+
+func TestParseSequenceSingleSetWithNegativeIterator(t *testing.T) {
+	t.Parallel()
+
+	// ----------------------------------------------------------------
+	// setup your test
+
+	testData := "{1..99..-3}"
+	expectedResult := braceSequence{false, 1, 99, -3}
+
+	// ----------------------------------------------------------------
+	// perform the change
+
+	actualResult, ok := parseSequence(testData)
+
+	// ----------------------------------------------------------------
+	// test the results
+
+	assert.True(t, ok)
+	assert.Equal(t, expectedResult, actualResult)
+}
+
+func TestParseSequenceSingleSetHighToLow(t *testing.T) {
+	t.Parallel()
+
+	// ----------------------------------------------------------------
+	// setup your test
+
+	testData := "{99..1}"
+	expectedResult := braceSequence{false, 99, 1, -1}
+
+	// ----------------------------------------------------------------
+	// perform the change
+
+	actualResult, ok := parseSequence(testData)
+
+	// ----------------------------------------------------------------
+	// test the results
+
+	assert.True(t, ok)
+	assert.Equal(t, expectedResult, actualResult)
+}
