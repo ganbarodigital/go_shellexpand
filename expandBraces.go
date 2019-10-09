@@ -57,23 +57,7 @@ func expandBraces(input string) string {
 
 					var exp []string
 					for _, part := range patternParts {
-						// we'll build our substitution here
-						var buf strings.Builder
-
-						// do we have a preamble to add?
-						if preambleStart < i {
-							buf.WriteString(input[preambleStart:i])
-						}
-
-						// we always have a pattern part to add
-						buf.WriteString(part)
-
-						// do we have a postscript to add?
-						if postscriptEnd > patternEnd+1 {
-							buf.WriteString(input[patternEnd+1 : postscriptEnd])
-						}
-
-						exp = append(exp, buf.String())
+						exp = append(exp, expandPattern(input, part, i, patternEnd, preambleStart, postscriptEnd))
 					}
 
 					var buf strings.Builder
@@ -92,6 +76,26 @@ func expandBraces(input string) string {
 	}
 
 	return input
+}
+
+func expandPattern(input, part string, i, patternEnd, preambleStart, postscriptEnd int) string {
+	// we'll build our substitution here
+	var buf strings.Builder
+
+	// do we have a preamble to add?
+	if preambleStart < i {
+		buf.WriteString(input[preambleStart:i])
+	}
+
+	// we always have a pattern part to add
+	buf.WriteString(part)
+
+	// do we have a postscript to add?
+	if postscriptEnd > patternEnd+1 {
+		buf.WriteString(input[patternEnd+1 : postscriptEnd])
+	}
+
+	return buf.String()
 }
 
 func findPreambleStart(input string, preambleStart int) int {
