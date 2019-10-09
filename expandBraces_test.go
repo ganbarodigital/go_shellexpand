@@ -101,6 +101,46 @@ func TestExpandBracesNestedSet(t *testing.T) {
 	assert.Equal(t, expectedResult, actualResult)
 }
 
+func TestExpandBracesSingleSequence(t *testing.T) {
+	t.Parallel()
+
+	// ----------------------------------------------------------------
+	// setup your test
+
+	testData := "so is {1..9}"
+	expectedResult := "so is 1 2 3 4 5 6 7 8 9"
+
+	// ----------------------------------------------------------------
+	// perform the change
+
+	actualResult := expandBraces(testData)
+
+	// ----------------------------------------------------------------
+	// test the results
+
+	assert.Equal(t, expectedResult, actualResult)
+}
+
+func TestExpandBracesPatternAndSequence(t *testing.T) {
+	t.Parallel()
+
+	// ----------------------------------------------------------------
+	// setup your test
+
+	testData := "this is a te{st,ab}{1..3}ing"
+	expectedResult := "this is a test1ing test2ing test3ing teab1ing teab2ing teab3ing"
+
+	// ----------------------------------------------------------------
+	// perform the change
+
+	actualResult := expandBraces(testData)
+
+	// ----------------------------------------------------------------
+	// test the results
+
+	assert.Equal(t, expectedResult, actualResult)
+}
+
 func TestMatchPatternSingleSet(t *testing.T) {
 	t.Parallel()
 

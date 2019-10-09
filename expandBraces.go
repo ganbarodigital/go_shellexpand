@@ -44,6 +44,7 @@ func expandBraces(input string) string {
 	// we expand in a strictly left-to-right manner
 	for i := 0; i < len(input); i++ {
 		if input[i] == '\\' {
+			// skip over escaped characters
 			i++
 		} else if input[i] == '$' {
 			varEnd, ok := matchVar(input, i)
@@ -51,29 +52,10 @@ func expandBraces(input string) string {
 				i = varEnd
 			}
 		} else if input[i] == '{' {
-			patternEnd, ok := matchPattern(input, i)
-			if ok {
-				patternParts, ok := parsePattern(input[i : patternEnd+1])
-				if ok {
-					preambleStart := findPreambleStart(input, i)
-					postscriptEnd := findPostscriptEnd(input, patternEnd)
-
-					var exp []string
-					for _, part := range patternParts {
-						exp = append(exp, expandPattern(input, part, i, patternEnd, preambleStart, postscriptEnd))
-					}
-
-					var buf strings.Builder
-					if preambleStart > 0 {
-						buf.WriteString(input[:preambleStart])
-					}
-					buf.WriteString(strings.Join(exp, " "))
-					if postscriptEnd < len(input) {
-						buf.WriteRune(' ')
-						buf.WriteString(input[postscriptEnd+1:])
-					}
-					input = buf.String()
-				}
+			var ok bool
+			input, ok = matchAndExpandSequence(input, i)
+			if !ok {
+				input, ok = matchAndExpandPattern(input, i)
 			}
 		}
 	}
@@ -101,6 +83,30 @@ func expandPattern(input, part string, i, patternEnd, preambleStart, postscriptE
 	return buf.String()
 }
 
+func expandSequence(input string, entry int, isChars bool, i, patternEnd, preambleStart, postscriptEnd int) string {
+	// we'll build our substitution here
+	var buf strings.Builder
+
+	// do we have a preamble to add?
+	if preambleStart < i {
+		buf.WriteString(input[preambleStart:i])
+	}
+
+	// we always have a sequence entry to add
+	if isChars {
+		buf.WriteString(string(entry))
+	} else {
+		buf.WriteString(strconv.Itoa(entry))
+	}
+
+	// do we have a postscript to add?
+	if postscriptEnd > patternEnd+1 {
+		buf.WriteString(input[patternEnd+1 : postscriptEnd])
+	}
+
+	return buf.String()
+}
+
 func findPreambleStart(input string, preambleStart int) int {
 	for ; preambleStart > 0; preambleStart-- {
 		if input[preambleStart] == ' ' {
@@ -119,6 +125,83 @@ func findPostscriptEnd(input string, postscriptEnd int) int {
 	}
 
 	return postscriptEnd
+}
+
+func matchAndExpandPattern(input string, i int) (string, bool) {
+	// are we looking at a pattern?
+	patternEnd, ok := matchPattern(input, i)
+	if !ok {
+		return input, false
+	}
+
+	// is it really a pattern though?
+	patternParts, ok := parsePattern(input[i : patternEnd+1])
+	if !ok {
+		return input, false
+	}
+
+	// if we get here, then yes it is
+	preambleStart := findPreambleStart(input, i)
+	postscriptEnd := findPostscriptEnd(input, patternEnd)
+
+	var exp []string
+	for _, part := range patternParts {
+		exp = append(exp, expandPattern(input, part, i, patternEnd, preambleStart, postscriptEnd))
+	}
+
+	var buf strings.Builder
+	if preambleStart > 0 {
+		buf.WriteString(input[:preambleStart])
+	}
+	buf.WriteString(strings.Join(exp, " "))
+	if postscriptEnd < len(input) {
+		buf.WriteRune(' ')
+		buf.WriteString(input[postscriptEnd+1:])
+	}
+
+	return buf.String(), true
+}
+
+func matchAndExpandSequence(input string, i int) (string, bool) {
+	// are we looking at a sequence?
+	seqEnd, ok := matchSequence(input, i)
+	if !ok {
+		return input, false
+	}
+
+	// but is it really a sequence?
+	braceSeq, ok := parseSequence(input[i : seqEnd+1])
+	if !ok {
+		return input, false
+	}
+
+	// if we get here, then yes it is
+	preambleStart := findPreambleStart(input, i)
+	postscriptEnd := findPostscriptEnd(input, seqEnd)
+
+	var exp []string
+	if braceSeq.incr > 0 {
+		for j := braceSeq.start; j <= braceSeq.end; j += braceSeq.incr {
+			exp = append(exp, expandSequence(input, j, braceSeq.chars, i, seqEnd, preambleStart, postscriptEnd))
+		}
+	} else {
+		for j := braceSeq.start; j >= braceSeq.end; j += braceSeq.incr {
+			exp = append(exp, expandSequence(input, j, braceSeq.chars, i, seqEnd, preambleStart, postscriptEnd))
+		}
+	}
+
+	var buf strings.Builder
+	if preambleStart > 0 {
+		buf.WriteString(input[:preambleStart])
+	}
+	buf.WriteString(strings.Join(exp, " "))
+	if postscriptEnd < len(input) {
+		buf.WriteRune(' ')
+		buf.WriteString(input[postscriptEnd+1:])
+	}
+
+	// all done
+	return buf.String(), true
 }
 
 func matchPattern(input string, start int) (int, bool) {
