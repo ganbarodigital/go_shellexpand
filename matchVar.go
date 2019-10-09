@@ -47,27 +47,34 @@ func matchVar(input string, start int) (int, bool) {
 	}
 
 	// no, it is not
-	//
-	// is there an opening brace after it?
-	var searchChar byte = '}'
-	if start == len(input)-1 || input[start+1] != '{' {
-		// we hunt for whitespace
-		searchChar = ' '
+	braceDepth := 0
+	for i := start + 1; i < len(input); i++ {
+		if input[i] == '\\' {
+			// skip escaped chars
+			i++
+		} else if input[i] == '{' {
+			braceDepth++
+		} else if input[i] == '}' {
+			braceDepth--
+
+			if braceDepth == 0 {
+				return i, true
+			}
+		} else if input[i] == ' ' {
+			if braceDepth == 0 {
+				// we must be looking at a var that was not surrounded
+				// by braces
+				return i - 1, true
+			}
+
+			// no spaces allowed inside a var name
+			return 0, false
+		}
 	}
 
-	// yes, there is
-	// we need to find the matching closing brace
-	braceDepth := 1
-	for i := start + 2; i < len(input); i++ {
-		if input[i] == '{' && input[i-1] != '\\' {
-			braceDepth++
-		} else if input[i] == searchChar && input[i-1] != '\\' {
-			braceDepth--
-		}
-
-		if braceDepth == 0 {
-			return i, true
-		}
+	// end of the string
+	if braceDepth == 0 {
+		return len(input) - 1, true
 	}
 
 	// we did not find a matching closing brace

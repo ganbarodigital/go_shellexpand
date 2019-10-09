@@ -132,7 +132,7 @@ func TestMatchVarSupportsMissingOpeningBrace(t *testing.T) {
 	// setup your test
 
 	testData := "this $HOME a test"
-	expectedEnd := 10
+	expectedEnd := 9
 
 	// ----------------------------------------------------------------
 	// perform the change
@@ -143,6 +143,120 @@ func TestMatchVarSupportsMissingOpeningBrace(t *testing.T) {
 	// test the results
 
 	assert.Equal(t, expectedEnd, actualEnd)
-	assert.Equal(t, testData[5:actualEnd], "$HOME")
+	assert.Equal(t, testData[5:actualEnd+1], "$HOME")
 	assert.True(t, ok)
+}
+
+func TestMatchVarIgnoresMissingClosingBraceMidString(t *testing.T) {
+	t.Parallel()
+
+	// ----------------------------------------------------------------
+	// setup your test
+
+	testData := "this ${HOME a test"
+	expectedEnd := 0
+
+	// ----------------------------------------------------------------
+	// perform the change
+
+	actualEnd, ok := matchVar(testData, 5)
+
+	// ----------------------------------------------------------------
+	// test the results
+
+	assert.Equal(t, expectedEnd, actualEnd)
+	assert.False(t, ok)
+}
+
+func TestMatchVarIgnoresMissingClosingBraceWholeString(t *testing.T) {
+	t.Parallel()
+
+	// ----------------------------------------------------------------
+	// setup your test
+
+	testData := "${HOME"
+	expectedEnd := 0
+
+	// ----------------------------------------------------------------
+	// perform the change
+
+	actualEnd, ok := matchVar(testData, 0)
+
+	// ----------------------------------------------------------------
+	// test the results
+
+	assert.Equal(t, expectedEnd, actualEnd)
+	assert.False(t, ok)
+}
+
+func TestMatchVarIgnoresEscapedClosingBrace(t *testing.T) {
+	t.Parallel()
+
+	// ----------------------------------------------------------------
+	// setup your test
+
+	testData := "${HOME\\}}"
+	expectedEnd := 8
+
+	// ----------------------------------------------------------------
+	// perform the change
+
+	actualEnd, ok := matchVar(testData, 0)
+
+	// ----------------------------------------------------------------
+	// test the results
+
+	assert.Equal(t, expectedEnd, actualEnd)
+	assert.True(t, ok)
+}
+
+func TestMatchVarKnownParamOperators(t *testing.T) {
+	t.Parallel()
+
+	// ----------------------------------------------------------------
+	// setup your test
+
+	testData := []string{
+		"$var",
+		"${var}",
+		"${var:-word}",
+		"${var:=word}",
+		"${var:?word}",
+		"${var:100}",
+		"${var:1:5}",
+		"${!prefix*}",
+		"${#var}",
+		"${#*}",
+		"${var#word}",
+		"${var##word}",
+		"${var%suffix}",
+		"${var%%suffix}",
+		"${*%suffix}",
+		"${*%%suffix}",
+		"${var/old/new}",
+		"${*/old/new}",
+		"${var^pattern}",
+		"${var^^pattern}",
+		"${var,pattern}",
+		"${var,,pattern}",
+		"${var@a}",
+		"${var@A}",
+		"${var@E}",
+		"${var@P}",
+		"${var@Q}",
+	}
+
+	// ----------------------------------------------------------------
+	// perform the change
+
+	for i := range testData {
+		testResult, ok := matchVar(testData[i], 0)
+
+		assert.True(t, ok)
+		assert.Equal(t, testData[i], testData[i][0:testResult+1])
+	}
+
+	// ----------------------------------------------------------------
+	// test the results
+
 }
