@@ -148,6 +148,48 @@ func matchPattern(input string, start int) (int, bool) {
 	return 0, false
 }
 
+func matchSequence(input string, start int) (int, bool) {
+	// are we looking at the start of a sequence?
+	if input[start] != '{' {
+		return 0, false
+	}
+
+	// a sequence has the format:
+	//
+	// {[:alphanum:]..[:alphanum:]} or
+	// {[:alphanum:]..[:alphanum:]..[:num:]}
+	//
+	// no escape chars, no vars to worry about, no nesting either
+
+	braceDepth := 0
+	for i := start; i < len(input); i++ {
+		if input[i] == '{' {
+			braceDepth++
+
+			// no nesting allowed!
+			if braceDepth > 1 {
+				return 0, false
+			}
+		} else if input[i] == '}' {
+			braceDepth--
+
+			if braceDepth == 0 {
+				return i, true
+			}
+		} else if isSequenceChar(input[i]) {
+			continue
+		} else {
+			return 0, false
+		}
+	}
+
+	return 0, false
+}
+
+func isSequenceChar(c byte) bool {
+	return c == '.' || '0' <= c && c <= '9' || 'a' <= c && c <= 'z' || 'A' <= c && c <= 'Z'
+}
+
 func parsePattern(pattern string) ([]string, bool) {
 	var parts []string
 

@@ -211,6 +211,94 @@ func TestMatchPatternIgnoresUnterminatedPatterns(t *testing.T) {
 	assert.Equal(t, expectedResult, actualResult)
 }
 
+func TestMatchSequenceSingleSetWithLowerCaseChars(t *testing.T) {
+	t.Parallel()
+
+	// ----------------------------------------------------------------
+	// setup your test
+
+	testData := "{a..z}"
+	expectedResult := len(testData) - 1
+
+	// ----------------------------------------------------------------
+	// perform the change
+
+	actualResult, ok := matchSequence(testData, 0)
+
+	// ----------------------------------------------------------------
+	// test the results
+
+	assert.True(t, ok)
+	assert.Equal(t, expectedResult, actualResult)
+	assert.Equal(t, testData, testData[:actualResult+1])
+}
+
+func TestMatchSequenceSingleSetWithUpperCaseChars(t *testing.T) {
+	t.Parallel()
+
+	// ----------------------------------------------------------------
+	// setup your test
+
+	testData := "{A..Z}"
+	expectedResult := len(testData) - 1
+
+	// ----------------------------------------------------------------
+	// perform the change
+
+	actualResult, ok := matchSequence(testData, 0)
+
+	// ----------------------------------------------------------------
+	// test the results
+
+	assert.True(t, ok)
+	assert.Equal(t, expectedResult, actualResult)
+	assert.Equal(t, testData, testData[:actualResult+1])
+}
+
+func TestMatchSequenceSingleSetWithNumbers(t *testing.T) {
+	t.Parallel()
+
+	// ----------------------------------------------------------------
+	// setup your test
+
+	testData := "{1..99}"
+	expectedResult := len(testData) - 1
+
+	// ----------------------------------------------------------------
+	// perform the change
+
+	actualResult, ok := matchSequence(testData, 0)
+
+	// ----------------------------------------------------------------
+	// test the results
+
+	assert.True(t, ok)
+	assert.Equal(t, expectedResult, actualResult)
+	assert.Equal(t, testData, testData[:actualResult+1])
+}
+
+func TestMatchSequenceSingleSetWithIterator(t *testing.T) {
+	t.Parallel()
+
+	// ----------------------------------------------------------------
+	// setup your test
+
+	testData := "{1..99..3}"
+	expectedResult := len(testData) - 1
+
+	// ----------------------------------------------------------------
+	// perform the change
+
+	actualResult, ok := matchSequence(testData, 0)
+
+	// ----------------------------------------------------------------
+	// test the results
+
+	assert.True(t, ok)
+	assert.Equal(t, expectedResult, actualResult)
+	assert.Equal(t, testData, testData[:actualResult+1])
+}
+
 func TestParsePatternSingleSet(t *testing.T) {
 	t.Parallel()
 
