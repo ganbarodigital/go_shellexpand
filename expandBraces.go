@@ -190,7 +190,7 @@ func matchSequence(input string, start int) (int, bool) {
 }
 
 func isSequenceChar(c byte) bool {
-	return c == '.' || '0' <= c && c <= '9' || 'a' <= c && c <= 'z' || 'A' <= c && c <= 'Z'
+	return c == '.' || c == '-' || '0' <= c && c <= '9' || 'a' <= c && c <= 'z' || 'A' <= c && c <= 'Z'
 }
 
 func parsePattern(pattern string) ([]string, bool) {

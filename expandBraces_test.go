@@ -319,6 +319,28 @@ func TestMatchSequenceSingleSetWithIterator(t *testing.T) {
 	assert.Equal(t, testData, testData[:actualResult+1])
 }
 
+func TestMatchSequenceSingleSetWithNegativeIterator(t *testing.T) {
+	t.Parallel()
+
+	// ----------------------------------------------------------------
+	// setup your test
+
+	testData := "{1..99..-3}"
+	expectedResult := len(testData) - 1
+
+	// ----------------------------------------------------------------
+	// perform the change
+
+	actualResult, ok := matchSequence(testData, 0)
+
+	// ----------------------------------------------------------------
+	// test the results
+
+	assert.True(t, ok)
+	assert.Equal(t, expectedResult, actualResult)
+	assert.Equal(t, testData, testData[:actualResult+1])
+}
+
 func TestParsePatternSingleSet(t *testing.T) {
 	t.Parallel()
 
