@@ -127,7 +127,7 @@ func matchAndExpandTilde(input string, start int, lookupVar, lookupHomeDir Looku
 func matchTildePrefix(input string, start int) (int, bool) {
 	// are we looking at the start of a prefix?
 	if input[start] != '~' {
-		return 0, false
+		return start, false
 	}
 
 	// find the end of the prefix

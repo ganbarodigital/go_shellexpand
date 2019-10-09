@@ -159,3 +159,234 @@ func TestExpandTildeUserHomedir(t *testing.T) {
 
 	assert.Equal(t, expectedResult, actualResult)
 }
+
+func TestParseTildePrefixWithHomedir(t *testing.T) {
+	t.Parallel()
+
+	// ----------------------------------------------------------------
+	// setup your test
+
+	testData := "~"
+	expectedResult := tildePrefix{tildePrefixHome, ""}
+
+	// ----------------------------------------------------------------
+	// perform the change
+
+	actualResult, ok := parseTildePrefix(testData)
+
+	// ----------------------------------------------------------------
+	// test the results
+
+	assert.True(t, ok)
+	assert.Equal(t, expectedResult, actualResult)
+}
+
+func TestParseTildePrefixWithPwd(t *testing.T) {
+	t.Parallel()
+
+	// ----------------------------------------------------------------
+	// setup your test
+
+	testData := "~+"
+	expectedResult := tildePrefix{tildePrefixPwd, ""}
+
+	// ----------------------------------------------------------------
+	// perform the change
+
+	actualResult, ok := parseTildePrefix(testData)
+
+	// ----------------------------------------------------------------
+	// test the results
+
+	assert.True(t, ok)
+	assert.Equal(t, expectedResult, actualResult)
+}
+
+func TestParseTildePrefixWithOldPwd(t *testing.T) {
+	t.Parallel()
+
+	// ----------------------------------------------------------------
+	// setup your test
+
+	testData := "~-"
+	expectedResult := tildePrefix{tildePrefixOldPwd, ""}
+
+	// ----------------------------------------------------------------
+	// perform the change
+
+	actualResult, ok := parseTildePrefix(testData)
+
+	// ----------------------------------------------------------------
+	// test the results
+
+	assert.True(t, ok)
+	assert.Equal(t, expectedResult, actualResult)
+}
+
+func TestParseTildePrefixWithUsername(t *testing.T) {
+	t.Parallel()
+
+	// ----------------------------------------------------------------
+	// setup your test
+
+	testData := "~stuart"
+	expectedResult := tildePrefix{tildePrefixUsername, "stuart"}
+
+	// ----------------------------------------------------------------
+	// perform the change
+
+	actualResult, ok := parseTildePrefix(testData)
+
+	// ----------------------------------------------------------------
+	// test the results
+
+	assert.True(t, ok)
+	assert.Equal(t, expectedResult, actualResult)
+}
+
+func TestParseTildePrefixWithoutTilde(t *testing.T) {
+	t.Parallel()
+
+	// ----------------------------------------------------------------
+	// setup your test
+
+	testData := "/root"
+	expectedResult := tildePrefix{}
+
+	// ----------------------------------------------------------------
+	// perform the change
+
+	actualResult, ok := parseTildePrefix(testData)
+
+	// ----------------------------------------------------------------
+	// test the results
+
+	assert.False(t, ok)
+	assert.Equal(t, expectedResult, actualResult)
+}
+
+func TestMatchTildePrefixWithHomedir(t *testing.T) {
+	t.Parallel()
+
+	// ----------------------------------------------------------------
+	// setup your test
+
+	testData := "ls ~/path/to/folder"
+	expectedResult := 3
+
+	// ----------------------------------------------------------------
+	// perform the change
+
+	actualResult, ok := matchTildePrefix(testData, 3)
+
+	// ----------------------------------------------------------------
+	// test the results
+
+	assert.True(t, ok)
+	assert.Equal(t, expectedResult, actualResult)
+}
+
+func TestMatchTildePrefixWithPwd(t *testing.T) {
+	t.Parallel()
+
+	// ----------------------------------------------------------------
+	// setup your test
+
+	testData := "ls ~+/src"
+	expectedResult := 4
+
+	// ----------------------------------------------------------------
+	// perform the change
+
+	actualResult, ok := matchTildePrefix(testData, 3)
+
+	// ----------------------------------------------------------------
+	// test the results
+
+	assert.True(t, ok)
+	assert.Equal(t, expectedResult, actualResult)
+}
+
+func TestMatchTildePrefixWithOldPwd(t *testing.T) {
+	t.Parallel()
+
+	// ----------------------------------------------------------------
+	// setup your test
+
+	testData := "ls ~-/bin"
+	expectedResult := 4
+
+	// ----------------------------------------------------------------
+	// perform the change
+
+	actualResult, ok := matchTildePrefix(testData, 3)
+
+	// ----------------------------------------------------------------
+	// test the results
+
+	assert.True(t, ok)
+	assert.Equal(t, expectedResult, actualResult)
+}
+
+func TestMatchTildePrefixWithUsername(t *testing.T) {
+	t.Parallel()
+
+	// ----------------------------------------------------------------
+	// setup your test
+
+	testData := "ls ~stuart"
+	expectedResult := 9
+
+	// ----------------------------------------------------------------
+	// perform the change
+
+	actualResult, ok := matchTildePrefix(testData, 3)
+
+	// ----------------------------------------------------------------
+	// test the results
+
+	assert.True(t, ok)
+	assert.Equal(t, expectedResult, actualResult)
+}
+
+func TestMatchTildePrefixWithoutTilde(t *testing.T) {
+	t.Parallel()
+
+	// ----------------------------------------------------------------
+	// setup your test
+
+	testData := "ls /root"
+	expectedResult := 3
+
+	// ----------------------------------------------------------------
+	// perform the change
+
+	actualResult, ok := matchTildePrefix(testData, 3)
+
+	// ----------------------------------------------------------------
+	// test the results
+
+	assert.False(t, ok)
+	assert.Equal(t, expectedResult, actualResult)
+}
+
+func TestMatchTildePrefixIgnoresEscapedSlashes(t *testing.T) {
+	t.Parallel()
+
+	// ----------------------------------------------------------------
+	// setup your test
+
+	testData := "ls ~\\/path/to/folder"
+	expectedResult := 9
+
+	// ----------------------------------------------------------------
+	// perform the change
+
+	actualResult, ok := matchTildePrefix(testData, 3)
+
+	// ----------------------------------------------------------------
+	// test the results
+
+	assert.True(t, ok)
+	assert.Equal(t, expectedResult, actualResult)
+}
