@@ -233,6 +233,14 @@ func parseParameter(input string) (paramDesc, bool) {
 		return paramDesc{}, false
 	}
 
+	// special case - handle positional params
+	if isNumericStringWithoutLeadingZero(input[2 : len(input)-1]) {
+		return paramDesc{
+			kind:  paramExpandToValue,
+			parts: []string{"$" + input[2:len(input)-1]},
+		}, true
+	}
+
 	// special case - handle ${!prefix*} and ${prefix@} here
 	if input[0:2] == "${!" {
 		if input[len(input)-2:] == "*}" {

@@ -36,6 +36,7 @@
 package shellexpand
 
 import (
+	"strconv"
 	"testing"
 
 	"github.com/stretchr/testify/assert"
@@ -146,6 +147,68 @@ func TestParseParamShellSpecialWithBraces(t *testing.T) {
 		expectedResult := paramDesc{
 			kind:  paramExpandToValue,
 			parts: []string{"$" + testData[2:3]},
+		}
+
+		// ----------------------------------------------------------------
+		// perform the change
+
+		actualResult, ok := parseParameter(testData)
+
+		// ----------------------------------------------------------------
+		// test the results
+
+		assert.True(t, ok)
+		assert.Equal(t, expectedResult, actualResult)
+	}
+}
+
+func TestParseParamPositionalParamsNoBraces(t *testing.T) {
+	t.Parallel()
+
+	var testDataSet []string
+
+	for i := 1; i < 20; i++ {
+		testDataSet = append(testDataSet, "$"+strconv.Itoa(i))
+	}
+
+	for _, testData := range testDataSet {
+		// ----------------------------------------------------------------
+		// setup your test
+
+		expectedResult := paramDesc{
+			kind:  paramExpandToValue,
+			parts: []string{testData},
+		}
+
+		// ----------------------------------------------------------------
+		// perform the change
+
+		actualResult, ok := parseParameter(testData)
+
+		// ----------------------------------------------------------------
+		// test the results
+
+		assert.True(t, ok)
+		assert.Equal(t, expectedResult, actualResult)
+	}
+}
+
+func TestParseParamPositionalWithBraces(t *testing.T) {
+	t.Parallel()
+
+	var testDataSet []string
+
+	for i := 1; i < 20; i++ {
+		testDataSet = append(testDataSet, "${"+strconv.Itoa(i)+"}")
+	}
+
+	for _, testData := range testDataSet {
+		// ----------------------------------------------------------------
+		// setup your test
+
+		expectedResult := paramDesc{
+			kind:  paramExpandToValue,
+			parts: []string{"$" + testData[2:len(testData)-1]},
 		}
 
 		// ----------------------------------------------------------------
