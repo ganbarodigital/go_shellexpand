@@ -112,9 +112,11 @@ func expandParameter(input string, lookupVar LookupVar) string {
 }
 
 const (
+	// we want '0' to mean something went wrong
+	paramExpandNotSupported = iota
 	// $var -> value of var (if set); empty string otherwise
 	// ${var} -> value of var (if set); empty string otherwise
-	paramExpandToValue = iota
+	paramExpandToValue
 	// ${var:-word} -> value of var (if set); expansion of word otherwise
 	paramExpandWithDefaultValue
 	// ${var:=word} -> value of var (if set); otherwise var is set to the expansion of word
@@ -191,7 +193,16 @@ func parseParameter(input string) (paramDesc, bool) {
 
 	// is the string wrapped in braces?
 	if input[1] != '{' && input[len(input)-1] != '}' {
-		// no - so it's a simple expansion required
+		// no
+		// are we looking at a special parameter?
+		if isShellSpecialChar(input[1]) {
+			return paramDesc{
+				kind:  paramExpandToValue,
+				parts: []string{input},
+			}, true
+		}
+
+		// no, we are not
 		return paramDesc{
 			kind:  paramExpandToValue,
 			parts: []string{input[1:len(input)]},
@@ -202,12 +213,24 @@ func parseParameter(input string) (paramDesc, bool) {
 	//
 	// this greatly simplifies the code later on
 	if len(input) == 4 {
-		if isNameStartChar(input[2]) || isShellSpecialChar(input[2]) {
+		// special case - we keep the '$' as part of their name
+		if isShellSpecialChar(input[2]) {
 			return paramDesc{
 				kind:  paramExpandToValue,
-				parts: []string{input[2:2]},
+				parts: []string{"$" + input[2:3]},
 			}, true
 		}
+
+		// it still has to be a valid name!
+		if isNameStartChar(input[2]) {
+			return paramDesc{
+				kind:  paramExpandToValue,
+				parts: []string{input[1:2]},
+			}, true
+		}
+
+		// we do not recognise it
+		return paramDesc{}, false
 	}
 
 	// special case - handle ${!prefix*} and ${prefix@} here

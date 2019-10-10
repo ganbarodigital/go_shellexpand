@@ -89,6 +89,78 @@ func TestParseParamSimpleBraces(t *testing.T) {
 	assert.Equal(t, expectedResult, actualResult)
 }
 
+func TestParseParamShellSpecialNoBraces(t *testing.T) {
+	t.Parallel()
+
+	testDataSet := []string{
+		"$!",
+		"$$",
+		"$*",
+		"$@",
+		"$#",
+		"$?",
+		"$-",
+		"$0",
+	}
+
+	for _, testData := range testDataSet {
+		// ----------------------------------------------------------------
+		// setup your test
+
+		expectedResult := paramDesc{
+			kind:  paramExpandToValue,
+			parts: []string{testData},
+		}
+
+		// ----------------------------------------------------------------
+		// perform the change
+
+		actualResult, ok := parseParameter(testData)
+
+		// ----------------------------------------------------------------
+		// test the results
+
+		assert.True(t, ok)
+		assert.Equal(t, expectedResult, actualResult)
+	}
+}
+
+func TestParseParamShellSpecialWithBraces(t *testing.T) {
+	t.Parallel()
+
+	testDataSet := []string{
+		"${!}",
+		"${$}",
+		"${*}",
+		"${@}",
+		"${#}",
+		"${?}",
+		"${-}",
+		"${0}",
+	}
+
+	for _, testData := range testDataSet {
+		// ----------------------------------------------------------------
+		// setup your test
+
+		expectedResult := paramDesc{
+			kind:  paramExpandToValue,
+			parts: []string{"$" + testData[2:3]},
+		}
+
+		// ----------------------------------------------------------------
+		// perform the change
+
+		actualResult, ok := parseParameter(testData)
+
+		// ----------------------------------------------------------------
+		// test the results
+
+		assert.True(t, ok)
+		assert.Equal(t, expectedResult, actualResult)
+	}
+}
+
 func TestParseParamDefaultValue(t *testing.T) {
 	t.Parallel()
 

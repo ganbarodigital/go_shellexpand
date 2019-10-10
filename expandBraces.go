@@ -403,17 +403,3 @@ func parseSequence(pattern string) (braceSequence, bool) {
 	// all done
 	return retval, true
 }
-
-func isNumericChar(char byte) bool {
-	return '0' <= char && char <= '9'
-}
-
-func isNumericString(input string) bool {
-	for i := 0; i < len(input); i++ {
-		if !isNumericChar(input[i]) {
-			return false
-		}
-	}
-
-	return true
-}
