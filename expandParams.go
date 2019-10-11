@@ -330,25 +330,17 @@ func parseParameter(input string) (paramDesc, bool) {
 			return paramDesc{}, false
 		}
 
-		// do we have a parameter name after it?
-		paramType, paramEnd, ok = matchParam(input, 3)
-		if ok {
-			if paramEnd == maxInput {
-				return paramDesc{
-					kind:     paramExpandToValue,
-					parts:    []string{input[3:paramEnd]},
-					indirect: true,
-				}, true
-			}
-
-			// at this point, there should be an operator next
-			opType, opEnd, ok = matchParamOp(input, paramEnd+1)
-			if ok {
-				retval.indirect = true
-				start++
-			}
-		}
+		// according to my testing, '${!' is *always* interpreted
+		// as indirection by POSIX shells
+		//
+		// if you come up with test cases that prove otherwise,
+		// I want to know!
+		retval.indirect = true
+		start++
 	}
+
+	// this helps us get out of the indirection check
+	// afterIndirectionCheck:
 
 	// the param name must be valid
 	paramType, paramEnd, ok = matchParam(input, start)

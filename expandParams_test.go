@@ -381,7 +381,6 @@ func TestParseParamShellSpecialDefaultValue(t *testing.T) {
 	t.Parallel()
 
 	testDataSet := []string{
-		"${!:-foo}",
 		"${$:-foo}",
 		"${*:-foo}",
 		"${@:-foo}",
@@ -629,7 +628,6 @@ func TestParseParamShellSpecialSetDefaultValue(t *testing.T) {
 	t.Parallel()
 
 	testDataSet := []string{
-		"${!:=foo}",
 		"${$:=foo}",
 		"${*:=foo}",
 		"${@:=foo}",
@@ -877,7 +875,6 @@ func TestParseParamShellSpecialWriteError(t *testing.T) {
 	t.Parallel()
 
 	testDataSet := []string{
-		"${!:?foo}",
 		"${$:?foo}",
 		"${*:?foo}",
 		"${@:?foo}",
@@ -1125,7 +1122,6 @@ func TestParseParamShellSpecialAlternativeValue(t *testing.T) {
 	t.Parallel()
 
 	testDataSet := []string{
-		"${!:+foo}",
 		"${$:+foo}",
 		"${*:+foo}",
 		"${@:+foo}",
@@ -1423,7 +1419,6 @@ func TestParseParamShellSpecialSubstring(t *testing.T) {
 	t.Parallel()
 
 	testDataSet := []string{
-		"${!:500}",
 		"${$:500}",
 		"${*:500}",
 		"${@:500}",
@@ -1727,7 +1722,6 @@ func TestParseParamShellSpecialSubstringLength(t *testing.T) {
 	t.Parallel()
 
 	testDataSet := []string{
-		"${!:500:1000}",
 		"${$:500:1000}",
 		"${*:500:1000}",
 		"${@:500:1000}",
@@ -2212,7 +2206,6 @@ func TestParseParamShellSpecialRemoveShortestPrefix(t *testing.T) {
 	t.Parallel()
 
 	testDataSet := []string{
-		"${!#FOO}",
 		"${$#FOO}",
 		"${*#FOO}",
 		"${@#FOO}",
@@ -2251,7 +2244,6 @@ func TestParseParamShellSpecialShortestPrefixWithIndirection(t *testing.T) {
 		"${!$#FOO}",
 		"${!*#FOO}",
 		"${!@#FOO}",
-		"${!##FOO}",
 		"${!?#FOO}",
 		"${!-#FOO}",
 		"${!0#FOO}",
@@ -2287,6 +2279,253 @@ func TestParseParamPlingRemoveShortestPrefixDoesNotSupportIndirection(t *testing
 	// setup your test
 
 	testData := "${!!#FOO}"
+	expectedResult := paramDesc{
+		kind: paramExpandNotSupported,
+	}
+
+	// ----------------------------------------------------------------
+	// perform the change
+
+	actualResult, ok := parseParameter(testData)
+
+	// ----------------------------------------------------------------
+	// test the results
+
+	assert.False(t, ok)
+	assert.Equal(t, expectedResult, actualResult)
+}
+
+func TestParseParamRemoveLongestPrefix(t *testing.T) {
+	t.Parallel()
+
+	// ----------------------------------------------------------------
+	// setup your test
+
+	testData := "${VAR##FOO}"
+	expectedResult := paramDesc{
+		kind:  paramExpandRemovePrefixLongestMatch,
+		parts: []string{"VAR", "FOO"},
+	}
+
+	// ----------------------------------------------------------------
+	// perform the change
+
+	actualResult, ok := parseParameter(testData)
+
+	// ----------------------------------------------------------------
+	// test the results
+
+	assert.True(t, ok)
+	assert.Equal(t, expectedResult, actualResult)
+}
+
+func TestParseParamRemoveLongestPrefixWithIndirection(t *testing.T) {
+	t.Parallel()
+
+	// ----------------------------------------------------------------
+	// setup your test
+
+	testData := "${!VAR##FOO}"
+	expectedResult := paramDesc{
+		kind:     paramExpandRemovePrefixLongestMatch,
+		parts:    []string{"VAR", "FOO"},
+		indirect: true,
+	}
+
+	// ----------------------------------------------------------------
+	// perform the change
+
+	actualResult, ok := parseParameter(testData)
+
+	// ----------------------------------------------------------------
+	// test the results
+
+	assert.True(t, ok)
+	assert.Equal(t, expectedResult, actualResult)
+}
+
+func TestParseParamRemoveLongestPrefixSingleLetterVar(t *testing.T) {
+	t.Parallel()
+
+	// ----------------------------------------------------------------
+	// setup your test
+
+	testData := "${V##FOO}"
+	expectedResult := paramDesc{
+		kind:  paramExpandRemovePrefixLongestMatch,
+		parts: []string{"V", "FOO"},
+	}
+
+	// ----------------------------------------------------------------
+	// perform the change
+
+	actualResult, ok := parseParameter(testData)
+
+	// ----------------------------------------------------------------
+	// test the results
+
+	assert.True(t, ok)
+	assert.Equal(t, expectedResult, actualResult)
+}
+
+func TestParseParamRemoveLongestPrefixSingleLetterVarWithIndirection(t *testing.T) {
+	t.Parallel()
+
+	// ----------------------------------------------------------------
+	// setup your test
+
+	testData := "${!V##FOO}"
+	expectedResult := paramDesc{
+		kind:     paramExpandRemovePrefixLongestMatch,
+		parts:    []string{"V", "FOO"},
+		indirect: true,
+	}
+
+	// ----------------------------------------------------------------
+	// perform the change
+
+	actualResult, ok := parseParameter(testData)
+
+	// ----------------------------------------------------------------
+	// test the results
+
+	assert.True(t, ok)
+	assert.Equal(t, expectedResult, actualResult)
+}
+
+func TestParseParamPositionalParamRemoveLongestPrefix(t *testing.T) {
+	t.Parallel()
+
+	for i := 1; i < 20; i++ {
+		testValue := strconv.Itoa(i)
+		// ----------------------------------------------------------------
+		// setup your test
+
+		testData := "${" + testValue + "##FOO}"
+		expectedResult := paramDesc{
+			kind:  paramExpandRemovePrefixLongestMatch,
+			parts: []string{"$" + testValue, "FOO"},
+		}
+
+		// ----------------------------------------------------------------
+		// perform the change
+
+		actualResult, ok := parseParameter(testData)
+
+		// ----------------------------------------------------------------
+		// test the results
+
+		assert.True(t, ok)
+		assert.Equal(t, expectedResult, actualResult)
+	}
+}
+
+func TestParseParamPositionalParamRemoveLongestPrefixWithIndirection(t *testing.T) {
+	t.Parallel()
+
+	for i := 1; i < 20; i++ {
+		testValue := strconv.Itoa(i)
+		// ----------------------------------------------------------------
+		// setup your test
+
+		testData := "${!" + testValue + "##FOO}"
+		expectedResult := paramDesc{
+			kind:     paramExpandRemovePrefixLongestMatch,
+			parts:    []string{"$" + testValue, "FOO"},
+			indirect: true,
+		}
+
+		// ----------------------------------------------------------------
+		// perform the change
+
+		actualResult, ok := parseParameter(testData)
+
+		// ----------------------------------------------------------------
+		// test the results
+
+		assert.True(t, ok)
+		assert.Equal(t, expectedResult, actualResult)
+	}
+}
+
+func TestParseParamShellSpecialRemoveLongestPrefix(t *testing.T) {
+	t.Parallel()
+
+	testDataSet := []string{
+		"${$##FOO}",
+		"${*##FOO}",
+		"${@##FOO}",
+		"${###FOO}",
+		"${?##FOO}",
+		"${-##FOO}",
+		"${0##FOO}",
+	}
+
+	for _, testData := range testDataSet {
+		// ----------------------------------------------------------------
+		// setup your test
+
+		expectedResult := paramDesc{
+			kind:  paramExpandRemovePrefixLongestMatch,
+			parts: []string{"$" + testData[2:3], "FOO"},
+		}
+
+		// ----------------------------------------------------------------
+		// perform the change
+
+		actualResult, ok := parseParameter(testData)
+
+		// ----------------------------------------------------------------
+		// test the results
+
+		assert.True(t, ok)
+		assert.Equal(t, expectedResult, actualResult)
+	}
+}
+
+func TestParseParamShellSpecialLongestPrefixWithIndirection(t *testing.T) {
+	t.Parallel()
+
+	testDataSet := []string{
+		"${!$##FOO}",
+		"${!*##FOO}",
+		"${!@##FOO}",
+		"${!###FOO}",
+		"${!?##FOO}",
+		"${!-##FOO}",
+		"${!0##FOO}",
+	}
+
+	for _, testData := range testDataSet {
+		// ----------------------------------------------------------------
+		// setup your test
+
+		expectedResult := paramDesc{
+			kind:     paramExpandRemovePrefixLongestMatch,
+			parts:    []string{"$" + testData[3:4], "FOO"},
+			indirect: true,
+		}
+
+		// ----------------------------------------------------------------
+		// perform the change
+
+		actualResult, ok := parseParameter(testData)
+
+		// ----------------------------------------------------------------
+		// test the results
+
+		assert.True(t, ok)
+		assert.Equal(t, expectedResult, actualResult)
+	}
+}
+
+func TestParseParamPlingRemoveLongestPrefixDoesNotSupportIndirection(t *testing.T) {
+	t.Parallel()
+
+	// ----------------------------------------------------------------
+	// setup your test
+
+	testData := "${!!##FOO}"
 	expectedResult := paramDesc{
 		kind: paramExpandNotSupported,
 	}
