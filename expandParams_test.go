@@ -271,3 +271,39 @@ func TestParseParamPositionalParamDefaultValue(t *testing.T) {
 	assert.True(t, ok)
 	assert.Equal(t, expectedResult, actualResult)
 }
+
+func TestParseParamShellSpecialDefaultValue(t *testing.T) {
+	t.Parallel()
+
+	testDataSet := []string{
+		"${!:-foo}",
+		"${$:-foo}",
+		"${*:-foo}",
+		"${@:-foo}",
+		"${#:-foo}",
+		"${?:-foo}",
+		"${-:-foo}",
+		"${0:-foo}",
+	}
+
+	for _, testData := range testDataSet {
+		// ----------------------------------------------------------------
+		// setup your test
+
+		expectedResult := paramDesc{
+			kind:  paramExpandWithDefaultValue,
+			parts: []string{"$" + testData[2:3], "foo"},
+		}
+
+		// ----------------------------------------------------------------
+		// perform the change
+
+		actualResult, ok := parseParameter(testData)
+
+		// ----------------------------------------------------------------
+		// test the results
+
+		assert.True(t, ok)
+		assert.Equal(t, expectedResult, actualResult)
+	}
+}

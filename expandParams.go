@@ -272,7 +272,7 @@ func parseParameter(input string) (paramDesc, bool) {
 	}
 
 	// special case - handle ${!prefix*} and ${prefix@} here
-	if input[0:2] == "${!" {
+	if input[0:3] == "${!" {
 		if input[len(input)-2:] == "*}" {
 			return paramDesc{
 				kind:  paramExpandPrefixNames,
@@ -287,7 +287,7 @@ func parseParameter(input string) (paramDesc, bool) {
 	}
 
 	// special case - handle ${#parameter} here
-	if input[0:2] == "${#" {
+	if input[0:3] == "${#" && (isNameStartChar(input[3]) || isNumericStartChar(input[3]) || isShellSpecialChar(input[3])) {
 		paramType, paramEnd, ok = matchParam(input, 3)
 		if !ok {
 			return paramDesc{}, false
@@ -320,7 +320,13 @@ func parseParameter(input string) (paramDesc, bool) {
 	start := 2
 
 	// do we have indirect expansion?
-	if input[2] == '!' {
+	if input[2] == '!' && (isNameStartChar(input[3]) || isNumericStartChar(input[3]) || isShellSpecialChar(input[3])) {
+		// special case - indirect expansion is not supported for '$!'
+		// according to my testing
+		if input[3] == '!' {
+			return paramDesc{}, false
+		}
+
 		retval.indirect = true
 		start++
 	}
