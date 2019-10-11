@@ -355,7 +355,7 @@ func parseParameter(input string) (paramDesc, bool) {
 	opStart := paramEnd + 1
 	switch input[opStart] {
 	case ':':
-		if opStart == len(input)-1 {
+		if opStart == maxInput {
 			// cannot have this as the last character for parameter expansion
 			return paramDesc{}, false
 		}
@@ -363,31 +363,31 @@ func parseParameter(input string) (paramDesc, bool) {
 		switch input[opStart+1] {
 		case '-':
 			retval.kind = paramExpandWithDefaultValue
-			if opStart < len(input)-1 {
-				retval.parts = append(retval.parts, input[opStart+2:len(input)-1])
+			if opStart < maxInput {
+				retval.parts = append(retval.parts, input[opStart+2:inputLen])
 			}
 			return retval, true
 		case '=':
 			retval.kind = paramExpandSetDefaultValue
-			if opStart < len(input)-1 {
-				retval.parts = append(retval.parts, input[opStart+2:len(input)-1])
+			if opStart < maxInput {
+				retval.parts = append(retval.parts, input[opStart+2:inputLen])
 			}
 			return retval, true
 		case '?':
 			retval.kind = paramExpandWriteError
-			if opStart < len(input)-1 {
-				retval.parts = append(retval.parts, input[opStart+2:len(input)-1])
+			if opStart < maxInput {
+				retval.parts = append(retval.parts, input[opStart+2:inputLen])
 			}
 			return retval, true
 		case '+':
 			retval.kind = paramExpandAlternativeValue
-			if opStart < len(input)-1 {
-				retval.parts = append(retval.parts, input[opStart+2:len(input)-1])
+			if opStart < maxInput {
+				retval.parts = append(retval.parts, input[opStart+2:inputLen])
 			}
 			return retval, true
 		default:
 			// must be a substring operation ... but which one?
-			parts := strings.Split(input[opStart+1:len(input)-1], ":")
+			parts := strings.Split(input[opStart+1:inputLen], ":")
 			if len(parts) > 2 {
 				return paramDesc{}, false
 			}
@@ -407,7 +407,7 @@ func parseParameter(input string) (paramDesc, bool) {
 	case '%':
 		// assume shortest match variant for now
 		retval.kind = paramExpandRemoveSuffixShortestMatch
-		if opStart == len(input)-1 {
+		if opStart == maxInput {
 			retval.parts = append(retval.parts, "")
 			return retval, true
 		}
@@ -415,18 +415,18 @@ func parseParameter(input string) (paramDesc, bool) {
 		// is it actually longest-match variant?
 		if input[opStart+1] == '%' {
 			retval.kind = paramExpandRemoveSuffixLongestMatch
-			if opStart < len(input)-2 {
-				retval.parts = append(retval.parts, input[opStart+2:len(input)-1])
+			if opStart < maxInput {
+				retval.parts = append(retval.parts, input[opStart+2:inputLen])
 			}
 			return retval, true
 		}
 
-		retval.parts = append(retval.parts, input[opStart+1:len(input)-1], "")
+		retval.parts = append(retval.parts, input[opStart+1:inputLen], "")
 		return retval, true
 	case '#':
 		// assume shortest match variant for now
 		retval.kind = paramExpandRemoveWordShortestMatch
-		if opStart == len(input)-1 {
+		if opStart == maxInput {
 			retval.parts = append(retval.parts, "")
 			return retval, true
 		}
@@ -434,18 +434,18 @@ func parseParameter(input string) (paramDesc, bool) {
 		// is it actually longest-match variant?
 		if input[opStart+1] == '#' {
 			retval.kind = paramExpandRemoveWordLongestMatch
-			if opStart < len(input)-2 {
-				retval.parts = append(retval.parts, input[opStart+2:len(input)-1])
+			if opStart < maxInput {
+				retval.parts = append(retval.parts, input[opStart+2:inputLen])
 			}
 			return retval, true
 		}
 
-		retval.parts = append(retval.parts, input[opStart+1:len(input)-1], "")
+		retval.parts = append(retval.parts, input[opStart+1:inputLen], "")
 		return retval, true
 	case '/':
 		// according to my testing, if there's nothing after the operand,
 		// UNIX shells simply do an expand-to-value
-		if opStart == len(input)-1 {
+		if opStart == maxInput {
 			retval.kind = paramExpandToValue
 			return retval, true
 		}
@@ -455,13 +455,13 @@ func parseParameter(input string) (paramDesc, bool) {
 		switch input[opStart+1] {
 		case '/':
 			// are we looking at a pattern that starts with '/'?
-			if strings.ContainsRune(input[opStart+2:len(input)-1], '/') {
+			if strings.ContainsRune(input[opStart+2:inputLen], '/') {
 				// yes, we are
 				retval.kind = paramExpandSearchReplaceAllMatches
-				retval.parts = append(retval.parts, strings.Split(input[opStart+2:len(input)-1], "/")...)
+				retval.parts = append(retval.parts, strings.Split(input[opStart+2:inputLen], "/")...)
 			} else {
 				retval.kind = paramExpandSearchReplaceFirstMatch
-				retval.parts = append(retval.parts, strings.Split(input[opStart+1:len(input)-1], "/")...)
+				retval.parts = append(retval.parts, strings.Split(input[opStart+1:inputLen], "/")...)
 			}
 
 			// if the replace string is missing, default is an empty string
@@ -473,7 +473,7 @@ func parseParameter(input string) (paramDesc, bool) {
 			return retval, true
 		case '%':
 			retval.kind = paramExpandSearchReplacePrefix
-			retval.parts = append(retval.parts, strings.Split(input[opStart+2:len(input)-1], "/")...)
+			retval.parts = append(retval.parts, strings.Split(input[opStart+2:inputLen], "/")...)
 			// if the replace string is missing, default is an empty string
 			if len(retval.parts) < 3 {
 				retval.parts = append(retval.parts, "")
@@ -481,7 +481,7 @@ func parseParameter(input string) (paramDesc, bool) {
 			return retval, true
 		case '#':
 			retval.kind = paramExpandSearchReplaceSuffix
-			retval.parts = append(retval.parts, strings.Split(input[opStart+2:len(input)-1], "/")...)
+			retval.parts = append(retval.parts, strings.Split(input[opStart+2:inputLen], "/")...)
 			// if the replace string is missing, default is an empty string
 			if len(retval.parts) < 3 {
 				retval.parts = append(retval.parts, "")
@@ -490,7 +490,7 @@ func parseParameter(input string) (paramDesc, bool) {
 		default:
 			// this is the easy bit!
 			retval.kind = paramExpandSearchReplaceFirstMatch
-			retval.parts = append(retval.parts, strings.Split(input[opStart+1:len(input)-1], "/")...)
+			retval.parts = append(retval.parts, strings.Split(input[opStart+1:inputLen], "/")...)
 			// if the replace string is missing, default is an empty string
 			if len(retval.parts) < 3 {
 				retval.parts = append(retval.parts, "")
@@ -500,16 +500,16 @@ func parseParameter(input string) (paramDesc, bool) {
 	case '^':
 		// according to my testing, if there's nothing after the operand,
 		// UNIX shells simply do an expand-to-value
-		if opStart == len(input)-1 {
+		if opStart == maxInput {
 			retval.kind = paramExpandToValue
 			return retval, true
 		}
 
 		switch input[opStart+1] {
 		case '^':
-			if opStart+2 < len(input)-1 {
+			if opStart+2 < maxInput {
 				retval.kind = paramExpandUppercaseAllChars
-				retval.parts = append(retval.parts, input[opStart+2:len(input)-1])
+				retval.parts = append(retval.parts, input[opStart+2:inputLen])
 			} else {
 				// nothing after the operand, so once again we default to
 				// expand-to-value
@@ -519,13 +519,13 @@ func parseParameter(input string) (paramDesc, bool) {
 			return retval, true
 		default:
 			retval.kind = paramExpandUppercaseFirstChar
-			retval.parts = append(retval.parts, input[opStart+2:len(input)-1])
+			retval.parts = append(retval.parts, input[opStart+2:inputLen])
 			return retval, true
 		}
 	case ',':
 		// according to my testing, if there's nothing after the operand,
 		// UNIX shells simply do an expand-to-value
-		if opStart == len(input)-1 {
+		if opStart == maxInput {
 			retval.kind = paramExpandToValue
 			return retval, true
 		}
@@ -534,7 +534,7 @@ func parseParameter(input string) (paramDesc, bool) {
 		case ',':
 			if opStart+2 < len(input)-1 {
 				retval.kind = paramExpandLowercaseAllChars
-				retval.parts = append(retval.parts, input[opStart+2:len(input)-1])
+				retval.parts = append(retval.parts, input[opStart+2:inputLen])
 			} else {
 				// nothing after the operand, so once again we default to
 				// expand-to-value
@@ -544,17 +544,17 @@ func parseParameter(input string) (paramDesc, bool) {
 			return retval, true
 		default:
 			retval.kind = paramExpandLowercaseFirstChar
-			retval.parts = append(retval.parts, input[opStart+2:len(input)-1])
+			retval.parts = append(retval.parts, input[opStart+2:inputLen])
 			return retval, true
 		}
 	case '@':
-		if opStart == len(input)-1 {
+		if opStart == maxInput {
 			return paramDesc{}, false
 		}
 
 		// using a string comparison here, for future expansion and to
 		// catch any ops that are too long
-		switch input[opStart+1 : len(input)-1] {
+		switch input[opStart+1 : inputLen] {
 		case "a":
 			retval.kind = paramExpandDescribeFlags
 			return retval, true
