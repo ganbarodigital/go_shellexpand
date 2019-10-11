@@ -1841,3 +1841,27 @@ func TestParseParamNameMatchPrefix(t *testing.T) {
 	assert.True(t, ok)
 	assert.Equal(t, expectedResult, actualResult)
 }
+
+func TestParseParamNameMatchPrefixDoubleQuoted(t *testing.T) {
+	t.Parallel()
+
+	// ----------------------------------------------------------------
+	// setup your test
+
+	testData := "${!VAR@}"
+	expectedResult := paramDesc{
+		kind:  paramExpandPrefixNamesDoubleQuoted,
+		parts: []string{"VAR"},
+	}
+
+	// ----------------------------------------------------------------
+	// perform the change
+
+	actualResult, ok := parseParameter(testData)
+
+	// ----------------------------------------------------------------
+	// test the results
+
+	assert.True(t, ok)
+	assert.Equal(t, expectedResult, actualResult)
+}

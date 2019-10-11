@@ -273,14 +273,14 @@ func parseParameter(input string) (paramDesc, bool) {
 
 	// special case - handle ${!prefix*} and ${prefix@} here
 	if input[0:3] == "${!" {
-		if input[len(input)-2:] == "*}" {
+		if input[maxInput:] == "*}" {
 			return paramDesc{
 				kind:  paramExpandPrefixNames,
 				parts: []string{input[3:maxInput]},
 			}, true
-		} else if input[len(input)-2:] == "@}" {
+		} else if input[maxInput:] == "@}" {
 			return paramDesc{
-				kind:  paramExpandPrefixNames,
+				kind:  paramExpandPrefixNamesDoubleQuoted,
 				parts: []string{input[3:maxInput]},
 			}, true
 		}
