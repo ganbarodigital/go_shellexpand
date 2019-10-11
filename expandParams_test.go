@@ -1817,3 +1817,27 @@ func TestParseParamPlingSubstringLengthDoesNotSupportIndirection(t *testing.T) {
 	assert.False(t, ok)
 	assert.Equal(t, expectedResult, actualResult)
 }
+
+func TestParseParamNameMatchPrefix(t *testing.T) {
+	t.Parallel()
+
+	// ----------------------------------------------------------------
+	// setup your test
+
+	testData := "${!VAR*}"
+	expectedResult := paramDesc{
+		kind:  paramExpandPrefixNames,
+		parts: []string{"VAR"},
+	}
+
+	// ----------------------------------------------------------------
+	// perform the change
+
+	actualResult, ok := parseParameter(testData)
+
+	// ----------------------------------------------------------------
+	// test the results
+
+	assert.True(t, ok)
+	assert.Equal(t, expectedResult, actualResult)
+}
