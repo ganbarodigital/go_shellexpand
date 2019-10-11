@@ -288,10 +288,9 @@ func parseParameter(input string) (paramDesc, bool) {
 
 	// special case - handle ${#parameter} here
 	if input[0:3] == "${#" && (isNameStartChar(input[3]) || isNumericStartChar(input[3]) || isShellSpecialChar(input[3])) {
-		paramType, paramEnd, ok = matchParam(input, 3)
-		if !ok {
-			return paramDesc{}, false
-		}
+		// we don't check the boolean return value, because we're 100%
+		// guaranteed to match the 1st char
+		paramType, paramEnd, _ = matchParam(input, 3)
 		if paramEnd != maxInput {
 			return paramDesc{}, false
 		}

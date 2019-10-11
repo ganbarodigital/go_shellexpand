@@ -1890,6 +1890,35 @@ func TestParseParamParamLength(t *testing.T) {
 	assert.Equal(t, expectedResult, actualResult)
 }
 
+func TestParseParamLengthMustHaveValidParamName(t *testing.T) {
+	t.Parallel()
+
+	testDataSet := []string{
+		" ",
+		"£",
+		"0129",
+	}
+
+	for _, testData := range testDataSet {
+		// ----------------------------------------------------------------
+		// setup your test
+
+		testData := "${#" + testData + "}"
+		expectedResult := paramDesc{}
+
+		// ----------------------------------------------------------------
+		// perform the change
+
+		actualResult, ok := parseParameter(testData)
+
+		// ----------------------------------------------------------------
+		// test the results
+
+		assert.False(t, ok)
+		assert.Equal(t, expectedResult, actualResult)
+	}
+}
+
 func TestParseParamLengthCanHaveNothingAfterParamName(t *testing.T) {
 	t.Parallel()
 
