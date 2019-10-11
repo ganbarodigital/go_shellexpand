@@ -1240,6 +1240,56 @@ func TestParseParamSubstring(t *testing.T) {
 	assert.Equal(t, expectedResult, actualResult)
 }
 
+func TestParseParamSubstringMustHaveOffset(t *testing.T) {
+	t.Parallel()
+
+	// ----------------------------------------------------------------
+	// setup your test
+
+	testData := "${VAR:}"
+	expectedResult := paramDesc{}
+
+	// ----------------------------------------------------------------
+	// perform the change
+
+	actualResult, ok := parseParameter(testData)
+
+	// ----------------------------------------------------------------
+	// test the results
+
+	assert.False(t, ok)
+	assert.Equal(t, expectedResult, actualResult)
+}
+
+func TestParseParamSubstringOffsetMustBeNumeric(t *testing.T) {
+	t.Parallel()
+
+	testDataSet := []string{
+		"abcdef",
+		"1hundred",
+		"500 ",
+	}
+
+	for _, testData := range testDataSet {
+		// ----------------------------------------------------------------
+		// setup your test
+
+		testData := "${VAR:" + testData + "}"
+		expectedResult := paramDesc{}
+
+		// ----------------------------------------------------------------
+		// perform the change
+
+		actualResult, ok := parseParameter(testData)
+
+		// ----------------------------------------------------------------
+		// test the results
+
+		assert.False(t, ok)
+		assert.Equal(t, expectedResult, actualResult)
+	}
+}
+
 func TestParseParamSubstringWithIndirection(t *testing.T) {
 	t.Parallel()
 
@@ -1486,6 +1536,62 @@ func TestParseParamSubstringLength(t *testing.T) {
 
 	assert.True(t, ok)
 	assert.Equal(t, expectedResult, actualResult)
+}
+
+func TestParseParamSubstringLengthMustBeNumeric(t *testing.T) {
+	t.Parallel()
+
+	testDataSet := []string{
+		"100:abcdef",
+		"100:1hundred",
+		"100:500 ",
+	}
+
+	for _, testData := range testDataSet {
+		// ----------------------------------------------------------------
+		// setup your test
+
+		testData := "${VAR:" + testData + "}"
+		expectedResult := paramDesc{}
+
+		// ----------------------------------------------------------------
+		// perform the change
+
+		actualResult, ok := parseParameter(testData)
+
+		// ----------------------------------------------------------------
+		// test the results
+
+		assert.False(t, ok)
+		assert.Equal(t, expectedResult, actualResult)
+	}
+}
+
+func TestParseParamSubstringLengthCannotHaveExtraParts(t *testing.T) {
+	t.Parallel()
+
+	testDataSet := []string{
+		"100:500:600",
+	}
+
+	for _, testData := range testDataSet {
+		// ----------------------------------------------------------------
+		// setup your test
+
+		testData := "${VAR:" + testData + "}"
+		expectedResult := paramDesc{}
+
+		// ----------------------------------------------------------------
+		// perform the change
+
+		actualResult, ok := parseParameter(testData)
+
+		// ----------------------------------------------------------------
+		// test the results
+
+		assert.False(t, ok)
+		assert.Equal(t, expectedResult, actualResult)
+	}
 }
 
 func TestParseParamSubstringLengthWithIndirection(t *testing.T) {
