@@ -248,16 +248,17 @@ func TestParseParamDefaultValue(t *testing.T) {
 	assert.Equal(t, expectedResult, actualResult)
 }
 
-func TestParseParamPositionalParamDefaultValue(t *testing.T) {
+func TestParseParamDefaultValueWithIndirection(t *testing.T) {
 	t.Parallel()
 
 	// ----------------------------------------------------------------
 	// setup your test
 
-	testData := "${4:-FOO}"
+	testData := "${!VAR:-FOO}"
 	expectedResult := paramDesc{
-		kind:  paramExpandWithDefaultValue,
-		parts: []string{"$4", "FOO"},
+		kind:     paramExpandWithDefaultValue,
+		parts:    []string{"VAR", "FOO"},
+		indirect: true,
 	}
 
 	// ----------------------------------------------------------------
@@ -270,6 +271,110 @@ func TestParseParamPositionalParamDefaultValue(t *testing.T) {
 
 	assert.True(t, ok)
 	assert.Equal(t, expectedResult, actualResult)
+}
+
+func TestParseParamDefaultValueSingleLetterVar(t *testing.T) {
+	t.Parallel()
+
+	// ----------------------------------------------------------------
+	// setup your test
+
+	testData := "${V:-FOO}"
+	expectedResult := paramDesc{
+		kind:  paramExpandWithDefaultValue,
+		parts: []string{"V", "FOO"},
+	}
+
+	// ----------------------------------------------------------------
+	// perform the change
+
+	actualResult, ok := parseParameter(testData)
+
+	// ----------------------------------------------------------------
+	// test the results
+
+	assert.True(t, ok)
+	assert.Equal(t, expectedResult, actualResult)
+}
+
+func TestParseParamDefaultValueSingleLetterVarWithIndirection(t *testing.T) {
+	t.Parallel()
+
+	// ----------------------------------------------------------------
+	// setup your test
+
+	testData := "${!V:-FOO}"
+	expectedResult := paramDesc{
+		kind:     paramExpandWithDefaultValue,
+		parts:    []string{"V", "FOO"},
+		indirect: true,
+	}
+
+	// ----------------------------------------------------------------
+	// perform the change
+
+	actualResult, ok := parseParameter(testData)
+
+	// ----------------------------------------------------------------
+	// test the results
+
+	assert.True(t, ok)
+	assert.Equal(t, expectedResult, actualResult)
+}
+
+func TestParseParamPositionalParamDefaultValue(t *testing.T) {
+	t.Parallel()
+
+	for i := 1; i < 20; i++ {
+		testValue := strconv.Itoa(i)
+		// ----------------------------------------------------------------
+		// setup your test
+
+		testData := "${" + testValue + ":-FOO}"
+		expectedResult := paramDesc{
+			kind:  paramExpandWithDefaultValue,
+			parts: []string{"$" + testValue, "FOO"},
+		}
+
+		// ----------------------------------------------------------------
+		// perform the change
+
+		actualResult, ok := parseParameter(testData)
+
+		// ----------------------------------------------------------------
+		// test the results
+
+		assert.True(t, ok)
+		assert.Equal(t, expectedResult, actualResult)
+	}
+}
+
+func TestParseParamPositionalParamDefaultValueWithIndirection(t *testing.T) {
+	t.Parallel()
+
+	for i := 1; i < 20; i++ {
+		testValue := strconv.Itoa(i)
+		// ----------------------------------------------------------------
+		// setup your test
+
+		testData := "${!" + testValue + ":-FOO}"
+		expectedResult := paramDesc{
+			kind:     paramExpandWithDefaultValue,
+			parts:    []string{"$" + testValue, "FOO"},
+			indirect: true,
+		}
+
+		// ----------------------------------------------------------------
+		// perform the change
+
+		actualResult, ok := parseParameter(testData)
+
+		// ----------------------------------------------------------------
+		// test the results
+
+		assert.True(t, ok)
+		assert.Equal(t, expectedResult, actualResult)
+	}
 }
 
 func TestParseParamShellSpecialDefaultValue(t *testing.T) {
@@ -306,4 +411,63 @@ func TestParseParamShellSpecialDefaultValue(t *testing.T) {
 		assert.True(t, ok)
 		assert.Equal(t, expectedResult, actualResult)
 	}
+}
+
+func TestParseParamShellSpecialDefaultValueWithIndirection(t *testing.T) {
+	t.Parallel()
+
+	testDataSet := []string{
+		"${!$:-foo}",
+		"${!*:-foo}",
+		"${!@:-foo}",
+		"${!#:-foo}",
+		"${!?:-foo}",
+		"${!-:-foo}",
+		"${!0:-foo}",
+	}
+
+	for _, testData := range testDataSet {
+		// ----------------------------------------------------------------
+		// setup your test
+
+		expectedResult := paramDesc{
+			kind:     paramExpandWithDefaultValue,
+			parts:    []string{"$" + testData[3:4], "foo"},
+			indirect: true,
+		}
+
+		// ----------------------------------------------------------------
+		// perform the change
+
+		actualResult, ok := parseParameter(testData)
+
+		// ----------------------------------------------------------------
+		// test the results
+
+		assert.True(t, ok)
+		assert.Equal(t, expectedResult, actualResult)
+	}
+}
+
+func TestParseParamPlingDoesNotSupportIndirection(t *testing.T) {
+	t.Parallel()
+
+	// ----------------------------------------------------------------
+	// setup your test
+
+	testData := "${!!:-foo}"
+	expectedResult := paramDesc{
+		kind: paramExpandNotSupported,
+	}
+
+	// ----------------------------------------------------------------
+	// perform the change
+
+	actualResult, ok := parseParameter(testData)
+
+	// ----------------------------------------------------------------
+	// test the results
+
+	assert.False(t, ok)
+	assert.Equal(t, expectedResult, actualResult)
 }
