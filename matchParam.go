@@ -35,68 +35,41 @@
 
 package shellexpand
 
-func isAlphaChar(char byte) bool {
-	return 'a' <= char && char <= 'z' || 'A' <= char && char <= 'Z'
-}
+const (
+	paramTypeInvalid = iota
+	paramTypeName
+	paramTypePositional
+	paramTypeSpecial
+)
 
-func isAlphaNumericChar(char byte) bool {
-	return isNumericChar(char) || isAlphaChar(char)
-}
+// matchParam checks the input string to see if there is a shell parameter
+// at the given starting position
+//
+// `start` must point to the first letter of the parameter's name (ie, after
+// any `$` and `{` characters)
+//
+// returns:
+//
+// - the parameter's type
+// - the zero-index position of the end of the parameter's name
+// - `true` on success
+func matchParam(input string, start int) (int, int, bool) {
+	var paramEnd int
+	var ok bool
 
-func isNumericChar(char byte) bool {
-	return '0' <= char && char <= '9'
-}
+	paramCheckers := []func(string, int) (int, bool){
+		matchName,
+		matchPositionalParam,
+		matchSpecialParam,
+	}
 
-func isNumericStartChar(char byte) bool {
-	return '1' <= char && char <= '9'
-}
-
-func isNumericString(input string) bool {
-	for i := 0; i < len(input); i++ {
-		if !isNumericChar(input[i]) {
-			return false
+	for i := 0; i < len(paramCheckers); i++ {
+		paramChecker := paramCheckers[i]
+		paramEnd, ok = paramChecker(input, start)
+		if ok {
+			return i + 1, paramEnd, true
 		}
 	}
 
-	return true
-}
-
-func isNumericStringWithoutLeadingZero(input string) bool {
-	if len(input) == 0 {
-		return false
-	}
-
-	if !isNumericStartChar(input[0]) {
-		return false
-	}
-
-	for i := 1; i < len(input); i++ {
-		if !isNumericChar(input[i]) {
-			return false
-		}
-	}
-
-	return true
-}
-
-func isNameBodyChar(char byte) bool {
-	return isAlphaNumericChar(char) || char == '_'
-}
-
-func isNameStartChar(char byte) bool {
-	return isAlphaChar(char) || char == '_'
-}
-
-func isShellSpecialChar(char byte) bool {
-	return char == '#' || char == '*' || char == '?' || char == '!' || char == '$' || char == '-' || char == '@' || char == '0'
-}
-
-func isShellSpecialString(input string) bool {
-	// check for special variables
-	if len(input) == 1 {
-		return isShellSpecialChar(input[0])
-	}
-
-	// check for positional parameters
-	return isNumericStringWithoutLeadingZero(input)
+	return paramTypeInvalid, 0, false
 }

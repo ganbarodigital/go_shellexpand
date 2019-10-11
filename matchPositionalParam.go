@@ -35,68 +35,21 @@
 
 package shellexpand
 
-func isAlphaChar(char byte) bool {
-	return 'a' <= char && char <= 'z' || 'A' <= char && char <= 'Z'
-}
+func matchPositionalParam(input string, start int) (int, bool) {
+	// a positional param is a word consisting of
+	//
+	// numeric characters
+	// beginning with a non-zero number
 
-func isAlphaNumericChar(char byte) bool {
-	return isNumericChar(char) || isAlphaChar(char)
-}
+	if !isNumericStartChar(input[start]) {
+		return 0, false
+	}
 
-func isNumericChar(char byte) bool {
-	return '0' <= char && char <= '9'
-}
-
-func isNumericStartChar(char byte) bool {
-	return '1' <= char && char <= '9'
-}
-
-func isNumericString(input string) bool {
-	for i := 0; i < len(input); i++ {
+	for i := start + 1; i < len(input); i++ {
 		if !isNumericChar(input[i]) {
-			return false
+			return i - 1, true
 		}
 	}
 
-	return true
-}
-
-func isNumericStringWithoutLeadingZero(input string) bool {
-	if len(input) == 0 {
-		return false
-	}
-
-	if !isNumericStartChar(input[0]) {
-		return false
-	}
-
-	for i := 1; i < len(input); i++ {
-		if !isNumericChar(input[i]) {
-			return false
-		}
-	}
-
-	return true
-}
-
-func isNameBodyChar(char byte) bool {
-	return isAlphaNumericChar(char) || char == '_'
-}
-
-func isNameStartChar(char byte) bool {
-	return isAlphaChar(char) || char == '_'
-}
-
-func isShellSpecialChar(char byte) bool {
-	return char == '#' || char == '*' || char == '?' || char == '!' || char == '$' || char == '-' || char == '@' || char == '0'
-}
-
-func isShellSpecialString(input string) bool {
-	// check for special variables
-	if len(input) == 1 {
-		return isShellSpecialChar(input[0])
-	}
-
-	// check for positional parameters
-	return isNumericStringWithoutLeadingZero(input)
+	return len(input) - 1, true
 }

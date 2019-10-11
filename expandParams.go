@@ -186,58 +186,88 @@ type paramDesc struct {
 }
 
 func parseParameter(input string) (paramDesc, bool) {
-	// make sure we're looking at a parameter
+	// shorthand
+	inputLen := len(input)
+	maxInput := inputLen - 1
+
+	// we'll use these throughout the function
+	var paramType int
+	var paramEnd int
+	var ok bool
+	var retval paramDesc
+
+	// make sure we're looking at something that has the shape of a parameter
 	if input[0] != '$' {
+		return paramDesc{}, false
+	}
+	if input[1] == '{' && input[maxInput] != '}' {
+		return paramDesc{}, false
+	}
+	if input[1] != '{' && input[maxInput] == '}' {
 		return paramDesc{}, false
 	}
 
 	// is the string wrapped in braces?
-	if input[1] != '{' && input[len(input)-1] != '}' {
+	if input[1] != '{' && input[maxInput] != '}' {
 		// no
-		// are we looking at a special parameter?
-		if isShellSpecialChar(input[1]) {
+		paramType, paramEnd, ok = matchParam(input, 1)
+		if !ok {
+			return paramDesc{}, false
+		}
+		if paramEnd != maxInput {
+			return paramDesc{}, false
+		}
+
+		switch paramType {
+		case paramTypeName:
+			return paramDesc{
+				kind:  paramExpandToValue,
+				parts: []string{input[1:inputLen]},
+			}, true
+		default:
 			return paramDesc{
 				kind:  paramExpandToValue,
 				parts: []string{input},
 			}, true
 		}
-
-		// no, we are not
-		return paramDesc{
-			kind:  paramExpandToValue,
-			parts: []string{input[1:len(input)]},
-		}, true
 	}
+
+	// at this point, we know we're looking at an input string wrapped
+	// in braces
+	maxInput--
+	inputLen--
 
 	// special case - handle *all* single-char names here
 	//
 	// this greatly simplifies the code later on
 	if len(input) == 4 {
-		// special case - we keep the '$' as part of their name
-		if isShellSpecialChar(input[2]) {
-			return paramDesc{
-				kind:  paramExpandToValue,
-				parts: []string{"$" + input[2:3]},
-			}, true
+		paramType, paramEnd, ok = matchParam(input, 2)
+		if !ok {
+			return paramDesc{}, false
+		}
+		if paramEnd != maxInput {
+			return paramDesc{}, false
 		}
 
-		// it still has to be a valid name!
-		if isNameStartChar(input[2]) {
+		switch paramType {
+		case paramTypeName:
 			return paramDesc{
 				kind:  paramExpandToValue,
-				parts: []string{input[1:2]},
+				parts: []string{input[2:inputLen]},
+			}, true
+		default:
+			return paramDesc{
+				kind:  paramExpandToValue,
+				parts: []string{"$" + input[2:inputLen]},
 			}, true
 		}
-
-		// we do not recognise it
-		return paramDesc{}, false
 	}
 
 	// special case - handle positional params
-	if isNumericStringWithoutLeadingZero(input[2 : len(input)-1]) {
+	if isNumericStringWithoutLeadingZero(input[2:inputLen]) {
 		return paramDesc{
 			kind:  paramExpandToValue,
-			parts: []string{"$" + input[2:len(input)-1]},
+			parts: []string{"$" + input[2:inputLen]},
 		}, true
 	}
 
@@ -246,27 +276,38 @@ func parseParameter(input string) (paramDesc, bool) {
 		if input[len(input)-2:] == "*}" {
 			return paramDesc{
 				kind:  paramExpandPrefixNames,
-				parts: []string{input[3 : len(input)-2]},
+				parts: []string{input[3:maxInput]},
 			}, true
 		} else if input[len(input)-2:] == "@}" {
 			return paramDesc{
 				kind:  paramExpandPrefixNames,
-				parts: []string{input[3 : len(input)-2]},
+				parts: []string{input[3:maxInput]},
 			}, true
 		}
 	}
 
 	// special case - handle ${#parameter} here
 	if input[0:2] == "${#" {
-		// make sure the parameter name is a valid name
-		nameEnd, ok := matchName(input, 3)
-		if !ok || nameEnd != len(input)-1 {
+		paramType, paramEnd, ok = matchParam(input, 3)
+		if !ok {
 			return paramDesc{}, false
 		}
-		return paramDesc{
-			kind:  paramExpandLen,
-			parts: []string{input[3 : nameEnd+1]},
-		}, true
+		if paramEnd != maxInput {
+			return paramDesc{}, false
+		}
+
+		switch paramType {
+		case paramTypeName:
+			return paramDesc{
+				kind:  paramExpandToValue,
+				parts: []string{input[3 : paramEnd+1]},
+			}, true
+		default:
+			return paramDesc{
+				kind:  paramExpandToValue,
+				parts: []string{"$" + input[3:paramEnd+1]},
+			}, true
+		}
 	}
 
 	// at this point, what's left is everything of the form:
@@ -274,9 +315,6 @@ func parseParameter(input string) (paramDesc, bool) {
 	// ${[!]parameter<op>[<op-specific parts>]}
 	//
 	// we just have to work through them
-
-	// this will hold our return value, if parsing is successful
-	retval := paramDesc{}
 
 	// where are we going to start looking for the name of the param?
 	start := 2
@@ -287,16 +325,20 @@ func parseParameter(input string) (paramDesc, bool) {
 		start++
 	}
 
-	// the param name must match the 'name' rules
-	nameEnd, ok := matchName(input, start)
+	// the param name must be valid
+	paramType, paramEnd, ok = matchParam(input, start)
 	if !ok {
-		// TODO - support for positional params and special params
 		return paramDesc{}, false
 	}
-	retval.parts = append(retval.parts, input[start:nameEnd+1])
+	switch paramType {
+	case paramTypeName:
+		retval.parts = append(retval.parts, input[start:paramEnd+1])
+	default:
+		retval.parts = append(retval.parts, "$"+input[start:paramEnd+1])
+	}
 
 	// special case - is that it?
-	if nameEnd == len(input)-2 {
+	if paramEnd == maxInput {
 		retval.kind = paramExpandToValue
 		return retval, true
 	}
@@ -304,7 +346,7 @@ func parseParameter(input string) (paramDesc, bool) {
 	// what kind of operator do we have?
 	//
 	// remember that it may be the last part of the parameter expansion
-	opStart := nameEnd + 1
+	opStart := paramEnd + 1
 	switch input[opStart] {
 	case ':':
 		if opStart == len(input)-1 {
