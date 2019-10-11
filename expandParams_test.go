@@ -1865,3 +1865,258 @@ func TestParseParamNameMatchPrefixDoubleQuoted(t *testing.T) {
 	assert.True(t, ok)
 	assert.Equal(t, expectedResult, actualResult)
 }
+
+func TestParseParamParamLength(t *testing.T) {
+	t.Parallel()
+
+	// ----------------------------------------------------------------
+	// setup your test
+
+	testData := "${#VAR}"
+	expectedResult := paramDesc{
+		kind:  paramExpandParamLength,
+		parts: []string{"VAR"},
+	}
+
+	// ----------------------------------------------------------------
+	// perform the change
+
+	actualResult, ok := parseParameter(testData)
+
+	// ----------------------------------------------------------------
+	// test the results
+
+	assert.True(t, ok)
+	assert.Equal(t, expectedResult, actualResult)
+}
+
+func TestParseParamLengthCanHaveNothingAfterParamName(t *testing.T) {
+	t.Parallel()
+
+	testDataSet := []string{
+		" ",
+		":0",
+		":100:500",
+		":-WORD",
+		":=WORD",
+		":?WORD",
+		":+WORD",
+		"*",
+		"@",
+		"#WORD",
+		"##WORD",
+		"%WORD",
+		"%%WORD",
+		"/old/new",
+		"^pattern",
+		"^^pattern",
+		",pattern",
+		",,pattern",
+		"@a",
+		"@A",
+		"@E",
+		"@P",
+		"@Q",
+	}
+
+	for _, testData := range testDataSet {
+		// ----------------------------------------------------------------
+		// setup your test
+
+		testData := "${#VAR" + testData + "}"
+		expectedResult := paramDesc{}
+
+		// ----------------------------------------------------------------
+		// perform the change
+
+		actualResult, ok := parseParameter(testData)
+
+		// ----------------------------------------------------------------
+		// test the results
+
+		assert.False(t, ok)
+		assert.Equal(t, expectedResult, actualResult)
+	}
+}
+
+func TestParseParamParamLengthWithIndirectionNotSupported(t *testing.T) {
+	t.Parallel()
+
+	// ----------------------------------------------------------------
+	// setup your test
+
+	testData := "${!#VAR}"
+	expectedResult := paramDesc{}
+
+	// ----------------------------------------------------------------
+	// perform the change
+
+	actualResult, ok := parseParameter(testData)
+
+	// ----------------------------------------------------------------
+	// test the results
+
+	assert.False(t, ok)
+	assert.Equal(t, expectedResult, actualResult)
+}
+
+func TestParseParamParamLengthSingleLetterVar(t *testing.T) {
+	t.Parallel()
+
+	// ----------------------------------------------------------------
+	// setup your test
+
+	testData := "${#V}"
+	expectedResult := paramDesc{
+		kind:  paramExpandParamLength,
+		parts: []string{"V"},
+	}
+
+	// ----------------------------------------------------------------
+	// perform the change
+
+	actualResult, ok := parseParameter(testData)
+
+	// ----------------------------------------------------------------
+	// test the results
+
+	assert.True(t, ok)
+	assert.Equal(t, expectedResult, actualResult)
+}
+
+func TestParseParamParamLengthSingleLetterVarWithIndirectionNotSupported(t *testing.T) {
+	t.Parallel()
+
+	// ----------------------------------------------------------------
+	// setup your test
+
+	testData := "${!#V}"
+	expectedResult := paramDesc{}
+
+	// ----------------------------------------------------------------
+	// perform the change
+
+	actualResult, ok := parseParameter(testData)
+
+	// ----------------------------------------------------------------
+	// test the results
+
+	assert.False(t, ok)
+	assert.Equal(t, expectedResult, actualResult)
+}
+
+func TestParseParamPositionalParamParamLength(t *testing.T) {
+	t.Parallel()
+
+	for i := 1; i < 20; i++ {
+		testValue := strconv.Itoa(i)
+		// ----------------------------------------------------------------
+		// setup your test
+
+		testData := "${#" + testValue + "}"
+		expectedResult := paramDesc{
+			kind:  paramExpandParamLength,
+			parts: []string{"$" + testValue},
+		}
+
+		// ----------------------------------------------------------------
+		// perform the change
+
+		actualResult, ok := parseParameter(testData)
+
+		// ----------------------------------------------------------------
+		// test the results
+
+		assert.True(t, ok)
+		assert.Equal(t, expectedResult, actualResult)
+	}
+}
+
+func TestParseParamPositionalParamParamLengthWithIndirectionNotSupported(t *testing.T) {
+	t.Parallel()
+
+	for i := 1; i < 20; i++ {
+		testValue := strconv.Itoa(i)
+		// ----------------------------------------------------------------
+		// setup your test
+
+		testData := "${!#" + testValue + "}"
+		expectedResult := paramDesc{}
+
+		// ----------------------------------------------------------------
+		// perform the change
+
+		actualResult, ok := parseParameter(testData)
+
+		// ----------------------------------------------------------------
+		// test the results
+
+		assert.False(t, ok)
+		assert.Equal(t, expectedResult, actualResult)
+	}
+}
+
+func TestParseParamShellSpecialParamLength(t *testing.T) {
+	t.Parallel()
+
+	testDataSet := []string{
+		"${#!}",
+		"${#$}",
+		"${#*}",
+		"${#@}",
+		"${##}",
+		"${#?}",
+		"${#-}",
+		"${#0}",
+	}
+
+	for _, testData := range testDataSet {
+		// ----------------------------------------------------------------
+		// setup your test
+
+		expectedResult := paramDesc{
+			kind:  paramExpandParamLength,
+			parts: []string{"$" + testData[3:4]},
+		}
+
+		// ----------------------------------------------------------------
+		// perform the change
+
+		actualResult, ok := parseParameter(testData)
+
+		// ----------------------------------------------------------------
+		// test the results
+
+		assert.True(t, ok)
+		assert.Equal(t, expectedResult, actualResult)
+	}
+}
+
+func TestParseParamShellSpecialParamLengthWithIndirectionNotSupported(t *testing.T) {
+	t.Parallel()
+
+	testDataSet := []string{
+		"${!#$}",
+		"${!#?}",
+		"${!#-}",
+		"${!#0}",
+	}
+
+	for _, testData := range testDataSet {
+		// ----------------------------------------------------------------
+		// setup your test
+
+		expectedResult := paramDesc{}
+
+		// ----------------------------------------------------------------
+		// perform the change
+
+		actualResult, ok := parseParameter(testData)
+
+		// ----------------------------------------------------------------
+		// test the results
+
+		assert.False(t, ok)
+		assert.Equal(t, expectedResult, actualResult)
+	}
+}

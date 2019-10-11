@@ -134,7 +134,7 @@ const (
 	// ${!prefix@} -> return a list of names matching the given prefix
 	paramExpandPrefixNamesDoubleQuoted
 	// ${#var} -> length of value of var
-	paramExpandLen
+	paramExpandParamLength
 	// ${#*} -> number of positional parameters
 	paramExpandNoOfPositionalParams
 	// ${var#word} -> value of var, with shortest match of word removed
@@ -299,13 +299,13 @@ func parseParameter(input string) (paramDesc, bool) {
 		switch paramType {
 		case paramTypeName:
 			return paramDesc{
-				kind:  paramExpandToValue,
-				parts: []string{input[3 : paramEnd+1]},
+				kind:  paramExpandParamLength,
+				parts: []string{input[3:inputLen]},
 			}, true
 		default:
 			return paramDesc{
-				kind:  paramExpandToValue,
-				parts: []string{"$" + input[3:paramEnd+1]},
+				kind:  paramExpandParamLength,
+				parts: []string{"$" + input[3:inputLen]},
 			}, true
 		}
 	}
