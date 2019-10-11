@@ -1215,3 +1215,251 @@ func TestParseParamPlingAlternativeValueDoesNotSupportIndirection(t *testing.T) 
 	assert.False(t, ok)
 	assert.Equal(t, expectedResult, actualResult)
 }
+
+func TestParseParamSubstring(t *testing.T) {
+	t.Parallel()
+
+	// ----------------------------------------------------------------
+	// setup your test
+
+	testData := "${VAR:500}"
+	expectedResult := paramDesc{
+		kind:  paramExpandSubstring,
+		parts: []string{"VAR", "500"},
+	}
+
+	// ----------------------------------------------------------------
+	// perform the change
+
+	actualResult, ok := parseParameter(testData)
+
+	// ----------------------------------------------------------------
+	// test the results
+
+	assert.True(t, ok)
+	assert.Equal(t, expectedResult, actualResult)
+}
+
+func TestParseParamSubstringWithIndirection(t *testing.T) {
+	t.Parallel()
+
+	// ----------------------------------------------------------------
+	// setup your test
+
+	testData := "${!VAR:500}"
+	expectedResult := paramDesc{
+		kind:     paramExpandSubstring,
+		parts:    []string{"VAR", "500"},
+		indirect: true,
+	}
+
+	// ----------------------------------------------------------------
+	// perform the change
+
+	actualResult, ok := parseParameter(testData)
+
+	// ----------------------------------------------------------------
+	// test the results
+
+	assert.True(t, ok)
+	assert.Equal(t, expectedResult, actualResult)
+}
+
+func TestParseParamSubstringSingleLetterVar(t *testing.T) {
+	t.Parallel()
+
+	// ----------------------------------------------------------------
+	// setup your test
+
+	testData := "${V:500}"
+	expectedResult := paramDesc{
+		kind:  paramExpandSubstring,
+		parts: []string{"V", "500"},
+	}
+
+	// ----------------------------------------------------------------
+	// perform the change
+
+	actualResult, ok := parseParameter(testData)
+
+	// ----------------------------------------------------------------
+	// test the results
+
+	assert.True(t, ok)
+	assert.Equal(t, expectedResult, actualResult)
+}
+
+func TestParseParamSubstringSingleLetterVarWithIndirection(t *testing.T) {
+	t.Parallel()
+
+	// ----------------------------------------------------------------
+	// setup your test
+
+	testData := "${!V:500}"
+	expectedResult := paramDesc{
+		kind:     paramExpandSubstring,
+		parts:    []string{"V", "500"},
+		indirect: true,
+	}
+
+	// ----------------------------------------------------------------
+	// perform the change
+
+	actualResult, ok := parseParameter(testData)
+
+	// ----------------------------------------------------------------
+	// test the results
+
+	assert.True(t, ok)
+	assert.Equal(t, expectedResult, actualResult)
+}
+
+func TestParseParamPositionalParamSubstring(t *testing.T) {
+	t.Parallel()
+
+	for i := 1; i < 20; i++ {
+		testValue := strconv.Itoa(i)
+		// ----------------------------------------------------------------
+		// setup your test
+
+		testData := "${" + testValue + ":500}"
+		expectedResult := paramDesc{
+			kind:  paramExpandSubstring,
+			parts: []string{"$" + testValue, "500"},
+		}
+
+		// ----------------------------------------------------------------
+		// perform the change
+
+		actualResult, ok := parseParameter(testData)
+
+		// ----------------------------------------------------------------
+		// test the results
+
+		assert.True(t, ok)
+		assert.Equal(t, expectedResult, actualResult)
+	}
+}
+
+func TestParseParamPositionalParamSubstringWithIndirection(t *testing.T) {
+	t.Parallel()
+
+	for i := 1; i < 20; i++ {
+		testValue := strconv.Itoa(i)
+		// ----------------------------------------------------------------
+		// setup your test
+
+		testData := "${!" + testValue + ":500}"
+		expectedResult := paramDesc{
+			kind:     paramExpandSubstring,
+			parts:    []string{"$" + testValue, "500"},
+			indirect: true,
+		}
+
+		// ----------------------------------------------------------------
+		// perform the change
+
+		actualResult, ok := parseParameter(testData)
+
+		// ----------------------------------------------------------------
+		// test the results
+
+		assert.True(t, ok)
+		assert.Equal(t, expectedResult, actualResult)
+	}
+}
+
+func TestParseParamShellSpecialSubstring(t *testing.T) {
+	t.Parallel()
+
+	testDataSet := []string{
+		"${!:500}",
+		"${$:500}",
+		"${*:500}",
+		"${@:500}",
+		"${#:500}",
+		"${?:500}",
+		"${-:500}",
+		"${0:500}",
+	}
+
+	for _, testData := range testDataSet {
+		// ----------------------------------------------------------------
+		// setup your test
+
+		expectedResult := paramDesc{
+			kind:  paramExpandSubstring,
+			parts: []string{"$" + testData[2:3], "500"},
+		}
+
+		// ----------------------------------------------------------------
+		// perform the change
+
+		actualResult, ok := parseParameter(testData)
+
+		// ----------------------------------------------------------------
+		// test the results
+
+		assert.True(t, ok)
+		assert.Equal(t, expectedResult, actualResult)
+	}
+}
+
+func TestParseParamShellSpecialSubstringWithIndirection(t *testing.T) {
+	t.Parallel()
+
+	testDataSet := []string{
+		"${!$:500}",
+		"${!*:500}",
+		"${!@:500}",
+		"${!#:500}",
+		"${!?:500}",
+		"${!-:500}",
+		"${!0:500}",
+	}
+
+	for _, testData := range testDataSet {
+		// ----------------------------------------------------------------
+		// setup your test
+
+		expectedResult := paramDesc{
+			kind:     paramExpandSubstring,
+			parts:    []string{"$" + testData[3:4], "500"},
+			indirect: true,
+		}
+
+		// ----------------------------------------------------------------
+		// perform the change
+
+		actualResult, ok := parseParameter(testData)
+
+		// ----------------------------------------------------------------
+		// test the results
+
+		assert.True(t, ok)
+		assert.Equal(t, expectedResult, actualResult)
+	}
+}
+
+func TestParseParamPlingSubstringDoesNotSupportIndirection(t *testing.T) {
+	t.Parallel()
+
+	// ----------------------------------------------------------------
+	// setup your test
+
+	testData := "${!!:500}"
+	expectedResult := paramDesc{
+		kind: paramExpandNotSupported,
+	}
+
+	// ----------------------------------------------------------------
+	// perform the change
+
+	actualResult, ok := parseParameter(testData)
+
+	// ----------------------------------------------------------------
+	// test the results
+
+	assert.False(t, ok)
+	assert.Equal(t, expectedResult, actualResult)
+}
