@@ -1968,27 +1968,6 @@ func TestParseParamLengthCanHaveNothingAfterParamName(t *testing.T) {
 	}
 }
 
-func TestParseParamParamLengthWithIndirectionNotSupported(t *testing.T) {
-	t.Parallel()
-
-	// ----------------------------------------------------------------
-	// setup your test
-
-	testData := "${!#VAR}"
-	expectedResult := paramDesc{}
-
-	// ----------------------------------------------------------------
-	// perform the change
-
-	actualResult, ok := parseParameter(testData)
-
-	// ----------------------------------------------------------------
-	// test the results
-
-	assert.False(t, ok)
-	assert.Equal(t, expectedResult, actualResult)
-}
-
 func TestParseParamParamLengthSingleLetterVar(t *testing.T) {
 	t.Parallel()
 
@@ -2010,27 +1989,6 @@ func TestParseParamParamLengthSingleLetterVar(t *testing.T) {
 	// test the results
 
 	assert.True(t, ok)
-	assert.Equal(t, expectedResult, actualResult)
-}
-
-func TestParseParamParamLengthSingleLetterVarWithIndirectionNotSupported(t *testing.T) {
-	t.Parallel()
-
-	// ----------------------------------------------------------------
-	// setup your test
-
-	testData := "${!#V}"
-	expectedResult := paramDesc{}
-
-	// ----------------------------------------------------------------
-	// perform the change
-
-	actualResult, ok := parseParameter(testData)
-
-	// ----------------------------------------------------------------
-	// test the results
-
-	assert.False(t, ok)
 	assert.Equal(t, expectedResult, actualResult)
 }
 
@@ -2057,30 +2015,6 @@ func TestParseParamPositionalParamParamLength(t *testing.T) {
 		// test the results
 
 		assert.True(t, ok)
-		assert.Equal(t, expectedResult, actualResult)
-	}
-}
-
-func TestParseParamPositionalParamParamLengthWithIndirectionNotSupported(t *testing.T) {
-	t.Parallel()
-
-	for i := 1; i < 20; i++ {
-		testValue := strconv.Itoa(i)
-		// ----------------------------------------------------------------
-		// setup your test
-
-		testData := "${!#" + testValue + "}"
-		expectedResult := paramDesc{}
-
-		// ----------------------------------------------------------------
-		// perform the change
-
-		actualResult, ok := parseParameter(testData)
-
-		// ----------------------------------------------------------------
-		// test the results
-
-		assert.False(t, ok)
 		assert.Equal(t, expectedResult, actualResult)
 	}
 }
@@ -2121,21 +2055,117 @@ func TestParseParamShellSpecialParamLength(t *testing.T) {
 	}
 }
 
-func TestParseParamShellSpecialParamLengthWithIndirectionNotSupported(t *testing.T) {
+func TestParseParamRemoveShortestPrefix(t *testing.T) {
 	t.Parallel()
 
-	testDataSet := []string{
-		"${!#$}",
-		"${!#?}",
-		"${!#-}",
-		"${!#0}",
+	// ----------------------------------------------------------------
+	// setup your test
+
+	testData := "${VAR#FOO}"
+	expectedResult := paramDesc{
+		kind:  paramExpandRemovePrefixShortestMatch,
+		parts: []string{"VAR", "FOO"},
 	}
 
-	for _, testData := range testDataSet {
+	// ----------------------------------------------------------------
+	// perform the change
+
+	actualResult, ok := parseParameter(testData)
+
+	// ----------------------------------------------------------------
+	// test the results
+
+	assert.True(t, ok)
+	assert.Equal(t, expectedResult, actualResult)
+}
+
+func TestParseParamRemoveShortestPrefixWithIndirection(t *testing.T) {
+	t.Parallel()
+
+	// ----------------------------------------------------------------
+	// setup your test
+
+	testData := "${!VAR#FOO}"
+	expectedResult := paramDesc{
+		kind:     paramExpandRemovePrefixShortestMatch,
+		parts:    []string{"VAR", "FOO"},
+		indirect: true,
+	}
+
+	// ----------------------------------------------------------------
+	// perform the change
+
+	actualResult, ok := parseParameter(testData)
+
+	// ----------------------------------------------------------------
+	// test the results
+
+	assert.True(t, ok)
+	assert.Equal(t, expectedResult, actualResult)
+}
+
+func TestParseParamRemoveShortestPrefixSingleLetterVar(t *testing.T) {
+	t.Parallel()
+
+	// ----------------------------------------------------------------
+	// setup your test
+
+	testData := "${V#FOO}"
+	expectedResult := paramDesc{
+		kind:  paramExpandRemovePrefixShortestMatch,
+		parts: []string{"V", "FOO"},
+	}
+
+	// ----------------------------------------------------------------
+	// perform the change
+
+	actualResult, ok := parseParameter(testData)
+
+	// ----------------------------------------------------------------
+	// test the results
+
+	assert.True(t, ok)
+	assert.Equal(t, expectedResult, actualResult)
+}
+
+func TestParseParamRemoveShortestPrefixSingleLetterVarWithIndirection(t *testing.T) {
+	t.Parallel()
+
+	// ----------------------------------------------------------------
+	// setup your test
+
+	testData := "${!V#FOO}"
+	expectedResult := paramDesc{
+		kind:     paramExpandRemovePrefixShortestMatch,
+		parts:    []string{"V", "FOO"},
+		indirect: true,
+	}
+
+	// ----------------------------------------------------------------
+	// perform the change
+
+	actualResult, ok := parseParameter(testData)
+
+	// ----------------------------------------------------------------
+	// test the results
+
+	assert.True(t, ok)
+	assert.Equal(t, expectedResult, actualResult)
+}
+
+func TestParseParamPositionalParamRemoveShortestPrefix(t *testing.T) {
+	t.Parallel()
+
+	for i := 1; i < 20; i++ {
+		testValue := strconv.Itoa(i)
 		// ----------------------------------------------------------------
 		// setup your test
 
-		expectedResult := paramDesc{}
+		testData := "${" + testValue + "#FOO}"
+		expectedResult := paramDesc{
+			kind:  paramExpandRemovePrefixShortestMatch,
+			parts: []string{"$" + testValue, "FOO"},
+		}
 
 		// ----------------------------------------------------------------
 		// perform the change
@@ -2145,7 +2175,130 @@ func TestParseParamShellSpecialParamLengthWithIndirectionNotSupported(t *testing
 		// ----------------------------------------------------------------
 		// test the results
 
-		assert.False(t, ok)
+		assert.True(t, ok)
 		assert.Equal(t, expectedResult, actualResult)
 	}
+}
+
+func TestParseParamPositionalParamRemoveShortestPrefixWithIndirection(t *testing.T) {
+	t.Parallel()
+
+	for i := 1; i < 20; i++ {
+		testValue := strconv.Itoa(i)
+		// ----------------------------------------------------------------
+		// setup your test
+
+		testData := "${!" + testValue + "#FOO}"
+		expectedResult := paramDesc{
+			kind:     paramExpandRemovePrefixShortestMatch,
+			parts:    []string{"$" + testValue, "FOO"},
+			indirect: true,
+		}
+
+		// ----------------------------------------------------------------
+		// perform the change
+
+		actualResult, ok := parseParameter(testData)
+
+		// ----------------------------------------------------------------
+		// test the results
+
+		assert.True(t, ok)
+		assert.Equal(t, expectedResult, actualResult)
+	}
+}
+
+func TestParseParamShellSpecialRemoveShortestPrefix(t *testing.T) {
+	t.Parallel()
+
+	testDataSet := []string{
+		"${!#FOO}",
+		"${$#FOO}",
+		"${*#FOO}",
+		"${@#FOO}",
+		"${##FOO}",
+		"${?#FOO}",
+		"${-#FOO}",
+		"${0#FOO}",
+	}
+
+	for _, testData := range testDataSet {
+		// ----------------------------------------------------------------
+		// setup your test
+
+		expectedResult := paramDesc{
+			kind:  paramExpandRemovePrefixShortestMatch,
+			parts: []string{"$" + testData[2:3], "FOO"},
+		}
+
+		// ----------------------------------------------------------------
+		// perform the change
+
+		actualResult, ok := parseParameter(testData)
+
+		// ----------------------------------------------------------------
+		// test the results
+
+		assert.True(t, ok)
+		assert.Equal(t, expectedResult, actualResult)
+	}
+}
+
+func TestParseParamShellSpecialShortestPrefixWithIndirection(t *testing.T) {
+	t.Parallel()
+
+	testDataSet := []string{
+		"${!$#FOO}",
+		"${!*#FOO}",
+		"${!@#FOO}",
+		"${!##FOO}",
+		"${!?#FOO}",
+		"${!-#FOO}",
+		"${!0#FOO}",
+	}
+
+	for _, testData := range testDataSet {
+		// ----------------------------------------------------------------
+		// setup your test
+
+		expectedResult := paramDesc{
+			kind:     paramExpandRemovePrefixShortestMatch,
+			parts:    []string{"$" + testData[3:4], "FOO"},
+			indirect: true,
+		}
+
+		// ----------------------------------------------------------------
+		// perform the change
+
+		actualResult, ok := parseParameter(testData)
+
+		// ----------------------------------------------------------------
+		// test the results
+
+		assert.True(t, ok)
+		assert.Equal(t, expectedResult, actualResult)
+	}
+}
+
+func TestParseParamPlingRemoveShortestPrefixDoesNotSupportIndirection(t *testing.T) {
+	t.Parallel()
+
+	// ----------------------------------------------------------------
+	// setup your test
+
+	testData := "${!!#FOO}"
+	expectedResult := paramDesc{
+		kind: paramExpandNotSupported,
+	}
+
+	// ----------------------------------------------------------------
+	// perform the change
+
+	actualResult, ok := parseParameter(testData)
+
+	// ----------------------------------------------------------------
+	// test the results
+
+	assert.False(t, ok)
+	assert.Equal(t, expectedResult, actualResult)
 }
