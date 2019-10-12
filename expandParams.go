@@ -306,6 +306,18 @@ func parseParameter(input string) (paramDesc, bool) {
 					kind:  paramExpandParamLength,
 					parts: []string{input[3:inputLen]},
 				}, true
+			case paramTypeSpecial:
+				if input[3] == '@' || input[3] == '*' {
+					return paramDesc{
+						kind:  paramExpandNoOfPositionalParams,
+						parts: []string{"$" + input[3:4]},
+					}, true
+				}
+				return paramDesc{
+					kind:  paramExpandParamLength,
+					parts: []string{"$" + input[3:inputLen]},
+				}, true
+
 			default:
 				return paramDesc{
 					kind:  paramExpandParamLength,

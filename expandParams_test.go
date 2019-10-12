@@ -2113,8 +2113,6 @@ func TestParseParamShellSpecialParamLength(t *testing.T) {
 	testDataSet := []string{
 		"${#!}",
 		"${#$}",
-		"${#*}",
-		"${#@}",
 		"${##}",
 		"${#?}",
 		"${#-}",
@@ -2127,6 +2125,36 @@ func TestParseParamShellSpecialParamLength(t *testing.T) {
 
 		expectedResult := paramDesc{
 			kind:  paramExpandParamLength,
+			parts: []string{"$" + testData[3:4]},
+		}
+
+		// ----------------------------------------------------------------
+		// perform the change
+
+		actualResult, ok := parseParameter(testData)
+
+		// ----------------------------------------------------------------
+		// test the results
+
+		assert.True(t, ok)
+		assert.Equal(t, expectedResult, actualResult)
+	}
+}
+
+func TestParseParamNoOfPositionalParameters(t *testing.T) {
+	t.Parallel()
+
+	testDataSet := []string{
+		"${#*}",
+		"${#@}",
+	}
+
+	for _, testData := range testDataSet {
+		// ----------------------------------------------------------------
+		// setup your test
+
+		expectedResult := paramDesc{
+			kind:  paramExpandNoOfPositionalParams,
 			parts: []string{"$" + testData[3:4]},
 		}
 
