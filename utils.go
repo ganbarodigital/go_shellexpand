@@ -61,6 +61,26 @@ func isNumericString(input string) bool {
 	return true
 }
 
+func isSignedNumericString(input string) bool {
+	// special case - zero
+	if input == "0" {
+		return true
+	}
+
+	// no leading zeros allowed ... but can be a negative value
+	if input[0] != '-' && !isNumericStartChar(input[0]) {
+		return false
+	}
+
+	for i := 1; i < len(input); i++ {
+		if !isNumericChar(input[i]) {
+			return false
+		}
+	}
+
+	return true
+}
+
 func isNumericStringWithoutLeadingZero(input string) bool {
 	if len(input) == 0 {
 		return false

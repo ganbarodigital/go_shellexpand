@@ -1533,6 +1533,56 @@ func TestParseParamSubstringLength(t *testing.T) {
 	assert.Equal(t, expectedResult, actualResult)
 }
 
+// resurrect this test when we have arithmetic expansion supported!
+//
+// func TestParseParamSubstringLengthSupportsNegativeOffset(t *testing.T) {
+// 	t.Parallel()
+
+// 	// ----------------------------------------------------------------
+// 	// setup your test
+
+// 	testData := "${VAR:((-3)):1}"
+// 	expectedResult := paramDesc{
+// 		kind:  paramExpandSubstringLength,
+// 		parts: []string{"VAR", "((-3))", "1"},
+// 	}
+
+// 	// ----------------------------------------------------------------
+// 	// perform the change
+
+// 	actualResult, ok := parseParameter(testData)
+
+// 	// ----------------------------------------------------------------
+// 	// test the results
+
+// 	assert.True(t, ok)
+// 	assert.Equal(t, expectedResult, actualResult)
+// }
+
+func TestParseParamSubstringLengthSupportsNegativeLength(t *testing.T) {
+	t.Parallel()
+
+	// ----------------------------------------------------------------
+	// setup your test
+
+	testData := "${VAR:500:-1}"
+	expectedResult := paramDesc{
+		kind:  paramExpandSubstringLength,
+		parts: []string{"VAR", "500", "-1"},
+	}
+
+	// ----------------------------------------------------------------
+	// perform the change
+
+	actualResult, ok := parseParameter(testData)
+
+	// ----------------------------------------------------------------
+	// test the results
+
+	assert.True(t, ok)
+	assert.Equal(t, expectedResult, actualResult)
+}
+
 func TestParseParamSubstringLengthMustBeNumeric(t *testing.T) {
 	t.Parallel()
 
