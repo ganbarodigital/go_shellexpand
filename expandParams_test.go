@@ -4353,7 +4353,7 @@ func TestParseParamUppercaseFirstChar(t *testing.T) {
 	assert.Equal(t, expectedResult, actualResult)
 }
 
-func TestParseParamUppercaseFirstCharSuffixWithNoReplacement(t *testing.T) {
+func TestParseParamUppercaseFirstCharWithNoReplacement(t *testing.T) {
 	t.Parallel()
 
 	testDataSet := []string{
@@ -4589,6 +4589,282 @@ func TestParseParamPlingUppercaseFirstCharDoesNotSupportIndirection(t *testing.T
 	// setup your test
 
 	testData := "${!!^abcde}"
+	expectedResult := paramDesc{
+		kind: paramExpandNotSupported,
+	}
+
+	// ----------------------------------------------------------------
+	// perform the change
+
+	actualResult, ok := parseParameter(testData)
+
+	// ----------------------------------------------------------------
+	// test the results
+
+	assert.False(t, ok)
+	assert.Equal(t, expectedResult, actualResult)
+}
+
+func TestParseParamUppercaseAllChars(t *testing.T) {
+	t.Parallel()
+
+	// ----------------------------------------------------------------
+	// setup your test
+
+	testData := "${VAR^^abcde}"
+	expectedResult := paramDesc{
+		kind:  paramExpandUppercaseAllChars,
+		parts: []string{"VAR", "abcde"},
+	}
+
+	// ----------------------------------------------------------------
+	// perform the change
+
+	actualResult, ok := parseParameter(testData)
+
+	// ----------------------------------------------------------------
+	// test the results
+
+	assert.True(t, ok)
+	assert.Equal(t, expectedResult, actualResult)
+}
+
+func TestParseParamUppercaseAllCharsWithNoReplacement(t *testing.T) {
+	t.Parallel()
+
+	testDataSet := []string{
+		"${VAR^^}",
+	}
+
+	for _, testData := range testDataSet {
+		// ----------------------------------------------------------------
+		// setup your test
+
+		expectedResult := paramDesc{
+			kind:  paramExpandToValue,
+			parts: []string{"VAR"},
+		}
+
+		// ----------------------------------------------------------------
+		// perform the change
+
+		actualResult, ok := parseParameter(testData)
+
+		// ----------------------------------------------------------------
+		// test the results
+
+		assert.True(t, ok)
+		assert.Equal(t, expectedResult, actualResult)
+	}
+}
+
+func TestParseParamUppercaseAllCharsWithIndirection(t *testing.T) {
+	t.Parallel()
+
+	// ----------------------------------------------------------------
+	// setup your test
+
+	testData := "${!VAR^^abcde}"
+	expectedResult := paramDesc{
+		kind:     paramExpandUppercaseAllChars,
+		parts:    []string{"VAR", "abcde"},
+		indirect: true,
+	}
+
+	// ----------------------------------------------------------------
+	// perform the change
+
+	actualResult, ok := parseParameter(testData)
+
+	// ----------------------------------------------------------------
+	// test the results
+
+	assert.True(t, ok)
+	assert.Equal(t, expectedResult, actualResult)
+}
+
+func TestParseParamUppercaseAllCharsSingleLetterVar(t *testing.T) {
+	t.Parallel()
+
+	// ----------------------------------------------------------------
+	// setup your test
+
+	testData := "${V^^abcde}"
+	expectedResult := paramDesc{
+		kind:  paramExpandUppercaseAllChars,
+		parts: []string{"V", "abcde"},
+	}
+
+	// ----------------------------------------------------------------
+	// perform the change
+
+	actualResult, ok := parseParameter(testData)
+
+	// ----------------------------------------------------------------
+	// test the results
+
+	assert.True(t, ok)
+	assert.Equal(t, expectedResult, actualResult)
+}
+
+func TestParseParamUppercaseAllCharsSingleLetterVarWithIndirection(t *testing.T) {
+	t.Parallel()
+
+	// ----------------------------------------------------------------
+	// setup your test
+
+	testData := "${!V^^abcde}"
+	expectedResult := paramDesc{
+		kind:     paramExpandUppercaseAllChars,
+		parts:    []string{"V", "abcde"},
+		indirect: true,
+	}
+
+	// ----------------------------------------------------------------
+	// perform the change
+
+	actualResult, ok := parseParameter(testData)
+
+	// ----------------------------------------------------------------
+	// test the results
+
+	assert.True(t, ok)
+	assert.Equal(t, expectedResult, actualResult)
+}
+
+func TestParseParamPositionalParamUppercaseAllChars(t *testing.T) {
+	t.Parallel()
+
+	for i := 1; i < 20; i++ {
+		testValue := strconv.Itoa(i)
+		// ----------------------------------------------------------------
+		// setup your test
+
+		testData := "${" + testValue + "^^abcde}"
+		expectedResult := paramDesc{
+			kind:  paramExpandUppercaseAllChars,
+			parts: []string{"$" + testValue, "abcde"},
+		}
+
+		// ----------------------------------------------------------------
+		// perform the change
+
+		actualResult, ok := parseParameter(testData)
+
+		// ----------------------------------------------------------------
+		// test the results
+
+		assert.True(t, ok)
+		assert.Equal(t, expectedResult, actualResult)
+	}
+}
+
+func TestParseParamPositionalParamUppercaseAllCharsWithIndirection(t *testing.T) {
+	t.Parallel()
+
+	for i := 1; i < 20; i++ {
+		testValue := strconv.Itoa(i)
+		// ----------------------------------------------------------------
+		// setup your test
+
+		testData := "${!" + testValue + "^^abcde}"
+		expectedResult := paramDesc{
+			kind:     paramExpandUppercaseAllChars,
+			parts:    []string{"$" + testValue, "abcde"},
+			indirect: true,
+		}
+
+		// ----------------------------------------------------------------
+		// perform the change
+
+		actualResult, ok := parseParameter(testData)
+
+		// ----------------------------------------------------------------
+		// test the results
+
+		assert.True(t, ok)
+		assert.Equal(t, expectedResult, actualResult)
+	}
+}
+
+func TestParseParamShellSpecialUppercaseAllChars(t *testing.T) {
+	t.Parallel()
+
+	testDataSet := []string{
+		"${$^^abcde}",
+		"${*^^abcde}",
+		"${@^^abcde}",
+		"${#^^abcde}",
+		"${?^^abcde}",
+		"${-^^abcde}",
+		"${0^^abcde}",
+	}
+
+	for _, testData := range testDataSet {
+		// ----------------------------------------------------------------
+		// setup your test
+
+		expectedResult := paramDesc{
+			kind:  paramExpandUppercaseAllChars,
+			parts: []string{"$" + testData[2:3], "abcde"},
+		}
+
+		// ----------------------------------------------------------------
+		// perform the change
+
+		actualResult, ok := parseParameter(testData)
+
+		// ----------------------------------------------------------------
+		// test the results
+
+		assert.True(t, ok)
+		assert.Equal(t, expectedResult, actualResult)
+	}
+}
+
+func TestParseParamShellSpecialUppercaseAllCharsWithIndirection(t *testing.T) {
+	t.Parallel()
+
+	testDataSet := []string{
+		"${!$^^abcde}",
+		"${!*^^abcde}",
+		"${!@^^abcde}",
+		"${!#^^abcde}",
+		"${!?^^abcde}",
+		"${!-^^abcde}",
+		"${!0^^abcde}",
+	}
+
+	for _, testData := range testDataSet {
+		// ----------------------------------------------------------------
+		// setup your test
+
+		expectedResult := paramDesc{
+			kind:     paramExpandUppercaseAllChars,
+			parts:    []string{"$" + testData[3:4], "abcde"},
+			indirect: true,
+		}
+
+		// ----------------------------------------------------------------
+		// perform the change
+
+		actualResult, ok := parseParameter(testData)
+
+		// ----------------------------------------------------------------
+		// test the results
+
+		assert.True(t, ok)
+		assert.Equal(t, expectedResult, actualResult)
+	}
+}
+
+func TestParseParamPlingUppercaseAllCharsDoesNotSupportIndirection(t *testing.T) {
+	t.Parallel()
+
+	// ----------------------------------------------------------------
+	// setup your test
+
+	testData := "${!!^^abcde}"
 	expectedResult := paramDesc{
 		kind: paramExpandNotSupported,
 	}
