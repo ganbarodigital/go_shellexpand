@@ -2073,6 +2073,30 @@ func TestParseParamRemoveShortestPrefix(t *testing.T) {
 	assert.Equal(t, expectedResult, actualResult)
 }
 
+func TestParseParamRemoveShortestPrefixWithNothingToRemove(t *testing.T) {
+	t.Parallel()
+
+	// ----------------------------------------------------------------
+	// setup your test
+
+	testData := "${VAR#}"
+	expectedResult := paramDesc{
+		kind:  paramExpandRemovePrefixShortestMatch,
+		parts: []string{"VAR", ""},
+	}
+
+	// ----------------------------------------------------------------
+	// perform the change
+
+	actualResult, ok := parseParameter(testData)
+
+	// ----------------------------------------------------------------
+	// test the results
+
+	assert.True(t, ok)
+	assert.Equal(t, expectedResult, actualResult)
+}
+
 func TestParseParamRemoveShortestPrefixWithIndirection(t *testing.T) {
 	t.Parallel()
 
@@ -2305,6 +2329,30 @@ func TestParseParamRemoveLongestPrefix(t *testing.T) {
 	expectedResult := paramDesc{
 		kind:  paramExpandRemovePrefixLongestMatch,
 		parts: []string{"VAR", "FOO"},
+	}
+
+	// ----------------------------------------------------------------
+	// perform the change
+
+	actualResult, ok := parseParameter(testData)
+
+	// ----------------------------------------------------------------
+	// test the results
+
+	assert.True(t, ok)
+	assert.Equal(t, expectedResult, actualResult)
+}
+
+func TestParseParamRemoveLongestPrefixWithNothingToRemove(t *testing.T) {
+	t.Parallel()
+
+	// ----------------------------------------------------------------
+	// setup your test
+
+	testData := "${VAR##}"
+	expectedResult := paramDesc{
+		kind:  paramExpandRemovePrefixLongestMatch,
+		parts: []string{"VAR", ""},
 	}
 
 	// ----------------------------------------------------------------
@@ -2566,6 +2614,30 @@ func TestParseParamRemoveShortestSuffix(t *testing.T) {
 	assert.Equal(t, expectedResult, actualResult)
 }
 
+func TestParseParamRemoveShortestSuffixWithNothingToRemove(t *testing.T) {
+	t.Parallel()
+
+	// ----------------------------------------------------------------
+	// setup your test
+
+	testData := "${VAR%}"
+	expectedResult := paramDesc{
+		kind:  paramExpandRemoveSuffixShortestMatch,
+		parts: []string{"VAR", ""},
+	}
+
+	// ----------------------------------------------------------------
+	// perform the change
+
+	actualResult, ok := parseParameter(testData)
+
+	// ----------------------------------------------------------------
+	// test the results
+
+	assert.True(t, ok)
+	assert.Equal(t, expectedResult, actualResult)
+}
+
 func TestParseParamRemoveShortestSuffixWithIndirection(t *testing.T) {
 	t.Parallel()
 
@@ -2798,6 +2870,30 @@ func TestParseParamRemoveLongestSuffix(t *testing.T) {
 	expectedResult := paramDesc{
 		kind:  paramExpandRemoveSuffixLongestMatch,
 		parts: []string{"VAR", "FOO"},
+	}
+
+	// ----------------------------------------------------------------
+	// perform the change
+
+	actualResult, ok := parseParameter(testData)
+
+	// ----------------------------------------------------------------
+	// test the results
+
+	assert.True(t, ok)
+	assert.Equal(t, expectedResult, actualResult)
+}
+
+func TestParseParamRemoveLongestSuffixWithNothingToRemove(t *testing.T) {
+	t.Parallel()
+
+	// ----------------------------------------------------------------
+	// setup your test
+
+	testData := "${VAR%%}"
+	expectedResult := paramDesc{
+		kind:  paramExpandRemoveSuffixLongestMatch,
+		parts: []string{"VAR", ""},
 	}
 
 	// ----------------------------------------------------------------
