@@ -150,7 +150,7 @@ const (
 	// ${*%%suffix} -> all positional params, with longest matching suffix removed
 	paramExpandRemoveSuffixAllPositionalParamsLongestMatch
 	// ${var/old/new} -> value of var, with first occurance of old replaced with new
-	paramExpandSearchReplaceFirstMatch
+	paramExpandSearchReplaceLongestFirstMatch
 	// ${var//old/new} -> value of var, with all occurances of old replaced with new
 	paramExpandSearchReplaceAllMatches
 	// ${var/#old/new} -> value of var, with old replaced with new if the string starts with old
@@ -472,7 +472,7 @@ func parseParameter(input string) (paramDesc, bool) {
 				retval.kind = paramExpandSearchReplaceAllMatches
 				retval.parts = append(retval.parts, strings.Split(input[opEnd+2:inputLen], "/")...)
 			} else {
-				retval.kind = paramExpandSearchReplaceFirstMatch
+				retval.kind = paramExpandSearchReplaceLongestFirstMatch
 				retval.parts = append(retval.parts, strings.Split(input[opEnd+1:inputLen], "/")...)
 			}
 
@@ -501,7 +501,7 @@ func parseParameter(input string) (paramDesc, bool) {
 			return retval, true
 		default:
 			// this is the easy bit!
-			retval.kind = paramExpandSearchReplaceFirstMatch
+			retval.kind = paramExpandSearchReplaceLongestFirstMatch
 			retval.parts = append(retval.parts, strings.Split(input[opEnd+1:inputLen], "/")...)
 			// if the replace string is missing, default is an empty string
 			if len(retval.parts) < 3 {
