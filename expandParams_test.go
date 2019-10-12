@@ -3726,3 +3726,304 @@ func TestParseParamPlingSearchReplaceLongestAllMatchesDoesNotSupportIndirection(
 	assert.False(t, ok)
 	assert.Equal(t, expectedResult, actualResult)
 }
+
+func TestParseParamSearchReplaceLongestPrefix(t *testing.T) {
+	t.Parallel()
+
+	// ----------------------------------------------------------------
+	// setup your test
+
+	testData := "${VAR/#FOO/BAR}"
+	expectedResult := paramDesc{
+		kind:  paramExpandSearchReplaceLongestPrefix,
+		parts: []string{"VAR", "FOO", "BAR"},
+	}
+
+	// ----------------------------------------------------------------
+	// perform the change
+
+	actualResult, ok := parseParameter(testData)
+
+	// ----------------------------------------------------------------
+	// test the results
+
+	assert.True(t, ok)
+	assert.Equal(t, expectedResult, actualResult)
+}
+
+func TestParseParamSearchReplaceLongestPrefixWithNoReplacement(t *testing.T) {
+	t.Parallel()
+
+	testDataSet := []string{
+		"${VAR/#FOO}",
+		"${VAR/#FOO/}",
+	}
+
+	for _, testData := range testDataSet {
+		// ----------------------------------------------------------------
+		// setup your test
+
+		expectedResult := paramDesc{
+			kind:  paramExpandSearchReplaceLongestPrefix,
+			parts: []string{"VAR", "FOO", ""},
+		}
+
+		// ----------------------------------------------------------------
+		// perform the change
+
+		actualResult, ok := parseParameter(testData)
+
+		// ----------------------------------------------------------------
+		// test the results
+
+		assert.True(t, ok)
+		assert.Equal(t, expectedResult, actualResult)
+	}
+}
+
+func TestParseParamSearchReplaceLongestPrefixWithNoSearchOrReplacement(t *testing.T) {
+	t.Parallel()
+
+	// ----------------------------------------------------------------
+	// setup your test
+
+	testData := "${VAR/#}"
+	expectedResult := paramDesc{
+		kind:  paramExpandToValue,
+		parts: []string{"VAR"},
+	}
+
+	// ----------------------------------------------------------------
+	// perform the change
+
+	actualResult, ok := parseParameter(testData)
+
+	// ----------------------------------------------------------------
+	// test the results
+
+	assert.True(t, ok)
+	assert.Equal(t, expectedResult, actualResult)
+}
+
+func TestParseParamSearchReplaceLongestPrefixWithIndirection(t *testing.T) {
+	t.Parallel()
+
+	// ----------------------------------------------------------------
+	// setup your test
+
+	testData := "${!VAR/#FOO/BAR}"
+	expectedResult := paramDesc{
+		kind:     paramExpandSearchReplaceLongestPrefix,
+		parts:    []string{"VAR", "FOO", "BAR"},
+		indirect: true,
+	}
+
+	// ----------------------------------------------------------------
+	// perform the change
+
+	actualResult, ok := parseParameter(testData)
+
+	// ----------------------------------------------------------------
+	// test the results
+
+	assert.True(t, ok)
+	assert.Equal(t, expectedResult, actualResult)
+}
+
+func TestParseParamSearchReplaceLongestPrefixSingleLetterVar(t *testing.T) {
+	t.Parallel()
+
+	// ----------------------------------------------------------------
+	// setup your test
+
+	testData := "${V/#FOO/BAR}"
+	expectedResult := paramDesc{
+		kind:  paramExpandSearchReplaceLongestPrefix,
+		parts: []string{"V", "FOO", "BAR"},
+	}
+
+	// ----------------------------------------------------------------
+	// perform the change
+
+	actualResult, ok := parseParameter(testData)
+
+	// ----------------------------------------------------------------
+	// test the results
+
+	assert.True(t, ok)
+	assert.Equal(t, expectedResult, actualResult)
+}
+
+func TestParseParamSearchReplaceLongestPrefixSingleLetterVarWithIndirection(t *testing.T) {
+	t.Parallel()
+
+	// ----------------------------------------------------------------
+	// setup your test
+
+	testData := "${!V/#FOO/BAR}"
+	expectedResult := paramDesc{
+		kind:     paramExpandSearchReplaceLongestPrefix,
+		parts:    []string{"V", "FOO", "BAR"},
+		indirect: true,
+	}
+
+	// ----------------------------------------------------------------
+	// perform the change
+
+	actualResult, ok := parseParameter(testData)
+
+	// ----------------------------------------------------------------
+	// test the results
+
+	assert.True(t, ok)
+	assert.Equal(t, expectedResult, actualResult)
+}
+
+func TestParseParamPositionalParamSearchReplaceLongestPrefix(t *testing.T) {
+	t.Parallel()
+
+	for i := 1; i < 20; i++ {
+		testValue := strconv.Itoa(i)
+		// ----------------------------------------------------------------
+		// setup your test
+
+		testData := "${" + testValue + "/#FOO/BAR}"
+		expectedResult := paramDesc{
+			kind:  paramExpandSearchReplaceLongestPrefix,
+			parts: []string{"$" + testValue, "FOO", "BAR"},
+		}
+
+		// ----------------------------------------------------------------
+		// perform the change
+
+		actualResult, ok := parseParameter(testData)
+
+		// ----------------------------------------------------------------
+		// test the results
+
+		assert.True(t, ok)
+		assert.Equal(t, expectedResult, actualResult)
+	}
+}
+
+func TestParseParamPositionalParamSearchReplaceLongestPrefixWithIndirection(t *testing.T) {
+	t.Parallel()
+
+	for i := 1; i < 20; i++ {
+		testValue := strconv.Itoa(i)
+		// ----------------------------------------------------------------
+		// setup your test
+
+		testData := "${!" + testValue + "/#FOO/BAR}"
+		expectedResult := paramDesc{
+			kind:     paramExpandSearchReplaceLongestPrefix,
+			parts:    []string{"$" + testValue, "FOO", "BAR"},
+			indirect: true,
+		}
+
+		// ----------------------------------------------------------------
+		// perform the change
+
+		actualResult, ok := parseParameter(testData)
+
+		// ----------------------------------------------------------------
+		// test the results
+
+		assert.True(t, ok)
+		assert.Equal(t, expectedResult, actualResult)
+	}
+}
+
+func TestParseParamShellSpecialSearchReplaceLongestPrefix(t *testing.T) {
+	t.Parallel()
+
+	testDataSet := []string{
+		"${$/#FOO/BAR}",
+		"${*/#FOO/BAR}",
+		"${@/#FOO/BAR}",
+		"${#/#FOO/BAR}",
+		"${?/#FOO/BAR}",
+		"${-/#FOO/BAR}",
+		"${0/#FOO/BAR}",
+	}
+
+	for _, testData := range testDataSet {
+		// ----------------------------------------------------------------
+		// setup your test
+
+		expectedResult := paramDesc{
+			kind:  paramExpandSearchReplaceLongestPrefix,
+			parts: []string{"$" + testData[2:3], "FOO", "BAR"},
+		}
+
+		// ----------------------------------------------------------------
+		// perform the change
+
+		actualResult, ok := parseParameter(testData)
+
+		// ----------------------------------------------------------------
+		// test the results
+
+		assert.True(t, ok)
+		assert.Equal(t, expectedResult, actualResult)
+	}
+}
+
+func TestParseParamShellSpecialSearchReplaceLongestPrefixWithIndirection(t *testing.T) {
+	t.Parallel()
+
+	testDataSet := []string{
+		"${!$/#FOO/BAR}",
+		"${!*/#FOO/BAR}",
+		"${!@/#FOO/BAR}",
+		"${!#/#FOO/BAR}",
+		"${!?/#FOO/BAR}",
+		"${!-/#FOO/BAR}",
+		"${!0/#FOO/BAR}",
+	}
+
+	for _, testData := range testDataSet {
+		// ----------------------------------------------------------------
+		// setup your test
+
+		expectedResult := paramDesc{
+			kind:     paramExpandSearchReplaceLongestPrefix,
+			parts:    []string{"$" + testData[3:4], "FOO", "BAR"},
+			indirect: true,
+		}
+
+		// ----------------------------------------------------------------
+		// perform the change
+
+		actualResult, ok := parseParameter(testData)
+
+		// ----------------------------------------------------------------
+		// test the results
+
+		assert.True(t, ok)
+		assert.Equal(t, expectedResult, actualResult)
+	}
+}
+
+func TestParseParamPlingSearchReplaceLongestPrefixDoesNotSupportIndirection(t *testing.T) {
+	t.Parallel()
+
+	// ----------------------------------------------------------------
+	// setup your test
+
+	testData := "${!!/#FOO/BAR}"
+	expectedResult := paramDesc{
+		kind: paramExpandNotSupported,
+	}
+
+	// ----------------------------------------------------------------
+	// perform the change
+
+	actualResult, ok := parseParameter(testData)
+
+	// ----------------------------------------------------------------
+	// test the results
+
+	assert.False(t, ok)
+	assert.Equal(t, expectedResult, actualResult)
+}

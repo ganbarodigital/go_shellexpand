@@ -154,9 +154,9 @@ const (
 	// ${var//old/new} -> value of var, with all occurances of old replaced with new
 	paramExpandSearchReplaceLongestAllMatches
 	// ${var/#old/new} -> value of var, with old replaced with new if the string starts with old
-	paramExpandSearchReplacePrefix
+	paramExpandSearchReplaceLongestPrefix
 	// ${var/%old/new} -> value of var, with old replaced with new if the string ends with old
-	paramExpandSearchReplaceSuffix
+	paramExpandSearchReplaceLongestSuffix
 	// ${*/old/new} -> all positional params, with occurances of old replaced with new
 	paramExpandAllPositionalParamsSearchReplace
 	// ${var^pattern} -> value of var, with first char set to uppercase if they are in pattern
@@ -484,16 +484,31 @@ func parseParameter(input string) (paramDesc, bool) {
 			// all done
 			return retval, true
 		case '%':
-			retval.kind = paramExpandSearchReplacePrefix
-			retval.parts = append(retval.parts, strings.Split(input[opEnd+1:inputLen], "/")...)
+			// according to my testing, if there's nothing after the
+			// 'all matches' /, UNIX shells effectively do an expand-to-value
+			if opEnd+1 == maxInput {
+				retval.kind = paramExpandToValue
+				return retval, true
+			}
+
+			retval.kind = paramExpandSearchReplaceLongestSuffix
+			retval.parts = append(retval.parts, strings.Split(input[opEnd+2:inputLen], "/")...)
+
 			// if the replace string is missing, default is an empty string
 			if len(retval.parts) < 3 {
 				retval.parts = append(retval.parts, "")
 			}
 			return retval, true
 		case '#':
-			retval.kind = paramExpandSearchReplaceSuffix
-			retval.parts = append(retval.parts, strings.Split(input[opEnd+1:inputLen], "/")...)
+			// according to my testing, if there's nothing after the
+			// 'all matches' /, UNIX shells effectively do an expand-to-value
+			if opEnd+1 == maxInput {
+				retval.kind = paramExpandToValue
+				return retval, true
+			}
+
+			retval.kind = paramExpandSearchReplaceLongestPrefix
+			retval.parts = append(retval.parts, strings.Split(input[opEnd+2:inputLen], "/")...)
 			// if the replace string is missing, default is an empty string
 			if len(retval.parts) < 3 {
 				retval.parts = append(retval.parts, "")
