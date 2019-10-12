@@ -578,7 +578,7 @@ func parseParameter(input string) (paramDesc, bool) {
 		retval.kind = paramExpandAsDeclare
 		return retval, true
 	case paramOpEscape:
-		retval.kind = paramExpandSingleQuoted
+		retval.kind = paramExpandEscaped
 		return retval, true
 	case paramOpExpandAsPrompt:
 		retval.kind = paramExpandAsPrompt
