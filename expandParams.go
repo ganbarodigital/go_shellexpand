@@ -129,6 +129,10 @@ const (
 	paramExpandSubstring
 	// ${var:offset:length} -> same as both, except also controlling length of substring
 	paramExpandSubstringLength
+	// ${@:offset} -> expansion of positional params, starting at offset
+	paramExpandPositionalParamsFromOffset
+	// ${@:offset:length} -> expansion of 'length' number of positional params, starting at offset
+	paramExpandPositionalParamsFromOffsetLength
 	// ${!prefix*} -> return a list of names matching the given prefix
 	paramExpandPrefixNames
 	// ${!prefix@} -> return a list of names matching the given prefix
@@ -413,7 +417,15 @@ func parseParameter(input string) (paramDesc, bool) {
 				return paramDesc{}, false
 			}
 		}
-		if len(parts) == 1 {
+
+		// special case - positional parameter expansion
+		if retval.parts[0] == "$@" {
+			if len(parts) == 1 {
+				retval.kind = paramExpandPositionalParamsFromOffset
+			} else {
+				retval.kind = paramExpandPositionalParamsFromOffsetLength
+			}
+		} else if len(parts) == 1 {
 			retval.kind = paramExpandSubstring
 		} else {
 			retval.kind = paramExpandSubstringLength

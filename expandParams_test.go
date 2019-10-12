@@ -1421,7 +1421,6 @@ func TestParseParamShellSpecialSubstring(t *testing.T) {
 	testDataSet := []string{
 		"${$:500}",
 		"${*:500}",
-		"${@:500}",
 		"${#:500}",
 		"${?:500}",
 		"${-:500}",
@@ -1456,7 +1455,6 @@ func TestParseParamShellSpecialSubstringWithIndirection(t *testing.T) {
 	testDataSet := []string{
 		"${!$:500}",
 		"${!*:500}",
-		"${!@:500}",
 		"${!#:500}",
 		"${!?:500}",
 		"${!-:500}",
@@ -1484,6 +1482,30 @@ func TestParseParamShellSpecialSubstringWithIndirection(t *testing.T) {
 		assert.True(t, ok)
 		assert.Equal(t, expectedResult, actualResult)
 	}
+}
+
+func TestParseParamSubstringListOfPositionalParameters(t *testing.T) {
+	t.Parallel()
+
+	// ----------------------------------------------------------------
+	// setup your test
+
+	testData := "${@:1}"
+	expectedResult := paramDesc{
+		kind:  paramExpandPositionalParamsFromOffset,
+		parts: []string{"$@", "1"},
+	}
+
+	// ----------------------------------------------------------------
+	// perform the change
+
+	actualResult, ok := parseParameter(testData)
+
+	// ----------------------------------------------------------------
+	// test the results
+
+	assert.True(t, ok)
+	assert.Equal(t, expectedResult, actualResult)
 }
 
 func TestParseParamPlingSubstringDoesNotSupportIndirection(t *testing.T) {
@@ -1774,7 +1796,6 @@ func TestParseParamShellSpecialSubstringLength(t *testing.T) {
 	testDataSet := []string{
 		"${$:500:1000}",
 		"${*:500:1000}",
-		"${@:500:1000}",
 		"${#:500:1000}",
 		"${?:500:1000}",
 		"${-:500:1000}",
@@ -1803,13 +1824,36 @@ func TestParseParamShellSpecialSubstringLength(t *testing.T) {
 	}
 }
 
+func TestParseParamSubstringLengthListOfPositionalParameters(t *testing.T) {
+	t.Parallel()
+
+	// ----------------------------------------------------------------
+	// setup your test
+
+	testData := "${@:1:3}"
+	expectedResult := paramDesc{
+		kind:  paramExpandPositionalParamsFromOffsetLength,
+		parts: []string{"$@", "1", "3"},
+	}
+
+	// ----------------------------------------------------------------
+	// perform the change
+
+	actualResult, ok := parseParameter(testData)
+
+	// ----------------------------------------------------------------
+	// test the results
+
+	assert.True(t, ok)
+	assert.Equal(t, expectedResult, actualResult)
+}
+
 func TestParseParamShellSpecialSubstringLengthWithIndirection(t *testing.T) {
 	t.Parallel()
 
 	testDataSet := []string{
 		"${!$:500:1000}",
 		"${!*:500:1000}",
-		"${!@:500:1000}",
 		"${!#:500:1000}",
 		"${!?:500:1000}",
 		"${!-:500:1000}",
