@@ -152,7 +152,7 @@ const (
 	// ${var/old/new} -> value of var, with first occurance of old replaced with new
 	paramExpandSearchReplaceLongestFirstMatch
 	// ${var//old/new} -> value of var, with all occurances of old replaced with new
-	paramExpandSearchReplaceAllMatches
+	paramExpandSearchReplaceLongestAllMatches
 	// ${var/#old/new} -> value of var, with old replaced with new if the string starts with old
 	paramExpandSearchReplacePrefix
 	// ${var/%old/new} -> value of var, with old replaced with new if the string ends with old
@@ -466,15 +466,15 @@ func parseParameter(input string) (paramDesc, bool) {
 		// changes the behaviour ... and can be an unescaped '/'
 		switch input[opEnd+1] {
 		case '/':
-			// are we looking at a pattern that starts with '/'?
-			if strings.ContainsRune(input[opEnd+1:inputLen], '/') {
-				// yes, we are
-				retval.kind = paramExpandSearchReplaceAllMatches
-				retval.parts = append(retval.parts, strings.Split(input[opEnd+2:inputLen], "/")...)
-			} else {
-				retval.kind = paramExpandSearchReplaceLongestFirstMatch
-				retval.parts = append(retval.parts, strings.Split(input[opEnd+1:inputLen], "/")...)
+			// according to my testing, if there's nothing after the
+			// 'all matches' /, UNIX shells effectively do an expand-to-value
+			if opEnd+1 == maxInput {
+				retval.kind = paramExpandToValue
+				return retval, true
 			}
+
+			retval.kind = paramExpandSearchReplaceLongestAllMatches
+			retval.parts = append(retval.parts, strings.Split(input[opEnd+2:inputLen], "/")...)
 
 			// if the replace string is missing, default is an empty string
 			if len(retval.parts) < 3 {
