@@ -2894,8 +2894,6 @@ func TestParseParamShellSpecialRemoveShortestSuffix(t *testing.T) {
 
 	testDataSet := []string{
 		"${$%FOO}",
-		"${*%FOO}",
-		"${@%FOO}",
 		"${#%FOO}",
 		"${?%FOO}",
 		"${-%FOO}",
@@ -2929,8 +2927,6 @@ func TestParseParamShellSpecialShortestSuffixWithIndirection(t *testing.T) {
 
 	testDataSet := []string{
 		"${!$%FOO}",
-		"${!*%FOO}",
-		"${!@%FOO}",
 		"${!?%FOO}",
 		"${!-%FOO}",
 		"${!0%FOO}",
@@ -2944,6 +2940,40 @@ func TestParseParamShellSpecialShortestSuffixWithIndirection(t *testing.T) {
 			kind:     paramExpandRemoveSuffixShortestMatch,
 			parts:    []string{"$" + testData[3:4], "FOO"},
 			indirect: true,
+		}
+
+		// ----------------------------------------------------------------
+		// perform the change
+
+		actualResult, ok := parseParameter(testData)
+
+		// ----------------------------------------------------------------
+		// test the results
+
+		assert.True(t, ok)
+		assert.Equal(t, expectedResult, actualResult)
+	}
+}
+
+func TestParseParamRemoveShortestSuffixAllPositionalParams(t *testing.T) {
+	t.Parallel()
+
+	// ----------------------------------------------------------------
+	// setup your test
+
+	testDataSet := []string{
+		"${*%FOO}",
+		"${@%FOO}",
+	}
+
+	for _, testData := range testDataSet {
+		// ----------------------------------------------------------------
+		// setup your test
+
+		expectedResult := paramDesc{
+			kind:     paramExpandAllPositionalParamsRemoveSuffixShortestMatch,
+			parts:    []string{"$" + testData[2:3], "FOO"},
+			indirect: false,
 		}
 
 		// ----------------------------------------------------------------
