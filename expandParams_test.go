@@ -222,6 +222,42 @@ func TestExpandParams(t *testing.T) {
 			input:          "${10}",
 			expectedResult: "bank",
 		},
+		// simple param, expand all positional vars via $*
+		{
+			positionalVars: map[string]string{
+				"$1":  "foo",
+				"$2":  "bar",
+				"$3":  "alfred",
+				"$4":  "trout",
+				"$5":  "haddock",
+				"$6":  "cod",
+				"$7":  "plaice",
+				"$8":  "pollock",
+				"$9":  "whitebait",
+				"$10": "bank",
+				"$#":  "10",
+			},
+			input:          "$*",
+			expectedResult: "foo bar alfred trout haddock cod plaice pollock whitebait bank",
+		},
+		// simple param, expand all positional vars via $@
+		{
+			positionalVars: map[string]string{
+				"$1":  "foo",
+				"$2":  "bar",
+				"$3":  "alfred",
+				"$4":  "trout",
+				"$5":  "haddock",
+				"$6":  "cod",
+				"$7":  "plaice",
+				"$8":  "pollock",
+				"$9":  "whitebait",
+				"$10": "bank",
+				"$#":  "10",
+			},
+			input:          "$@",
+			expectedResult: "foo bar alfred trout haddock cod plaice pollock whitebait bank",
+		},
 		// simple param, braces
 		{
 			vars: map[string]string{

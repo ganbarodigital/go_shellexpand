@@ -35,7 +35,10 @@
 
 package shellexpand
 
-import "strings"
+import (
+	"strconv"
+	"strings"
+)
 
 // expandParams will expand any ${VAR} or $VAR
 //
@@ -125,16 +128,27 @@ func expandParameters(input string, lookupVar LookupVar, lookupHomeDir LookupVar
 
 func expandParameter(paramDesc paramDesc, lookupVar LookupVar, lookupHomeDir LookupVar) string {
 	// what we will (eventually) send back
-	var retval string
+	var retval []string
 
 	// ... but only if all is well
 	var ok bool
 
-	switch paramDesc.kind {
-	case paramExpandToValue:
-		retval, ok = expandParamToValue(paramDesc, lookupVar)
-	case paramExpandWithDefaultValue:
-		retval, ok = expandParamWithDefaultValue(paramDesc, lookupVar, lookupHomeDir)
+	// and, because we may be building it up bit by bit, we need somewhere
+	// to store it temporarily
+	var buf string
+
+	// step 1: we (nearly) always expand the parameter first
+	//
+	// the only exception is when we're called on to SET a default value
+	for paramValue := range expandParamByLookup(paramDesc.parts[0], paramDesc.indirect, lookupVar) {
+		switch paramDesc.kind {
+		case paramExpandToValue:
+			buf, ok = expandParamToValue(paramValue, paramDesc, lookupVar)
+		case paramExpandWithDefaultValue:
+			buf, ok = expandParamWithDefaultValue(paramValue, paramDesc, lookupVar, lookupHomeDir)
+		}
+
+		retval = append(retval, buf)
 	}
 
 	// are we happy with our attempted expansion?
@@ -143,7 +157,7 @@ func expandParameter(paramDesc paramDesc, lookupVar LookupVar, lookupHomeDir Loo
 	}
 
 	// if we get here, then yes, we are happy
-	return retval
+	return strings.Join(retval, " ")
 }
 
 func expandParamWithIndirection(paramName string, lookupVar LookupVar) string {
@@ -155,35 +169,60 @@ func expandParamWithIndirection(paramName string, lookupVar LookupVar) string {
 	return retval
 }
 
-func expandParamToValue(paramDesc paramDesc, lookupVar LookupVar) (string, bool) {
-	// (possibly) shorthand
-	varName := paramDesc.parts[0]
-
-	// are we supporting indirection?
-	if paramDesc.indirect {
-		varName = expandParamWithIndirection(varName, lookupVar)
-	}
-
-	// do the lookup
-	return lookupVar(varName)
+func expandParamToValue(paramValue string, paramDesc paramDesc, lookupVar LookupVar) (string, bool) {
+	// nothing else to do
+	return paramValue, true
 }
 
-func expandParamWithDefaultValue(paramDesc paramDesc, lookupVar LookupVar, lookupHomeDir LookupVar) (string, bool) {
-	// (possibly) shorthand
-	varName := paramDesc.parts[0]
-
-	// are we supporting indirection?
-	if paramDesc.indirect {
-		varName = expandParamWithIndirection(varName, lookupVar)
-	}
-
-	// do the lookup
-	retval, ok := lookupVar(varName)
-
+func expandParamWithDefaultValue(paramValue string, paramDesc paramDesc, lookupVar LookupVar, lookupHomeDir LookupVar) (string, bool) {
 	// do we need to return the default value?
-	if !ok || retval == "" {
+	if paramValue == "" {
 		return expandWord(paramDesc.parts[1], lookupVar, lookupHomeDir), true
 	}
 
-	return retval, ok
+	return paramValue, true
+}
+
+func expandParamByLookup(key string, indirection bool, lookupVar LookupVar) <-chan string {
+	// we'll send the results bit by bit via this channel
+	chn := make(chan string)
+
+	// are we expanding the positional parameters?
+	if key == "$@" || key == "$*" {
+		// how many positional parameters are there?
+		//
+		// we rely on $# being correctly set by the caller
+		rawMax, ok := lookupVar("$#")
+		if !ok {
+			chn <- ""
+			close(chn)
+		} else {
+			maxI, err := strconv.Atoi(rawMax)
+			if err != nil {
+				chn <- ""
+				close(chn)
+			} else {
+				go func() {
+					for i := 1; i <= maxI; i++ {
+						retval, ok := lookupVar("$" + strconv.Itoa(i))
+						if ok {
+							chn <- retval
+						}
+					}
+					close(chn)
+				}()
+			}
+		}
+	} else {
+		go func() {
+			retval, _ := lookupVar(key)
+			if indirection {
+				retval = expandParamWithIndirection(retval, lookupVar)
+			}
+			chn <- retval
+			close(chn)
+		}()
+	}
+
+	return chn
 }
