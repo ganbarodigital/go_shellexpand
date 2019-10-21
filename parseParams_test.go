@@ -339,6 +339,32 @@ func TestParseParamShellSpecialWithBraces(t *testing.T) {
 	}
 }
 
+func TestParseParamSimpleBracesWithIndirectionMustBeValidName(t *testing.T) {
+	t.Parallel()
+
+	testDataSet := []string{
+		"${![}",
+	}
+
+	for _, testData := range testDataSet {
+		// ----------------------------------------------------------------
+		// setup your test
+
+		expectedResult := paramDesc{}
+
+		// ----------------------------------------------------------------
+		// perform the change
+
+		actualResult, ok := parseParameter(testData)
+
+		// ----------------------------------------------------------------
+		// test the results
+
+		assert.False(t, ok)
+		assert.Equal(t, expectedResult, actualResult)
+	}
+}
+
 func TestParseParamPositionalParamsNoBraces(t *testing.T) {
 	t.Parallel()
 
