@@ -89,6 +89,15 @@ func TestExpandParams(t *testing.T) {
 			input:          "this is all ${PARAM1}bar",
 			expectedResult: "this is all foobar",
 		},
+		// simple param, braces, indirection
+		{
+			vars: map[string]string{
+				"PARAM1": "PARAM2",
+				"PARAM2": "foo",
+			},
+			input:          "${!PARAM1}",
+			expectedResult: "foo",
+		},
 	}
 
 	for _, testData := range testDataSets {

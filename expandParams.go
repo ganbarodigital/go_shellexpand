@@ -132,7 +132,16 @@ func expandParameter(paramDesc paramDesc, lookupVar LookupVar) string {
 
 	switch paramDesc.kind {
 	case paramExpandToValue:
-		retval, ok = lookupVar(paramDesc.parts[0])
+		// (possibly) shorthand
+		varName := paramDesc.parts[0]
+
+		// are we supporting indirection?
+		if paramDesc.indirect {
+			varName = expandParamWithIndirection(varName, lookupVar)
+		}
+
+		// do the lookup
+		retval, ok = lookupVar(varName)
 	}
 
 	// are we happy with our attempted expansion?
@@ -141,5 +150,14 @@ func expandParameter(paramDesc paramDesc, lookupVar LookupVar) string {
 	}
 
 	// if we get here, then yes, we are happy
+	return retval
+}
+
+func expandParamWithIndirection(paramName string, lookupVar LookupVar) string {
+	retval, ok := lookupVar(paramName)
+	if !ok {
+		return ""
+	}
+
 	return retval
 }
