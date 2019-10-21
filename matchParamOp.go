@@ -56,6 +56,9 @@ const (
 	paramOpEscape
 	paramOpExpandAsPrompt
 	paramOpExpandDoubleQuotes
+	// this has been added to help us test unsupported operand rejection
+	// in the parameter parser
+	paramOpEmptyObject
 )
 
 func matchParamOp(input string, start int) (int, int, bool) {
@@ -123,7 +126,16 @@ func matchParamOp(input string, start int) (int, int, bool) {
 		default:
 			return paramOpInvalid, 0, false
 		}
-
+	case '{':
+		if start == maxInput {
+			return paramOpInvalid, 0, false
+		}
+		switch input[startPlus1] {
+		case '}':
+			return paramOpEmptyObject, startPlus1, true
+		default:
+			return paramOpInvalid, 0, false
+		}
 	default:
 		return paramOpInvalid, 0, false
 	}
