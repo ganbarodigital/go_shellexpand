@@ -453,7 +453,7 @@ func TestExpand(t *testing.T) {
 			input:          "${#foo}",
 			expectedResult: "10",
 		},
-		// number of positional parameters
+		// number of positional parameters via $*
 		{
 			specialVars: map[string]string{
 				"$#": "10",
@@ -471,6 +471,26 @@ func TestExpand(t *testing.T) {
 				"$10": "bank",
 			},
 			input:          "${#*}",
+			expectedResult: "10",
+		},
+		// number of positional parameters via $@
+		{
+			specialVars: map[string]string{
+				"$#": "10",
+			},
+			positionalVars: map[string]string{
+				"$1":  "foo",
+				"$2":  "bar",
+				"$3":  "alfred",
+				"$4":  "trout",
+				"$5":  "haddock",
+				"$6":  "cod",
+				"$7":  "plaice",
+				"$8":  "pollock",
+				"$9":  "whitebait",
+				"$10": "bank",
+			},
+			input:          "${#@}",
 			expectedResult: "10",
 		},
 	}
