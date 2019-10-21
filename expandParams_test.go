@@ -326,6 +326,11 @@ func TestExpandParams(t *testing.T) {
 			input:          "${PARAM1:-${PARAM2}}",
 			expectedResult: "bar",
 		},
+		// positional param, default value triggered
+		{
+			input:          "${1:-foo}",
+			expectedResult: "foo",
+		},
 	}
 
 	for _, testData := range testDataSets {
