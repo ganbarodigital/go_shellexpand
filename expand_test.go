@@ -47,21 +47,20 @@ import (
 	"github.com/stretchr/testify/assert"
 )
 
-type expandParamsTestData struct {
+type expandTestData struct {
 	homedirs       map[string]string
 	positionalVars map[string]string
 	vars           map[string]string
 	input          string
 	shellExtra     []string
 	expectedResult string
-	actualResult   func(expandParamsTestData) string
+	actualResult   func(expandTestData) string
 }
 
-func TestExpandParams(t *testing.T) {
+func TestExpand(t *testing.T) {
 
-	// if you add a test here, you must also add it to the main
-	// Expand test suite
-	testDataSets := []expandParamsTestData{
+	// our master set of all UNIX shell string expansion permutations
+	testDataSets := []expandTestData{
 		// simple param, no braces
 		{
 			vars: map[string]string{
@@ -341,7 +340,7 @@ func TestExpandParams(t *testing.T) {
 				"echo $PARAM1",
 			},
 			expectedResult: "foo",
-			actualResult: func(testData expandParamsTestData) string {
+			actualResult: func(testData expandTestData) string {
 				return testData.vars["PARAM1"]
 			},
 		},
@@ -356,7 +355,7 @@ func TestExpandParams(t *testing.T) {
 				"echo $PARAM1",
 			},
 			expectedResult: "bar",
-			actualResult: func(testData expandParamsTestData) string {
+			actualResult: func(testData expandTestData) string {
 				return testData.vars["PARAM1"]
 			},
 		},
@@ -452,7 +451,7 @@ func TestExpandParams(t *testing.T) {
 		shellRawResult, shellErr := cmd.CombinedOutput()
 		shellActualResult := strings.TrimSpace(string(shellRawResult))
 
-		internalActualResult := expandParameters(input, varLookup, homeDirLookup, assignVar)
+		internalActualResult := Expand(input, varLookup, homeDirLookup, assignVar)
 		// special case - the result is a side effect, not a direct string
 		// expansion
 		if testData.actualResult != nil {
