@@ -392,6 +392,14 @@ func TestExpand(t *testing.T) {
 			input:          "${foo:+alternative}",
 			expectedResult: "alternative",
 		},
+		// simple param, expand substring to end of value
+		{
+			vars: map[string]string{
+				"foo": "1234567890",
+			},
+			input:          "${foo:3}",
+			expectedResult: "4567890",
+		},
 	}
 
 	for _, testData := range testDataSets {

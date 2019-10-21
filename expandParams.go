@@ -159,6 +159,8 @@ func expandParameter(paramDesc paramDesc, lookupVar LookupVar, lookupHomeDir Loo
 			buf, ok = expandParamWriteError(paramName, paramValue, paramDesc, lookupVar, lookupHomeDir, assignVar)
 		case paramExpandAlternativeValue:
 			buf, ok = expandParamAlternativeValue(paramName, paramValue, paramDesc, lookupVar, lookupHomeDir, assignVar)
+		case paramExpandSubstring:
+			buf, ok = expandParamSubstring(paramName, paramValue, paramDesc, lookupVar, lookupHomeDir, assignVar)
 		}
 
 		retval = append(retval, buf)
@@ -238,6 +240,15 @@ func expandParamAlternativeValue(paramName, paramValue string, paramDesc paramDe
 	}
 
 	return paramValue, true
+}
+
+func expandParamSubstring(paramName, paramValue string, paramDesc paramDesc, lookupVar LookupVar, lookupHomeDir LookupVar, assignVar AssignVar) (string, bool) {
+	start, err := strconv.Atoi(paramDesc.parts[1])
+	if err != nil {
+		return "", false
+	}
+
+	return paramValue[start:], true
 }
 
 func expandParamValue(key string, lookupVar LookupVar) <-chan string {
