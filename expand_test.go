@@ -426,6 +426,15 @@ func TestExpand(t *testing.T) {
 			input:          "${!foo:3:4}",
 			expectedResult: "4567",
 		},
+		// expand param names by prefix
+		{
+			vars: map[string]string{
+				"foo1": "bar",
+				"foo2": "humbug",
+			},
+			input:          "${!foo*}",
+			expectedResult: "foo1 foo2",
+		},
 	}
 
 	for _, testData := range testDataSets {
@@ -506,6 +515,18 @@ func TestExpand(t *testing.T) {
 					return retval, true
 				}
 				return "", false
+			},
+
+			MatchVarNames: func(prefix string) []string {
+				retval := []string{}
+
+				for key := range testData.vars {
+					if strings.HasPrefix(key, prefix) {
+						retval = append(retval, key)
+					}
+				}
+
+				return retval
 			},
 		}
 

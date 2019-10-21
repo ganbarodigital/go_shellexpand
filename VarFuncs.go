@@ -48,4 +48,8 @@ type VarFuncs struct {
 	// LookupHomeDir is called whenever we need to find the home directory
 	// of a given user
 	LookupHomeDir LookupVar
+
+	// MatchVarNames is called whenever we need to find a list of
+	// variable names from your backing store
+	MatchVarNames MatchVarNames
 }

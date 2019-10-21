@@ -44,3 +44,8 @@ type AssignVar func(string, string) error
 // (matching value, true), or
 // ("", false)
 type LookupVar func(string) (string, bool)
+
+// MatchVarNames returns a list of names that match the given search term
+//
+// The search term is a prefix
+type MatchVarNames func(string) []string

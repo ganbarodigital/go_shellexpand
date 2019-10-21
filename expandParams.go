@@ -137,6 +137,7 @@ func expandParameter(paramDesc paramDesc, varFuncs VarFuncs) string {
 		paramExpandAlternativeValue: expandParamAlternativeValue,
 		paramExpandSubstring:        expandParamSubstring,
 		paramExpandSubstringLength:  expandParamSubstringLength,
+		paramExpandPrefixNames:      expandParamPrefixNames,
 	}
 
 	// what we will (eventually) send back
@@ -269,10 +270,10 @@ func expandParamSubstringLength(paramName, paramValue string, paramDesc paramDes
 	return paramValue[start:end], true
 }
 
-// func expandParamPrefixNames(paramName, paramValue string, paramDesc paramDesc, varFuncs VarFuncs) (string, bool) {
-// 	varNames := varFuncs.MatchVarNames(paramName)
-// 	return strings.Join(varNames, " "), true
-// }
+func expandParamPrefixNames(paramName, paramValue string, paramDesc paramDesc, varFuncs VarFuncs) (string, bool) {
+	varNames := varFuncs.MatchVarNames(paramName)
+	return strings.Join(varNames, " "), true
+}
 
 func expandParamValue(key string, lookupVar LookupVar) <-chan string {
 	// we'll send the results bit by bit via this channel
