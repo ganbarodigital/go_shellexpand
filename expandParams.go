@@ -152,10 +152,9 @@ const (
 	paramExpandAllPositionalParamsRemoveSuffixShortestMatch
 	// ${var%%suffix} -> value of var, with longest matching suffix removed
 	paramExpandRemoveSuffixLongestMatch
-	// ${*%suffix} -> all positional params, with shorted matching suffix removed
-	paramExpandRemoveSuffixAllPositionalParamsShortestMatch
-	// ${*%%suffix} -> all positional params, with longest matching suffix removed
-	paramExpandRemoveSuffixAllPositionalParamsLongestMatch
+	// ${*%%word} / ${*%%word} -> value of all positional params, with longest
+	// matching suffix of word removed
+	paramExpandAllPositionalParamsRemoveSuffixLongestMatch
 	// ${var/old/new} -> value of var, with first occurance of old replaced with new
 	paramExpandSearchReplaceLongestFirstMatch
 	// ${var//old/new} -> value of var, with all occurances of old replaced with new
@@ -461,7 +460,11 @@ func parseParameter(input string) (paramDesc, bool) {
 		return retval, true
 
 	case paramOpRemoveLongestSuffix:
-		retval.kind = paramExpandRemoveSuffixLongestMatch
+		if retval.parts[0] == "$*" || retval.parts[0] == "$@" {
+			retval.kind = paramExpandAllPositionalParamsRemoveSuffixLongestMatch
+		} else {
+			retval.kind = paramExpandRemoveSuffixLongestMatch
+		}
 		if opEnd < maxInput {
 			retval.parts = append(retval.parts, input[opEnd+1:inputLen])
 		} else {
