@@ -155,6 +155,8 @@ func expandParameter(paramDesc paramDesc, lookupVar LookupVar, lookupHomeDir Loo
 			buf, ok = expandParamWithDefaultValue(paramName, paramValue, paramDesc, lookupVar, lookupHomeDir, assignVar)
 		case paramExpandSetDefaultValue:
 			buf, ok = expandParamSetDefaultValue(paramName, paramValue, paramDesc, lookupVar, lookupHomeDir, assignVar)
+		case paramExpandWriteError:
+			buf, ok = expandParamWriteError(paramName, paramValue, paramDesc, lookupVar, lookupHomeDir, assignVar)
 		}
 
 		retval = append(retval, buf)
@@ -216,6 +218,15 @@ func expandParamSetDefaultValue(paramName, paramValue string, paramDesc paramDes
 
 	// all done
 	return lookupVar(paramName)
+}
+
+func expandParamWriteError(paramName, paramValue string, paramDesc paramDesc, lookupVar LookupVar, lookupHomeDir LookupVar, assignVar AssignVar) (string, bool) {
+	// do we have a value?
+	if paramValue == "" {
+		return paramName + ": " + expandWord(paramDesc.parts[1], lookupVar, lookupHomeDir, assignVar), true
+	}
+
+	return paramValue, true
 }
 
 func expandParamValue(key string, lookupVar LookupVar) <-chan string {

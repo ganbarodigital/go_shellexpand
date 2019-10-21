@@ -48,13 +48,14 @@ import (
 )
 
 type expandTestData struct {
-	homedirs       map[string]string
-	positionalVars map[string]string
-	vars           map[string]string
-	input          string
-	shellExtra     []string
-	expectedResult string
-	actualResult   func(expandTestData) string
+	homedirs             map[string]string
+	positionalVars       map[string]string
+	vars                 map[string]string
+	input                string
+	shellExtra           []string
+	expectedResult       string
+	resultSubstringMatch bool
+	actualResult         func(expandTestData) string
 }
 
 func TestExpand(t *testing.T) {
@@ -374,6 +375,15 @@ func TestExpand(t *testing.T) {
 				return testData.vars["PARAM2"]
 			},
 		},
+		// simple param, error written
+		{
+			vars: map[string]string{
+				"foo": "",
+			},
+			input:                "${foo:?not set}",
+			expectedResult:       "foo: not set",
+			resultSubstringMatch: true,
+		},
 	}
 
 	for _, testData := range testDataSets {
@@ -463,7 +473,7 @@ func TestExpand(t *testing.T) {
 		// perform the change
 
 		cmd := exec.Command("/usr/bin/env", "bash", tmpFile.Name())
-		shellRawResult, shellErr := cmd.CombinedOutput()
+		shellRawResult, _ := cmd.CombinedOutput()
 		shellActualResult := strings.TrimSpace(string(shellRawResult))
 
 		internalActualResult := Expand(input, varLookup, homeDirLookup, assignVar)
@@ -476,9 +486,14 @@ func TestExpand(t *testing.T) {
 		// ----------------------------------------------------------------
 		// test the results
 
-		assert.Nil(t, shellErr)
-		assert.Equal(t, expectedResult, shellActualResult, buf.String())
-		assert.Equal(t, expectedResult, internalActualResult, testData)
+		// assert.Nil(t, shellErr)
+		if testData.resultSubstringMatch {
+			assert.Contains(t, shellActualResult, expectedResult, buf.String())
+			assert.Contains(t, internalActualResult, expectedResult, testData)
+		} else {
+			assert.Equal(t, expectedResult, shellActualResult, buf.String())
+			assert.Equal(t, expectedResult, internalActualResult, testData)
+		}
 	}
 }
 
@@ -487,13 +502,12 @@ func TestExpand(t *testing.T) {
 // 	// if you add a test here, you must also add it to the main
 // 	// Expand test suite
 // 	testDataSets := []expandTestData{
-// 		// simple param, braces, indirection
+// 		// simple param, error written
 // 		{
 // 			vars: map[string]string{
-// 				"PARAM1": "PARAM2",
-// 				"PARAM2": "foo",
+// 				"foo": "",
 // 			},
-// 			input:          "${!PARAM1}",
+// 			input:          "${foo:?not set}",
 // 			expectedResult: "foo",
 // 		},
 // 	}
@@ -585,7 +599,7 @@ func TestExpand(t *testing.T) {
 // 		// perform the change
 
 // 		cmd := exec.Command("/usr/bin/env", "bash", tmpFile.Name())
-// 		shellRawResult, shellErr := cmd.CombinedOutput()
+// 		shellRawResult, _ := cmd.CombinedOutput()
 // 		shellActualResult := strings.TrimSpace(string(shellRawResult))
 
 // 		internalActualResult := Expand(input, varLookup, homeDirLookup, assignVar)
@@ -598,8 +612,13 @@ func TestExpand(t *testing.T) {
 // 		// ----------------------------------------------------------------
 // 		// test the results
 
-// 		assert.Nil(t, shellErr)
-// 		assert.Equal(t, expectedResult, shellActualResult, buf.String())
-// 		assert.Equal(t, expectedResult, internalActualResult, testData)
+// 		// assert.Nil(t, shellErr)
+// 		if testData.resultSubstringMatch {
+// 			assert.Contains(t, shellActualResult, expectedResult, buf.String())
+// 			assert.Contains(t, internalActualResult, expectedResult, testData)
+// 		} else {
+// 			assert.Equal(t, expectedResult, shellActualResult, buf.String())
+// 			assert.Equal(t, expectedResult, internalActualResult, testData)
+// 		}
 // 	}
 // }

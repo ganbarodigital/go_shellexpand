@@ -77,7 +77,7 @@ func matchVar(input string, start int) (int, bool) {
 			}
 
 			// no spaces allowed inside a var name
-			return 0, false
+			// return 0, false
 		}
 	}
 
