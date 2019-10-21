@@ -42,6 +42,27 @@ import (
 	"github.com/stretchr/testify/assert"
 )
 
+func TestParseParamMustStartWithDollarSign(t *testing.T) {
+	t.Parallel()
+
+	// ----------------------------------------------------------------
+	// setup your test
+
+	testData := "VAR"
+	expectedResult := paramDesc{}
+
+	// ----------------------------------------------------------------
+	// perform the change
+
+	actualResult, ok := parseParameter(testData)
+
+	// ----------------------------------------------------------------
+	// test the results
+
+	assert.False(t, ok)
+	assert.Equal(t, expectedResult, actualResult)
+}
+
 func TestParseParamNoBraces(t *testing.T) {
 	t.Parallel()
 
