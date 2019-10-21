@@ -129,10 +129,6 @@ const (
 	paramExpandSubstring
 	// ${var:offset:length} -> same as both, except also controlling length of substring
 	paramExpandSubstringLength
-	// ${@:offset} -> expansion of positional params, starting at offset
-	paramExpandPositionalParamsFromOffset
-	// ${@:offset:length} -> expansion of 'length' number of positional params, starting at offset
-	paramExpandPositionalParamsFromOffsetLength
 	// ${!prefix*} -> return a list of names matching the given prefix
 	paramExpandPrefixNames
 	// ${!prefix@} -> return a list of names matching the given prefix
@@ -143,29 +139,14 @@ const (
 	paramExpandNoOfPositionalParams
 	// ${var#word} -> value of var, with shortest matching prefix of word removed
 	paramExpandRemovePrefixShortestMatch
-	// ${*#word} / ${*#word} -> value of all positional params, with shortest
-	// matching prefix of word removed
-	paramExpandAllPositionalParamsRemovePrefixShortestMatch
 	// ${var##word} -> value of var, with longest matching prefix of word removed
 	paramExpandRemovePrefixLongestMatch
-	// ${*#word} / ${*#word} -> value of all positional params, with longest
-	// matching prefix of word removed
-	paramExpandAllPositionalParamsRemovePrefixLongestMatch
 	// ${var%suffix} -> value of var, with shortest matching suffix removed
 	paramExpandRemoveSuffixShortestMatch
-	// ${*%word} / ${*%word} -> value of all positional params, with shortest
-	// matching suffix of word removed
-	paramExpandAllPositionalParamsRemoveSuffixShortestMatch
 	// ${var%%suffix} -> value of var, with longest matching suffix removed
 	paramExpandRemoveSuffixLongestMatch
-	// ${*%%word} / ${*%%word} -> value of all positional params, with longest
-	// matching suffix of word removed
-	paramExpandAllPositionalParamsRemoveSuffixLongestMatch
 	// ${var/old/new} -> value of var, with first occurance of old replaced with new
 	paramExpandSearchReplaceLongestFirstMatch
-	// ${*/old/new} / ${@/old/new} -> value of var, with first occurance of
-	// old replaced with new
-	paramExpandAllPositionalParamsSearchReplaceLongestFirstMatch
 	// ${var//old/new} -> value of var, with all occurances of old replaced with new
 	paramExpandSearchReplaceLongestAllMatches
 	// ${var/#old/new} -> value of var, with old replaced with new if the string starts with old
@@ -441,14 +422,8 @@ func parseParameter(input string) (paramDesc, bool) {
 			}
 		}
 
-		// special case - positional parameter expansion
-		if retval.parts[0] == "$@" {
-			if len(parts) == 1 {
-				retval.kind = paramExpandPositionalParamsFromOffset
-			} else {
-				retval.kind = paramExpandPositionalParamsFromOffsetLength
-			}
-		} else if len(parts) == 1 {
+		// do we have a string length to limit our expansion?
+		if len(parts) == 1 {
 			retval.kind = paramExpandSubstring
 		} else {
 			retval.kind = paramExpandSubstringLength
@@ -456,11 +431,7 @@ func parseParameter(input string) (paramDesc, bool) {
 		retval.parts = append(retval.parts, parts...)
 		return retval, true
 	case paramOpRemoveShortestSuffix:
-		if retval.parts[0] == "$*" || retval.parts[0] == "$@" {
-			retval.kind = paramExpandAllPositionalParamsRemoveSuffixShortestMatch
-		} else {
-			retval.kind = paramExpandRemoveSuffixShortestMatch
-		}
+		retval.kind = paramExpandRemoveSuffixShortestMatch
 		if opEnd < maxInput {
 			retval.parts = append(retval.parts, input[opEnd+1:inputLen])
 		} else {
@@ -469,11 +440,7 @@ func parseParameter(input string) (paramDesc, bool) {
 		return retval, true
 
 	case paramOpRemoveLongestSuffix:
-		if retval.parts[0] == "$*" || retval.parts[0] == "$@" {
-			retval.kind = paramExpandAllPositionalParamsRemoveSuffixLongestMatch
-		} else {
-			retval.kind = paramExpandRemoveSuffixLongestMatch
-		}
+		retval.kind = paramExpandRemoveSuffixLongestMatch
 		if opEnd < maxInput {
 			retval.parts = append(retval.parts, input[opEnd+1:inputLen])
 		} else {
@@ -482,11 +449,7 @@ func parseParameter(input string) (paramDesc, bool) {
 		return retval, true
 
 	case paramOpRemoveShortestPrefix:
-		if retval.parts[0] == "$*" || retval.parts[0] == "$@" {
-			retval.kind = paramExpandAllPositionalParamsRemovePrefixShortestMatch
-		} else {
-			retval.kind = paramExpandRemovePrefixShortestMatch
-		}
+		retval.kind = paramExpandRemovePrefixShortestMatch
 		if opEnd < maxInput {
 			retval.parts = append(retval.parts, input[opEnd+1:inputLen])
 		} else {
@@ -495,11 +458,7 @@ func parseParameter(input string) (paramDesc, bool) {
 		return retval, true
 
 	case paramOpRemoveLongestPrefix:
-		if retval.parts[0] == "$*" || retval.parts[0] == "$@" {
-			retval.kind = paramExpandAllPositionalParamsRemovePrefixLongestMatch
-		} else {
-			retval.kind = paramExpandRemovePrefixLongestMatch
-		}
+		retval.kind = paramExpandRemovePrefixLongestMatch
 		if opEnd < maxInput {
 			retval.parts = append(retval.parts, input[opEnd+1:inputLen])
 		} else {
@@ -560,13 +519,7 @@ func parseParameter(input string) (paramDesc, bool) {
 				return retval, true
 			}
 
-			// special case - performing search & replace on all positional
-			// params
-			// if retval.parts[0] == "$*" || retval.parts[0] == "$@" {
-			// 	retval.kind = paramExpandAllPositionalParamsSearchReplaceLongestPrefix
-			// } else {
 			retval.kind = paramExpandSearchReplaceLongestPrefix
-			// }
 			retval.parts = append(retval.parts, strings.Split(input[opEnd+2:inputLen], "/")...)
 
 			// if the replace string is missing, default is an empty string
@@ -577,14 +530,7 @@ func parseParameter(input string) (paramDesc, bool) {
 
 		default:
 			// this is the easy bit!
-
-			// special case - performing search & replace on all positional
-			// params
-			if retval.parts[0] == "$*" || retval.parts[0] == "$@" {
-				retval.kind = paramExpandAllPositionalParamsSearchReplaceLongestFirstMatch
-			} else {
-				retval.kind = paramExpandSearchReplaceLongestFirstMatch
-			}
+			retval.kind = paramExpandSearchReplaceLongestFirstMatch
 			retval.parts = append(retval.parts, strings.Split(input[opEnd+1:inputLen], "/")...)
 
 			// if the replace string is missing, default is an empty string
