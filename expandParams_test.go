@@ -2653,8 +2653,6 @@ func TestParseParamShellSpecialRemoveLongestPrefix(t *testing.T) {
 
 	testDataSet := []string{
 		"${$##FOO}",
-		"${*##FOO}",
-		"${@##FOO}",
 		"${###FOO}",
 		"${?##FOO}",
 		"${-##FOO}",
@@ -2688,8 +2686,6 @@ func TestParseParamShellSpecialLongestPrefixWithIndirection(t *testing.T) {
 
 	testDataSet := []string{
 		"${!$##FOO}",
-		"${!*##FOO}",
-		"${!@##FOO}",
 		"${!###FOO}",
 		"${!?##FOO}",
 		"${!-##FOO}",
@@ -2704,6 +2700,40 @@ func TestParseParamShellSpecialLongestPrefixWithIndirection(t *testing.T) {
 			kind:     paramExpandRemovePrefixLongestMatch,
 			parts:    []string{"$" + testData[3:4], "FOO"},
 			indirect: true,
+		}
+
+		// ----------------------------------------------------------------
+		// perform the change
+
+		actualResult, ok := parseParameter(testData)
+
+		// ----------------------------------------------------------------
+		// test the results
+
+		assert.True(t, ok)
+		assert.Equal(t, expectedResult, actualResult)
+	}
+}
+
+func TestParseParamRemoveLongestPrefixAllPositionalParams(t *testing.T) {
+	t.Parallel()
+
+	// ----------------------------------------------------------------
+	// setup your test
+
+	testDataSet := []string{
+		"${*##FOO}",
+		"${@##FOO}",
+	}
+
+	for _, testData := range testDataSet {
+		// ----------------------------------------------------------------
+		// setup your test
+
+		expectedResult := paramDesc{
+			kind:     paramExpandAllPositionalParamsRemovePrefixLongestMatch,
+			parts:    []string{"$" + testData[2:3], "FOO"},
+			indirect: false,
 		}
 
 		// ----------------------------------------------------------------
