@@ -345,6 +345,21 @@ func TestExpandParams(t *testing.T) {
 				return testData.vars["PARAM1"]
 			},
 		},
+		// simple param, default value set to word expansion
+		{
+			vars: map[string]string{
+				"PARAM2": "bar",
+			},
+			input: "${PARAM1:=${PARAM2}}",
+			shellExtra: []string{
+				"dummy=${PARAM1:=${PARAM2}}",
+				"echo $PARAM1",
+			},
+			expectedResult: "bar",
+			actualResult: func(testData expandParamsTestData) string {
+				return testData.vars["PARAM1"]
+			},
+		},
 	}
 
 	for _, testData := range testDataSets {
