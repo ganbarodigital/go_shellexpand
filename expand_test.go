@@ -444,6 +444,14 @@ func TestExpand(t *testing.T) {
 			input:          "${!foo@}",
 			expectedResult: "foo1 foo2",
 		},
+		// length of simple param
+		{
+			vars: map[string]string{
+				"foo": "bar humbug",
+			},
+			input:          "${#foo}",
+			expectedResult: "10",
+		},
 	}
 
 	for _, testData := range testDataSets {

@@ -140,6 +140,7 @@ func expandParameter(paramDesc paramDesc, varFuncs VarFuncs) string {
 		paramExpandSubstringLength:         expandParamSubstringLength,
 		paramExpandPrefixNames:             expandParamPrefixNames,
 		paramExpandPrefixNamesDoubleQuoted: expandParamPrefixNames,
+		paramExpandParamLength:             expandParamLength,
 	}
 
 	// what we will (eventually) send back
@@ -276,6 +277,10 @@ func expandParamPrefixNames(paramName, paramValue string, paramDesc paramDesc, v
 	varNames := varFuncs.MatchVarNames(paramName)
 	sort.Strings(varNames)
 	return strings.Join(varNames, " "), true
+}
+
+func expandParamLength(paramName, paramValue string, paramDesc paramDesc, varFuncs VarFuncs) (string, bool) {
+	return strconv.Itoa(len(paramValue)), true
 }
 
 func expandParamValue(key string, lookupVar LookupVar) <-chan string {
