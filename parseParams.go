@@ -171,9 +171,6 @@ func parseParameter(input string) (paramDesc, bool) {
 		if !ok {
 			return paramDesc{}, false
 		}
-		if paramEnd != maxInput {
-			return paramDesc{}, false
-		}
 
 		switch paramType {
 		case paramTypeName:
