@@ -47,6 +47,15 @@ func matchVar(input string, start int) (int, bool) {
 	}
 
 	// no, it is not
+	//
+	// special case: positional parameters are not subject to normal
+	// matching rules (sigh)
+	if isNumericChar(input[start+1]) {
+		return start + 1, true
+	}
+
+	// general case - a non-positional parameter that may be wrapped
+	// in braces
 	braceDepth := 0
 	for i := start + 1; i < len(input); i++ {
 		if input[i] == '\\' {

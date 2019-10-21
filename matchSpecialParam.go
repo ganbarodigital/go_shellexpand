@@ -35,11 +35,11 @@
 
 package shellexpand
 
-func matchSpecialParam(input string, start int) (int, bool) {
+func matchSpecialParam(input string, start int) (int, int, bool) {
 	// a special param is a single character
 	if !isShellSpecialChar(input[start]) {
-		return 0, false
+		return paramTypeInvalid, 0, false
 	}
 
-	return start, true
+	return paramTypeSpecial, start, true
 }

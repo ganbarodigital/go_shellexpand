@@ -35,21 +35,21 @@
 
 package shellexpand
 
-func matchName(input string, start int) (int, bool) {
+func matchName(input string, start int) (int, int, bool) {
 	// a name is a word consisting of:
 	//
 	// alphanumeric characters and underscores
 	// beginning with alphabetic character or underscore
 
 	if !isNameStartChar(input[start]) {
-		return 0, false
+		return paramTypeInvalid, 0, false
 	}
 
 	for i := start + 1; i < len(input); i++ {
 		if !isNameBodyChar(input[i]) {
-			return i - 1, true
+			return paramTypeName, i - 1, true
 		}
 	}
 
-	return len(input) - 1, true
+	return paramTypeName, len(input) - 1, true
 }

@@ -184,6 +184,44 @@ func TestExpandParams(t *testing.T) {
 			input:          "$9",
 			expectedResult: "whitebait",
 		},
+		// simple param, positional var $10
+		//
+		// bash stops parsing after matching '$1'
+		{
+			positionalVars: map[string]string{
+				"$1":  "foo",
+				"$2":  "bar",
+				"$3":  "alfred",
+				"$4":  "trout",
+				"$5":  "haddock",
+				"$6":  "cod",
+				"$7":  "plaice",
+				"$8":  "pollock",
+				"$9":  "whitebait",
+				"$10": "bank",
+			},
+			input:          "$10",
+			expectedResult: "foo0",
+		},
+		// simple param, positional var $10 wrapped in brackets
+		//
+		// this IS supported by bash
+		{
+			positionalVars: map[string]string{
+				"$1":  "foo",
+				"$2":  "bar",
+				"$3":  "alfred",
+				"$4":  "trout",
+				"$5":  "haddock",
+				"$6":  "cod",
+				"$7":  "plaice",
+				"$8":  "pollock",
+				"$9":  "whitebait",
+				"$10": "bank",
+			},
+			input:          "${10}",
+			expectedResult: "bank",
+		},
 		// simple param, braces
 		{
 			vars: map[string]string{
@@ -334,90 +372,108 @@ func TestExpandParams(t *testing.T) {
 	}
 }
 
-// func TestExpandParamsDebugCase(t *testing.T) {
+func TestExpandParamsDebugCase(t *testing.T) {
 
-// 	// if you add a test here, you must also add it to the main
-// 	// Expand test suite
-// 	testDataSets := []expandParamsTestData{
-// 		// simple param, positional vars
-// 		{
-// 			positionalVars: map[string]string{
-// 				"$1": "foo",
-// 			},
-// 			input:          "$1",
-// 			expectedResult: "foo",
-// 		},
-// 	}
+	// if you add a test here, you must also add it to the main
+	// Expand test suite
+	testDataSets := []expandParamsTestData{
+		// simple param, positional var $10
+		//
+		// this is NOT supported by bash
+		{
+			positionalVars: map[string]string{
+				"$1":  "foo",
+				"$2":  "bar",
+				"$3":  "alfred",
+				"$4":  "trout",
+				"$5":  "haddock",
+				"$6":  "cod",
+				"$7":  "plaice",
+				"$8":  "pollock",
+				"$9":  "whitebait",
+				"$10": "bank",
+			},
+			input:          "$10",
+			expectedResult: "foo0",
+		},
+	}
 
-// 	for _, testData := range testDataSets {
+	for _, testData := range testDataSets {
 
-// 		// ----------------------------------------------------------------
-// 		// setup your test
+		// ----------------------------------------------------------------
+		// setup your test
 
-// 		// create the shell script we'll use to verify that internal behaviour
-// 		// matches actual shell script behaviour
-// 		tmpFile, _ := ioutil.TempFile("", "shellexpand-expandParams-")
-// 		cleanup := func() {
-// 			tmpFile.Close()
-// 			os.Remove(tmpFile.Name())
-// 		}
-// 		defer cleanup()
-// 		tmpFile.WriteString("#!/usr/bin/env bash\n\n")
-// 		for key, value := range testData.vars {
-// 			tmpFile.WriteString(fmt.Sprintf("%s='%s'\n", key, value))
-// 		}
-// 		if len(testData.positionalVars) > 0 {
-// 			tmpFile.WriteString("set -- ")
-// 			for _, value := range testData.positionalVars {
-// 				tmpFile.WriteString(value + " ")
-// 			}
-// 			tmpFile.WriteString("\n")
-// 		}
-// 		tmpFile.WriteString("echo ")
-// 		tmpFile.WriteString(testData.input)
-// 		tmpFile.WriteString("\n")
-// 		tmpFile.Close()
+		var buf strings.Builder
 
-// 		// now, setup everything we need to test this internally
-// 		varLookup := func(key string) (string, bool) {
-// 			// special case - positional parameter
-// 			retval, ok := testData.positionalVars[key]
-// 			if ok {
-// 				return retval, true
-// 			}
-// 			// general case
-// 			retval, ok = testData.vars[key]
-// 			if ok {
-// 				return retval, true
-// 			}
-// 			return "", false
-// 		}
-// 		homeDirLookup := func(key string) (string, bool) {
-// 			retval, ok := testData.homedirs[key]
-// 			if ok {
-// 				return retval, true
-// 			}
-// 			return "", false
-// 		}
+		buf.WriteString("#!/usr/bin/env bash\n\n")
+		for key, value := range testData.vars {
+			buf.WriteString(fmt.Sprintf("%s='%s'\n", key, value))
+		}
+		if len(testData.positionalVars) > 0 {
+			buf.WriteString("set -- ")
+			for i := 1; i <= len(testData.positionalVars); i++ {
+				buf.WriteString(testData.positionalVars["$"+strconv.Itoa(i)] + " ")
+			}
+			buf.WriteString("\n")
+		}
+		buf.WriteString("echo ")
+		buf.WriteString(testData.input)
+		buf.WriteString("\n")
 
-// 		// shorthand
-// 		input := testData.input
-// 		expectedResult := testData.expectedResult
+		// create the shell script we'll use to verify that internal behaviour
+		// matches actual shell script behaviour
+		tmpFile, _ := ioutil.TempFile("", "shellexpand-expandParams-")
+		cleanup := func() {
+			tmpFile.Close()
+			os.Remove(tmpFile.Name())
+		}
+		defer cleanup()
 
-// 		// ----------------------------------------------------------------
-// 		// perform the change
+		// tmpFile.Truncate(0)
+		tmpFile.WriteString(buf.String())
+		tmpFile.Sync()
+		tmpFile.Close()
 
-// 		cmd := exec.Command("/usr/bin/env", "bash", tmpFile.Name())
-// 		shellRawResult, shellErr := cmd.CombinedOutput()
-// 		shellActualResult := strings.TrimSpace(string(shellRawResult))
+		// now, setup everything we need to test this internally
+		varLookup := func(key string) (string, bool) {
+			// special case - positional parameter
+			retval, ok := testData.positionalVars[key]
+			if ok {
+				return retval, true
+			}
+			// general case
+			retval, ok = testData.vars[key]
+			if ok {
+				return retval, true
+			}
+			return "", false
+		}
+		homeDirLookup := func(key string) (string, bool) {
+			retval, ok := testData.homedirs[key]
+			if ok {
+				return retval, true
+			}
+			return "", false
+		}
 
-// 		internalActualResult := expandParameters(input, varLookup, homeDirLookup)
+		// shorthand
+		input := testData.input
+		expectedResult := testData.expectedResult
 
-// 		// ----------------------------------------------------------------
-// 		// test the results
+		// ----------------------------------------------------------------
+		// perform the change
 
-// 		assert.Nil(t, shellErr)
-// 		assert.Equal(t, expectedResult, shellActualResult)
-// 		assert.Equal(t, expectedResult, internalActualResult)
-// 	}
-// }
+		cmd := exec.Command("/usr/bin/env", "bash", tmpFile.Name())
+		shellRawResult, shellErr := cmd.CombinedOutput()
+		shellActualResult := strings.TrimSpace(string(shellRawResult))
+
+		internalActualResult := expandParameters(input, varLookup, homeDirLookup)
+
+		// ----------------------------------------------------------------
+		// test the results
+
+		assert.Nil(t, shellErr)
+		assert.Equal(t, expectedResult, shellActualResult, buf.String())
+		assert.Equal(t, expectedResult, internalActualResult, testData)
+	}
+}

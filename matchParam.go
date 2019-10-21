@@ -54,20 +54,21 @@ const (
 // - the zero-index position of the end of the parameter's name
 // - `true` on success
 func matchParam(input string, start int) (int, int, bool) {
+	var paramType int
 	var paramEnd int
 	var ok bool
 
-	paramCheckers := []func(string, int) (int, bool){
-		matchName,
+	paramCheckers := []func(string, int) (int, int, bool){
 		matchPositionalParam,
 		matchSpecialParam,
+		matchName,
 	}
 
 	for i := 0; i < len(paramCheckers); i++ {
 		paramChecker := paramCheckers[i]
-		paramEnd, ok = paramChecker(input, start)
+		paramType, paramEnd, ok = paramChecker(input, start)
 		if ok {
-			return i + 1, paramEnd, true
+			return paramType, paramEnd, true
 		}
 	}
 

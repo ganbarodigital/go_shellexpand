@@ -186,7 +186,10 @@ func parseParameter(input string) (paramDesc, bool) {
 		}
 	}
 
-	// special case - handle positional params
+	// special case - handle positional params that are wrapped in braces
+	//
+	// UNIX shells support positional params $10, $11 and so on ONLY IF they
+	// have been wrapped in brances
 	if isNumericStringWithoutLeadingZero(input[2:inputLen]) {
 		return paramDesc{
 			kind:  paramExpandToValue,

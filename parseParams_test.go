@@ -370,7 +370,7 @@ func TestParseParamPositionalParamsNoBraces(t *testing.T) {
 
 	var testDataSet []string
 
-	for i := 1; i < 20; i++ {
+	for i := 1; i < 10; i++ {
 		testDataSet = append(testDataSet, "$"+strconv.Itoa(i))
 	}
 
@@ -401,7 +401,7 @@ func TestParseParamPositionalWithBraces(t *testing.T) {
 
 	var testDataSet []string
 
-	for i := 1; i < 20; i++ {
+	for i := 1; i < 10; i++ {
 		testDataSet = append(testDataSet, "${"+strconv.Itoa(i)+"}")
 	}
 
@@ -554,7 +554,7 @@ func TestParseParamDefaultValueSingleLetterVarWithIndirection(t *testing.T) {
 func TestParseParamPositionalParamDefaultValue(t *testing.T) {
 	t.Parallel()
 
-	for i := 1; i < 20; i++ {
+	for i := 1; i < 10; i++ {
 		testValue := strconv.Itoa(i)
 		// ----------------------------------------------------------------
 		// setup your test
@@ -581,7 +581,7 @@ func TestParseParamPositionalParamDefaultValue(t *testing.T) {
 func TestParseParamPositionalParamDefaultValueWithIndirection(t *testing.T) {
 	t.Parallel()
 
-	for i := 1; i < 20; i++ {
+	for i := 1; i < 10; i++ {
 		testValue := strconv.Itoa(i)
 		// ----------------------------------------------------------------
 		// setup your test
@@ -801,7 +801,7 @@ func TestParseParamSetDefaultValueSingleLetterVarWithIndirection(t *testing.T) {
 func TestParseParamPositionalParamSetDefaultValue(t *testing.T) {
 	t.Parallel()
 
-	for i := 1; i < 20; i++ {
+	for i := 1; i < 10; i++ {
 		testValue := strconv.Itoa(i)
 		// ----------------------------------------------------------------
 		// setup your test
@@ -828,7 +828,7 @@ func TestParseParamPositionalParamSetDefaultValue(t *testing.T) {
 func TestParseParamPositionalParamSetDefaultValueWithIndirection(t *testing.T) {
 	t.Parallel()
 
-	for i := 1; i < 20; i++ {
+	for i := 1; i < 10; i++ {
 		testValue := strconv.Itoa(i)
 		// ----------------------------------------------------------------
 		// setup your test
@@ -1048,7 +1048,7 @@ func TestParseParamWriteErrorSingleLetterVarWithIndirection(t *testing.T) {
 func TestParseParamPositionalParamWriteError(t *testing.T) {
 	t.Parallel()
 
-	for i := 1; i < 20; i++ {
+	for i := 1; i < 10; i++ {
 		testValue := strconv.Itoa(i)
 		// ----------------------------------------------------------------
 		// setup your test
@@ -1075,7 +1075,7 @@ func TestParseParamPositionalParamWriteError(t *testing.T) {
 func TestParseParamPositionalParamWriteErrorWithIndirection(t *testing.T) {
 	t.Parallel()
 
-	for i := 1; i < 20; i++ {
+	for i := 1; i < 10; i++ {
 		testValue := strconv.Itoa(i)
 		// ----------------------------------------------------------------
 		// setup your test
@@ -1295,7 +1295,7 @@ func TestParseParamAlternativeValueSingleLetterVarWithIndirection(t *testing.T) 
 func TestParseParamPositionalParamAlternativeValue(t *testing.T) {
 	t.Parallel()
 
-	for i := 1; i < 20; i++ {
+	for i := 1; i < 10; i++ {
 		testValue := strconv.Itoa(i)
 		// ----------------------------------------------------------------
 		// setup your test
@@ -1322,7 +1322,7 @@ func TestParseParamPositionalParamAlternativeValue(t *testing.T) {
 func TestParseParamPositionalParamAlternativeValueWithIndirection(t *testing.T) {
 	t.Parallel()
 
-	for i := 1; i < 20; i++ {
+	for i := 1; i < 10; i++ {
 		testValue := strconv.Itoa(i)
 		// ----------------------------------------------------------------
 		// setup your test
@@ -1592,7 +1592,7 @@ func TestParseParamSubstringSingleLetterVarWithIndirection(t *testing.T) {
 func TestParseParamPositionalParamSubstring(t *testing.T) {
 	t.Parallel()
 
-	for i := 1; i < 20; i++ {
+	for i := 1; i < 10; i++ {
 		testValue := strconv.Itoa(i)
 		// ----------------------------------------------------------------
 		// setup your test
@@ -1619,7 +1619,7 @@ func TestParseParamPositionalParamSubstring(t *testing.T) {
 func TestParseParamPositionalParamSubstringWithIndirection(t *testing.T) {
 	t.Parallel()
 
-	for i := 1; i < 20; i++ {
+	for i := 1; i < 10; i++ {
 		testValue := strconv.Itoa(i)
 		// ----------------------------------------------------------------
 		// setup your test
@@ -1945,7 +1945,7 @@ func TestParseParamSubstringLengthSingleLetterVarWithIndirection(t *testing.T) {
 func TestParseParamPositionalParamSubstringLength(t *testing.T) {
 	t.Parallel()
 
-	for i := 1; i < 20; i++ {
+	for i := 1; i < 10; i++ {
 		testValue := strconv.Itoa(i)
 		// ----------------------------------------------------------------
 		// setup your test
@@ -1972,7 +1972,7 @@ func TestParseParamPositionalParamSubstringLength(t *testing.T) {
 func TestParseParamPositionalParamSubstringLengthWithIndirection(t *testing.T) {
 	t.Parallel()
 
-	for i := 1; i < 20; i++ {
+	for i := 1; i < 10; i++ {
 		testValue := strconv.Itoa(i)
 		// ----------------------------------------------------------------
 		// setup your test
@@ -2268,7 +2268,7 @@ func TestParseParamParamLengthSingleLetterVar(t *testing.T) {
 func TestParseParamPositionalParamParamLength(t *testing.T) {
 	t.Parallel()
 
-	for i := 1; i < 20; i++ {
+	for i := 1; i < 10; i++ {
 		testValue := strconv.Itoa(i)
 		// ----------------------------------------------------------------
 		// setup your test
@@ -2481,7 +2481,7 @@ func TestParseParamRemoveShortestPrefixSingleLetterVarWithIndirection(t *testing
 func TestParseParamPositionalParamRemoveShortestPrefix(t *testing.T) {
 	t.Parallel()
 
-	for i := 1; i < 20; i++ {
+	for i := 1; i < 10; i++ {
 		testValue := strconv.Itoa(i)
 		// ----------------------------------------------------------------
 		// setup your test
@@ -2508,7 +2508,7 @@ func TestParseParamPositionalParamRemoveShortestPrefix(t *testing.T) {
 func TestParseParamPositionalParamRemoveShortestPrefixWithIndirection(t *testing.T) {
 	t.Parallel()
 
-	for i := 1; i < 20; i++ {
+	for i := 1; i < 10; i++ {
 		testValue := strconv.Itoa(i)
 		// ----------------------------------------------------------------
 		// setup your test
@@ -2751,7 +2751,7 @@ func TestParseParamRemoveLongestPrefixSingleLetterVarWithIndirection(t *testing.
 func TestParseParamPositionalParamRemoveLongestPrefix(t *testing.T) {
 	t.Parallel()
 
-	for i := 1; i < 20; i++ {
+	for i := 1; i < 10; i++ {
 		testValue := strconv.Itoa(i)
 		// ----------------------------------------------------------------
 		// setup your test
@@ -2778,7 +2778,7 @@ func TestParseParamPositionalParamRemoveLongestPrefix(t *testing.T) {
 func TestParseParamPositionalParamRemoveLongestPrefixWithIndirection(t *testing.T) {
 	t.Parallel()
 
-	for i := 1; i < 20; i++ {
+	for i := 1; i < 10; i++ {
 		testValue := strconv.Itoa(i)
 		// ----------------------------------------------------------------
 		// setup your test
@@ -3022,7 +3022,7 @@ func TestParseParamRemoveShortestSuffixSingleLetterVarWithIndirection(t *testing
 func TestParseParamPositionalParamRemoveShortestSuffix(t *testing.T) {
 	t.Parallel()
 
-	for i := 1; i < 20; i++ {
+	for i := 1; i < 10; i++ {
 		testValue := strconv.Itoa(i)
 		// ----------------------------------------------------------------
 		// setup your test
@@ -3049,7 +3049,7 @@ func TestParseParamPositionalParamRemoveShortestSuffix(t *testing.T) {
 func TestParseParamPositionalParamRemoveShortestSuffixWithIndirection(t *testing.T) {
 	t.Parallel()
 
-	for i := 1; i < 20; i++ {
+	for i := 1; i < 10; i++ {
 		testValue := strconv.Itoa(i)
 		// ----------------------------------------------------------------
 		// setup your test
@@ -3292,7 +3292,7 @@ func TestParseParamRemoveLongestSuffixSingleLetterVarWithIndirection(t *testing.
 func TestParseParamPositionalParamRemoveLongestSuffix(t *testing.T) {
 	t.Parallel()
 
-	for i := 1; i < 20; i++ {
+	for i := 1; i < 10; i++ {
 		testValue := strconv.Itoa(i)
 		// ----------------------------------------------------------------
 		// setup your test
@@ -3319,7 +3319,7 @@ func TestParseParamPositionalParamRemoveLongestSuffix(t *testing.T) {
 func TestParseParamPositionalParamRemoveLongestSuffixWithIndirection(t *testing.T) {
 	t.Parallel()
 
-	for i := 1; i < 20; i++ {
+	for i := 1; i < 10; i++ {
 		testValue := strconv.Itoa(i)
 		// ----------------------------------------------------------------
 		// setup your test
@@ -3593,7 +3593,7 @@ func TestParseParamSearchReplaceLongestFirstMatchSingleLetterVarWithIndirection(
 func TestParseParamPositionalParamSearchReplaceLongestFirstMatch(t *testing.T) {
 	t.Parallel()
 
-	for i := 1; i < 20; i++ {
+	for i := 1; i < 10; i++ {
 		testValue := strconv.Itoa(i)
 		// ----------------------------------------------------------------
 		// setup your test
@@ -3620,7 +3620,7 @@ func TestParseParamPositionalParamSearchReplaceLongestFirstMatch(t *testing.T) {
 func TestParseParamPositionalParamSearchReplaceLongestFirstMatchWithIndirection(t *testing.T) {
 	t.Parallel()
 
-	for i := 1; i < 20; i++ {
+	for i := 1; i < 10; i++ {
 		testValue := strconv.Itoa(i)
 		// ----------------------------------------------------------------
 		// setup your test
@@ -3894,7 +3894,7 @@ func TestParseParamSearchReplaceLongestAllMatchesSingleLetterVarWithIndirection(
 func TestParseParamPositionalParamSearchReplaceLongestAllMatches(t *testing.T) {
 	t.Parallel()
 
-	for i := 1; i < 20; i++ {
+	for i := 1; i < 10; i++ {
 		testValue := strconv.Itoa(i)
 		// ----------------------------------------------------------------
 		// setup your test
@@ -3921,7 +3921,7 @@ func TestParseParamPositionalParamSearchReplaceLongestAllMatches(t *testing.T) {
 func TestParseParamPositionalParamSearchReplaceLongestAllMatchesWithIndirection(t *testing.T) {
 	t.Parallel()
 
-	for i := 1; i < 20; i++ {
+	for i := 1; i < 10; i++ {
 		testValue := strconv.Itoa(i)
 		// ----------------------------------------------------------------
 		// setup your test
@@ -4195,7 +4195,7 @@ func TestParseParamSearchReplaceLongestPrefixSingleLetterVarWithIndirection(t *t
 func TestParseParamPositionalParamSearchReplaceLongestPrefix(t *testing.T) {
 	t.Parallel()
 
-	for i := 1; i < 20; i++ {
+	for i := 1; i < 10; i++ {
 		testValue := strconv.Itoa(i)
 		// ----------------------------------------------------------------
 		// setup your test
@@ -4222,7 +4222,7 @@ func TestParseParamPositionalParamSearchReplaceLongestPrefix(t *testing.T) {
 func TestParseParamPositionalParamSearchReplaceLongestPrefixWithIndirection(t *testing.T) {
 	t.Parallel()
 
-	for i := 1; i < 20; i++ {
+	for i := 1; i < 10; i++ {
 		testValue := strconv.Itoa(i)
 		// ----------------------------------------------------------------
 		// setup your test
@@ -4496,7 +4496,7 @@ func TestParseParamSearchReplaceLongestSuffixSingleLetterVarWithIndirection(t *t
 func TestParseParamPositionalParamSearchReplaceLongestSuffix(t *testing.T) {
 	t.Parallel()
 
-	for i := 1; i < 20; i++ {
+	for i := 1; i < 10; i++ {
 		testValue := strconv.Itoa(i)
 		// ----------------------------------------------------------------
 		// setup your test
@@ -4523,7 +4523,7 @@ func TestParseParamPositionalParamSearchReplaceLongestSuffix(t *testing.T) {
 func TestParseParamPositionalParamSearchReplaceLongestSuffixWithIndirection(t *testing.T) {
 	t.Parallel()
 
-	for i := 1; i < 20; i++ {
+	for i := 1; i < 10; i++ {
 		testValue := strconv.Itoa(i)
 		// ----------------------------------------------------------------
 		// setup your test
@@ -4772,7 +4772,7 @@ func TestParseParamUppercaseFirstCharSingleLetterVarWithIndirection(t *testing.T
 func TestParseParamPositionalParamUppercaseFirstChar(t *testing.T) {
 	t.Parallel()
 
-	for i := 1; i < 20; i++ {
+	for i := 1; i < 10; i++ {
 		testValue := strconv.Itoa(i)
 		// ----------------------------------------------------------------
 		// setup your test
@@ -4799,7 +4799,7 @@ func TestParseParamPositionalParamUppercaseFirstChar(t *testing.T) {
 func TestParseParamPositionalParamUppercaseFirstCharWithIndirection(t *testing.T) {
 	t.Parallel()
 
-	for i := 1; i < 20; i++ {
+	for i := 1; i < 10; i++ {
 		testValue := strconv.Itoa(i)
 		// ----------------------------------------------------------------
 		// setup your test
@@ -5048,7 +5048,7 @@ func TestParseParamUppercaseAllCharsSingleLetterVarWithIndirection(t *testing.T)
 func TestParseParamPositionalParamUppercaseAllChars(t *testing.T) {
 	t.Parallel()
 
-	for i := 1; i < 20; i++ {
+	for i := 1; i < 10; i++ {
 		testValue := strconv.Itoa(i)
 		// ----------------------------------------------------------------
 		// setup your test
@@ -5075,7 +5075,7 @@ func TestParseParamPositionalParamUppercaseAllChars(t *testing.T) {
 func TestParseParamPositionalParamUppercaseAllCharsWithIndirection(t *testing.T) {
 	t.Parallel()
 
-	for i := 1; i < 20; i++ {
+	for i := 1; i < 10; i++ {
 		testValue := strconv.Itoa(i)
 		// ----------------------------------------------------------------
 		// setup your test
@@ -5324,7 +5324,7 @@ func TestParseParamLowercaseFirstCharSingleLetterVarWithIndirection(t *testing.T
 func TestParseParamPositionalParamLowercaseFirstChar(t *testing.T) {
 	t.Parallel()
 
-	for i := 1; i < 20; i++ {
+	for i := 1; i < 10; i++ {
 		testValue := strconv.Itoa(i)
 		// ----------------------------------------------------------------
 		// setup your test
@@ -5351,7 +5351,7 @@ func TestParseParamPositionalParamLowercaseFirstChar(t *testing.T) {
 func TestParseParamPositionalParamLowercaseFirstCharWithIndirection(t *testing.T) {
 	t.Parallel()
 
-	for i := 1; i < 20; i++ {
+	for i := 1; i < 10; i++ {
 		testValue := strconv.Itoa(i)
 		// ----------------------------------------------------------------
 		// setup your test
@@ -5600,7 +5600,7 @@ func TestParseParamLowercaseAllCharsSingleLetterVarWithIndirection(t *testing.T)
 func TestParseParamPositionalParamLowercaseAllChars(t *testing.T) {
 	t.Parallel()
 
-	for i := 1; i < 20; i++ {
+	for i := 1; i < 10; i++ {
 		testValue := strconv.Itoa(i)
 		// ----------------------------------------------------------------
 		// setup your test
@@ -5627,7 +5627,7 @@ func TestParseParamPositionalParamLowercaseAllChars(t *testing.T) {
 func TestParseParamPositionalParamLowercaseAllCharsWithIndirection(t *testing.T) {
 	t.Parallel()
 
-	for i := 1; i < 20; i++ {
+	for i := 1; i < 10; i++ {
 		testValue := strconv.Itoa(i)
 		// ----------------------------------------------------------------
 		// setup your test
@@ -5847,7 +5847,7 @@ func TestParseParamDescribeFlagsSingleLetterVarWithIndirection(t *testing.T) {
 func TestParseParamPositionalParamDescribeFlags(t *testing.T) {
 	t.Parallel()
 
-	for i := 1; i < 20; i++ {
+	for i := 1; i < 10; i++ {
 		testValue := strconv.Itoa(i)
 		// ----------------------------------------------------------------
 		// setup your test
@@ -5874,7 +5874,7 @@ func TestParseParamPositionalParamDescribeFlags(t *testing.T) {
 func TestParseParamPositionalParamDescribeFlagsWithIndirection(t *testing.T) {
 	t.Parallel()
 
-	for i := 1; i < 20; i++ {
+	for i := 1; i < 10; i++ {
 		testValue := strconv.Itoa(i)
 		// ----------------------------------------------------------------
 		// setup your test
@@ -6094,7 +6094,7 @@ func TestParseParamAsDeclareSingleLetterVarWithIndirection(t *testing.T) {
 func TestParseParamPositionalParamAsDeclare(t *testing.T) {
 	t.Parallel()
 
-	for i := 1; i < 20; i++ {
+	for i := 1; i < 10; i++ {
 		testValue := strconv.Itoa(i)
 		// ----------------------------------------------------------------
 		// setup your test
@@ -6121,7 +6121,7 @@ func TestParseParamPositionalParamAsDeclare(t *testing.T) {
 func TestParseParamPositionalParamAsDeclareWithIndirection(t *testing.T) {
 	t.Parallel()
 
-	for i := 1; i < 20; i++ {
+	for i := 1; i < 10; i++ {
 		testValue := strconv.Itoa(i)
 		// ----------------------------------------------------------------
 		// setup your test
@@ -6341,7 +6341,7 @@ func TestParseParamEscapedSingleLetterVarWithIndirection(t *testing.T) {
 func TestParseParamPositionalParamEscaped(t *testing.T) {
 	t.Parallel()
 
-	for i := 1; i < 20; i++ {
+	for i := 1; i < 10; i++ {
 		testValue := strconv.Itoa(i)
 		// ----------------------------------------------------------------
 		// setup your test
@@ -6368,7 +6368,7 @@ func TestParseParamPositionalParamEscaped(t *testing.T) {
 func TestParseParamPositionalParamEscapedWithIndirection(t *testing.T) {
 	t.Parallel()
 
-	for i := 1; i < 20; i++ {
+	for i := 1; i < 10; i++ {
 		testValue := strconv.Itoa(i)
 		// ----------------------------------------------------------------
 		// setup your test
@@ -6588,7 +6588,7 @@ func TestParseParamAsPromptSingleLetterVarWithIndirection(t *testing.T) {
 func TestParseParamPositionalParamAsPrompt(t *testing.T) {
 	t.Parallel()
 
-	for i := 1; i < 20; i++ {
+	for i := 1; i < 10; i++ {
 		testValue := strconv.Itoa(i)
 		// ----------------------------------------------------------------
 		// setup your test
@@ -6615,7 +6615,7 @@ func TestParseParamPositionalParamAsPrompt(t *testing.T) {
 func TestParseParamPositionalParamAsPromptWithIndirection(t *testing.T) {
 	t.Parallel()
 
-	for i := 1; i < 20; i++ {
+	for i := 1; i < 10; i++ {
 		testValue := strconv.Itoa(i)
 		// ----------------------------------------------------------------
 		// setup your test
@@ -6835,7 +6835,7 @@ func TestParseParamSingleQuotedSingleLetterVarWithIndirection(t *testing.T) {
 func TestParseParamPositionalParamSingleQuoted(t *testing.T) {
 	t.Parallel()
 
-	for i := 1; i < 20; i++ {
+	for i := 1; i < 10; i++ {
 		testValue := strconv.Itoa(i)
 		// ----------------------------------------------------------------
 		// setup your test
@@ -6862,7 +6862,7 @@ func TestParseParamPositionalParamSingleQuoted(t *testing.T) {
 func TestParseParamPositionalParamSingleQuotedWithIndirection(t *testing.T) {
 	t.Parallel()
 
-	for i := 1; i < 20; i++ {
+	for i := 1; i < 10; i++ {
 		testValue := strconv.Itoa(i)
 		// ----------------------------------------------------------------
 		// setup your test

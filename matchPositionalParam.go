@@ -35,21 +35,15 @@
 
 package shellexpand
 
-func matchPositionalParam(input string, start int) (int, bool) {
-	// a positional param is a word consisting of
+func matchPositionalParam(input string, start int) (int, int, bool) {
+	// a positional param is a single numerical char
 	//
-	// numeric characters
-	// beginning with a non-zero number
+	// real shells only support $0...$9 inclusive
+	// they do NOT support $10, $11, $12 and so on
 
-	if !isNumericStartChar(input[start]) {
-		return 0, false
+	if isNumericChar(input[start]) {
+		return paramTypePositional, start, true
 	}
 
-	for i := start + 1; i < len(input); i++ {
-		if !isNumericChar(input[i]) {
-			return i - 1, true
-		}
-	}
-
-	return len(input) - 1, true
+	return paramTypeInvalid, 0, false
 }
