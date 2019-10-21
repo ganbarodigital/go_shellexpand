@@ -143,6 +143,9 @@ const (
 	paramExpandNoOfPositionalParams
 	// ${var#word} -> value of var, with shortest matching prefix of word removed
 	paramExpandRemovePrefixShortestMatch
+	// ${*#word} / ${*#word} -> value of all positional params, with shortest
+	// matching prefix of word removed
+	paramExpandAllPositionalParamsRemovePrefixShortestMatch
 	// ${var##word} -> value of var, with longest matching prefix of word removed
 	paramExpandRemovePrefixLongestMatch
 	// ${var%suffix} -> value of var, with shortest matching suffix removed
@@ -473,7 +476,11 @@ func parseParameter(input string) (paramDesc, bool) {
 		return retval, true
 
 	case paramOpRemoveShortestPrefix:
-		retval.kind = paramExpandRemovePrefixShortestMatch
+		if retval.parts[0] == "$*" || retval.parts[0] == "$@" {
+			retval.kind = paramExpandAllPositionalParamsRemovePrefixShortestMatch
+		} else {
+			retval.kind = paramExpandRemovePrefixShortestMatch
+		}
 		if opEnd < maxInput {
 			retval.parts = append(retval.parts, input[opEnd+1:inputLen])
 		} else {
