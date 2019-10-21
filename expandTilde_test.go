@@ -47,15 +47,17 @@ func TestExpandTildeHomedir(t *testing.T) {
 	// ----------------------------------------------------------------
 	// setup your test
 
-	varLookup := func(key string) (string, bool) {
-		if key == "HOME" {
-			return "/home/stuart", true
-		}
+	varFuncs := VarFuncs{
+		LookupVar: func(key string) (string, bool) {
+			if key == "HOME" {
+				return "/home/stuart", true
+			}
 
-		return "invalid key", true
-	}
-	homeLookup := func(key string) (string, bool) {
-		return "should not be called", true
+			return "invalid key", true
+		},
+		LookupHomeDir: func(key string) (string, bool) {
+			return "should not be called", true
+		},
 	}
 	testData := "~/path/to/folder"
 	expectedResult := "/home/stuart/path/to/folder"
@@ -63,7 +65,7 @@ func TestExpandTildeHomedir(t *testing.T) {
 	// ----------------------------------------------------------------
 	// perform the change
 
-	actualResult := ExpandTilde(testData, varLookup, homeLookup)
+	actualResult := ExpandTilde(testData, varFuncs)
 
 	// ----------------------------------------------------------------
 	// test the results
@@ -77,15 +79,17 @@ func TestExpandTildePwd(t *testing.T) {
 	// ----------------------------------------------------------------
 	// setup your test
 
-	varLookup := func(key string) (string, bool) {
-		if key == "PWD" {
-			return "/tmp", true
-		}
+	varFuncs := VarFuncs{
+		LookupVar: func(key string) (string, bool) {
+			if key == "PWD" {
+				return "/tmp", true
+			}
 
-		return "invalid key", true
-	}
-	homeLookup := func(key string) (string, bool) {
-		return "should not be called", true
+			return "invalid key", true
+		},
+		LookupHomeDir: func(key string) (string, bool) {
+			return "should not be called", true
+		},
 	}
 	testData := "~+/path/to/folder"
 	expectedResult := "/tmp/path/to/folder"
@@ -93,7 +97,7 @@ func TestExpandTildePwd(t *testing.T) {
 	// ----------------------------------------------------------------
 	// perform the change
 
-	actualResult := ExpandTilde(testData, varLookup, homeLookup)
+	actualResult := ExpandTilde(testData, varFuncs)
 
 	// ----------------------------------------------------------------
 	// test the results
@@ -107,15 +111,17 @@ func TestExpandTildeOldPwd(t *testing.T) {
 	// ----------------------------------------------------------------
 	// setup your test
 
-	varLookup := func(key string) (string, bool) {
-		if key == "OLDPWD" {
-			return "/tmp", true
-		}
+	varFuncs := VarFuncs{
+		LookupVar: func(key string) (string, bool) {
+			if key == "OLDPWD" {
+				return "/tmp", true
+			}
 
-		return "invalid key", true
-	}
-	homeLookup := func(key string) (string, bool) {
-		return "should not be called", true
+			return "invalid key", true
+		},
+		LookupHomeDir: func(key string) (string, bool) {
+			return "should not be called", true
+		},
 	}
 	testData := "~-/path/to/folder"
 	expectedResult := "/tmp/path/to/folder"
@@ -123,7 +129,7 @@ func TestExpandTildeOldPwd(t *testing.T) {
 	// ----------------------------------------------------------------
 	// perform the change
 
-	actualResult := ExpandTilde(testData, varLookup, homeLookup)
+	actualResult := ExpandTilde(testData, varFuncs)
 
 	// ----------------------------------------------------------------
 	// test the results
@@ -137,14 +143,16 @@ func TestExpandTildeUserHomedir(t *testing.T) {
 	// ----------------------------------------------------------------
 	// setup your test
 
-	varLookup := func(key string) (string, bool) {
-		return "should not be called", true
-	}
-	homeLookup := func(key string) (string, bool) {
-		if key == "stuart" {
-			return "/home/stuart", true
-		}
-		return "invalid key", true
+	varFuncs := VarFuncs{
+		LookupVar: func(key string) (string, bool) {
+			return "should not be called", true
+		},
+		LookupHomeDir: func(key string) (string, bool) {
+			if key == "stuart" {
+				return "/home/stuart", true
+			}
+			return "invalid key", true
+		},
 	}
 	testData := "~stuart/path/to/folder"
 	expectedResult := "/home/stuart/path/to/folder"
@@ -152,7 +160,7 @@ func TestExpandTildeUserHomedir(t *testing.T) {
 	// ----------------------------------------------------------------
 	// perform the change
 
-	actualResult := ExpandTilde(testData, varLookup, homeLookup)
+	actualResult := ExpandTilde(testData, varFuncs)
 
 	// ----------------------------------------------------------------
 	// test the results
@@ -166,11 +174,13 @@ func TestExpandTildeDoesNotModifyStringsWithoutTildePrefixes(t *testing.T) {
 	// ----------------------------------------------------------------
 	// setup your test
 
-	varLookup := func(key string) (string, bool) {
-		return "invalid key", true
-	}
-	homeLookup := func(key string) (string, bool) {
-		return "should not be called", true
+	varFuncs := VarFuncs{
+		LookupVar: func(key string) (string, bool) {
+			return "invalid key", true
+		},
+		LookupHomeDir: func(key string) (string, bool) {
+			return "should not be called", true
+		},
 	}
 	testData := "/path/to/folder"
 	expectedResult := "/path/to/folder"
@@ -178,7 +188,7 @@ func TestExpandTildeDoesNotModifyStringsWithoutTildePrefixes(t *testing.T) {
 	// ----------------------------------------------------------------
 	// perform the change
 
-	actualResult := ExpandTilde(testData, varLookup, homeLookup)
+	actualResult := ExpandTilde(testData, varFuncs)
 
 	// ----------------------------------------------------------------
 	// test the results
@@ -192,11 +202,13 @@ func TestExpandTildeIgnoresTildeInsideVars(t *testing.T) {
 	// ----------------------------------------------------------------
 	// setup your test
 
-	varLookup := func(key string) (string, bool) {
-		return "invalid key", true
-	}
-	homeLookup := func(key string) (string, bool) {
-		return "should not be called", true
+	varFuncs := VarFuncs{
+		LookupVar: func(key string) (string, bool) {
+			return "invalid key", true
+		},
+		LookupHomeDir: func(key string) (string, bool) {
+			return "should not be called", true
+		},
 	}
 	testData := "${VAR1:~VAR2}"
 	expectedResult := testData
@@ -204,7 +216,7 @@ func TestExpandTildeIgnoresTildeInsideVars(t *testing.T) {
 	// ----------------------------------------------------------------
 	// perform the change
 
-	actualResult := ExpandTilde(testData, varLookup, homeLookup)
+	actualResult := ExpandTilde(testData, varFuncs)
 
 	// ----------------------------------------------------------------
 	// test the results
@@ -218,11 +230,13 @@ func TestExpandTildeIgnoresEscapedTilde(t *testing.T) {
 	// ----------------------------------------------------------------
 	// setup your test
 
-	varLookup := func(key string) (string, bool) {
-		return "invalid key", true
-	}
-	homeLookup := func(key string) (string, bool) {
-		return "should not be called", true
+	varFuncs := VarFuncs{
+		LookupVar: func(key string) (string, bool) {
+			return "invalid key", true
+		},
+		LookupHomeDir: func(key string) (string, bool) {
+			return "should not be called", true
+		},
 	}
 	testData := "\\~/path"
 	expectedResult := testData
@@ -230,7 +244,7 @@ func TestExpandTildeIgnoresEscapedTilde(t *testing.T) {
 	// ----------------------------------------------------------------
 	// perform the change
 
-	actualResult := ExpandTilde(testData, varLookup, homeLookup)
+	actualResult := ExpandTilde(testData, varFuncs)
 
 	// ----------------------------------------------------------------
 	// test the results
@@ -244,11 +258,13 @@ func TestExpandTildeIgnoresWhenHomedirNotSet(t *testing.T) {
 	// ----------------------------------------------------------------
 	// setup your test
 
-	varLookup := func(key string) (string, bool) {
-		return "invalid key", false
-	}
-	homeLookup := func(key string) (string, bool) {
-		return "should not be called", true
+	varFuncs := VarFuncs{
+		LookupVar: func(key string) (string, bool) {
+			return "invalid key", false
+		},
+		LookupHomeDir: func(key string) (string, bool) {
+			return "should not be called", true
+		},
 	}
 	testData := "~/path"
 	expectedResult := testData
@@ -256,7 +272,7 @@ func TestExpandTildeIgnoresWhenHomedirNotSet(t *testing.T) {
 	// ----------------------------------------------------------------
 	// perform the change
 
-	actualResult := ExpandTilde(testData, varLookup, homeLookup)
+	actualResult := ExpandTilde(testData, varFuncs)
 
 	// ----------------------------------------------------------------
 	// test the results
@@ -270,11 +286,13 @@ func TestExpandTildeIgnoresWhenPwdNotSet(t *testing.T) {
 	// ----------------------------------------------------------------
 	// setup your test
 
-	varLookup := func(key string) (string, bool) {
-		return "invalid key", false
-	}
-	homeLookup := func(key string) (string, bool) {
-		return "should not be called", true
+	varFuncs := VarFuncs{
+		LookupVar: func(key string) (string, bool) {
+			return "invalid key", false
+		},
+		LookupHomeDir: func(key string) (string, bool) {
+			return "should not be called", true
+		},
 	}
 	testData := "~+/path"
 	expectedResult := testData
@@ -282,7 +300,7 @@ func TestExpandTildeIgnoresWhenPwdNotSet(t *testing.T) {
 	// ----------------------------------------------------------------
 	// perform the change
 
-	actualResult := ExpandTilde(testData, varLookup, homeLookup)
+	actualResult := ExpandTilde(testData, varFuncs)
 
 	// ----------------------------------------------------------------
 	// test the results
@@ -296,11 +314,13 @@ func TestExpandTildeIgnoresWhenOldPwdNotSet(t *testing.T) {
 	// ----------------------------------------------------------------
 	// setup your test
 
-	varLookup := func(key string) (string, bool) {
-		return "invalid key", false
-	}
-	homeLookup := func(key string) (string, bool) {
-		return "should not be called", true
+	varFuncs := VarFuncs{
+		LookupVar: func(key string) (string, bool) {
+			return "invalid key", false
+		},
+		LookupHomeDir: func(key string) (string, bool) {
+			return "should not be called", true
+		},
 	}
 	testData := "~-/path"
 	expectedResult := testData
@@ -308,7 +328,7 @@ func TestExpandTildeIgnoresWhenOldPwdNotSet(t *testing.T) {
 	// ----------------------------------------------------------------
 	// perform the change
 
-	actualResult := ExpandTilde(testData, varLookup, homeLookup)
+	actualResult := ExpandTilde(testData, varFuncs)
 
 	// ----------------------------------------------------------------
 	// test the results
@@ -322,11 +342,13 @@ func TestExpandTildeIgnoresWhenUsernameNotKnown(t *testing.T) {
 	// ----------------------------------------------------------------
 	// setup your test
 
-	varLookup := func(key string) (string, bool) {
-		return "should not be called", true
-	}
-	homeLookup := func(key string) (string, bool) {
-		return "invalid key", false
+	varFuncs := VarFuncs{
+		LookupVar: func(key string) (string, bool) {
+			return "should not be called", true
+		},
+		LookupHomeDir: func(key string) (string, bool) {
+			return "invalid key", false
+		},
 	}
 	testData := "~user/path"
 	expectedResult := testData
@@ -334,7 +356,7 @@ func TestExpandTildeIgnoresWhenUsernameNotKnown(t *testing.T) {
 	// ----------------------------------------------------------------
 	// perform the change
 
-	actualResult := ExpandTilde(testData, varLookup, homeLookup)
+	actualResult := ExpandTilde(testData, varFuncs)
 
 	// ----------------------------------------------------------------
 	// test the results
@@ -579,11 +601,13 @@ func TestMatchAndExpandTildeIgnoresNonPrefix(t *testing.T) {
 	// ----------------------------------------------------------------
 	// setup your test
 
-	varLookup := func(key string) (string, bool) {
-		return "invalid key", true
-	}
-	homeLookup := func(key string) (string, bool) {
-		return "should not be called", true
+	varFuncs := VarFuncs{
+		LookupVar: func(key string) (string, bool) {
+			return "invalid key", true
+		},
+		LookupHomeDir: func(key string) (string, bool) {
+			return "should not be called", true
+		},
 	}
 	testData := "/path"
 	expectedResult := testData
@@ -591,7 +615,7 @@ func TestMatchAndExpandTildeIgnoresNonPrefix(t *testing.T) {
 	// ----------------------------------------------------------------
 	// perform the change
 
-	actualResult, ok := matchAndExpandTilde(testData, 0, varLookup, homeLookup)
+	actualResult, ok := matchAndExpandTilde(testData, 0, varFuncs)
 
 	// ----------------------------------------------------------------
 	// test the results

@@ -92,7 +92,7 @@ import (
 //
 // it's up to the caller to ensure lookupVar() can provide a value for any
 // of these params
-func expandParameters(input string, lookupVar LookupVar, lookupHomeDir LookupVar, assignVar AssignVar) string {
+func expandParameters(input string, varFuncs VarFuncs) string {
 	// we expand in a strictly left-to-right manner
 	for i := 0; i < len(input); i++ {
 		if input[i] == '\\' {
@@ -106,7 +106,7 @@ func expandParameters(input string, lookupVar LookupVar, lookupHomeDir LookupVar
 					continue
 				}
 
-				replacement := expandParameter(paramDesc, lookupVar, lookupHomeDir, assignVar)
+				replacement := expandParameter(paramDesc, varFuncs)
 				var buf strings.Builder
 
 				if i > 0 {
@@ -126,9 +126,9 @@ func expandParameters(input string, lookupVar LookupVar, lookupHomeDir LookupVar
 	return input
 }
 
-type paramExpandFunc func(string, string, paramDesc, LookupVar, LookupVar, AssignVar) (string, bool)
+type paramExpandFunc func(string, string, paramDesc, VarFuncs) (string, bool)
 
-func expandParameter(paramDesc paramDesc, lookupVar LookupVar, lookupHomeDir LookupVar, assignVar AssignVar) string {
+func expandParameter(paramDesc paramDesc, varFuncs VarFuncs) string {
 	paramExpandFuncs := map[int]paramExpandFunc{
 		paramExpandToValue:          expandParamToValue,
 		paramExpandWithDefaultValue: expandParamWithDefaultValue,
@@ -151,7 +151,7 @@ func expandParameter(paramDesc paramDesc, lookupVar LookupVar, lookupHomeDir Loo
 
 	// step 1: we need to expand the paramName first, to support any
 	// possible use of indirection
-	paramName, ok := expandParamName(paramDesc, lookupVar)
+	paramName, ok := expandParamName(paramDesc, varFuncs.LookupVar)
 
 	// step 2: we need to feed that into all the different ways that
 	// parameters can be expanded in strings
@@ -159,10 +159,10 @@ func expandParameter(paramDesc paramDesc, lookupVar LookupVar, lookupHomeDir Loo
 	// this is complicated by some parameters ($*, $@, and arrays if we
 	// ever add support for them in the future) having the expansion applied
 	// to each part of their value
-	for paramValue := range expandParamValue(paramName, lookupVar) {
+	for paramValue := range expandParamValue(paramName, varFuncs.LookupVar) {
 		expandFunc, ok := paramExpandFuncs[paramDesc.kind]
 		if ok {
-			buf, ok = expandFunc(paramName, paramValue, paramDesc, lookupVar, lookupHomeDir, assignVar)
+			buf, ok = expandFunc(paramName, paramValue, paramDesc, varFuncs)
 		}
 		retval = append(retval, buf)
 	}
@@ -195,55 +195,55 @@ func expandParamWithIndirection(paramName string, lookupVar LookupVar) string {
 	return retval
 }
 
-func expandParamToValue(paramName, paramValue string, paramDesc paramDesc, lookupVar LookupVar, lookupHomeDir LookupVar, assignVar AssignVar) (string, bool) {
+func expandParamToValue(paramName, paramValue string, paramDesc paramDesc, varFuncs VarFuncs) (string, bool) {
 	// nothing else to do
 	return paramValue, true
 }
 
-func expandParamWithDefaultValue(paramName, paramValue string, paramDesc paramDesc, lookupVar LookupVar, lookupHomeDir LookupVar, assignVar AssignVar) (string, bool) {
+func expandParamWithDefaultValue(paramName, paramValue string, paramDesc paramDesc, varFuncs VarFuncs) (string, bool) {
 	// do we need to return the default value?
 	if paramValue == "" {
-		return expandWord(paramDesc.parts[1], lookupVar, lookupHomeDir, assignVar), true
+		return expandWord(paramDesc.parts[1], varFuncs), true
 	}
 
 	return paramValue, true
 }
 
-func expandParamSetDefaultValue(paramName, paramValue string, paramDesc paramDesc, lookupVar LookupVar, lookupHomeDir LookupVar, assignVar AssignVar) (string, bool) {
+func expandParamSetDefaultValue(paramName, paramValue string, paramDesc paramDesc, varFuncs VarFuncs) (string, bool) {
 	// do we need to do anything?
 	if paramValue != "" {
 		return paramValue, true
 	}
 
 	// at this point, we need to assign a new value
-	err := assignVar(paramName, expandWord(paramDesc.parts[1], lookupVar, lookupHomeDir, assignVar))
+	err := varFuncs.AssignToVar(paramName, expandWord(paramDesc.parts[1], varFuncs))
 	if err != nil {
 		return "", false
 	}
 
 	// all done
-	return lookupVar(paramName)
+	return varFuncs.LookupVar(paramName)
 }
 
-func expandParamWriteError(paramName, paramValue string, paramDesc paramDesc, lookupVar LookupVar, lookupHomeDir LookupVar, assignVar AssignVar) (string, bool) {
+func expandParamWriteError(paramName, paramValue string, paramDesc paramDesc, varFuncs VarFuncs) (string, bool) {
 	// do we have a value?
 	if paramValue == "" {
-		return paramName + ": " + expandWord(paramDesc.parts[1], lookupVar, lookupHomeDir, assignVar), true
+		return paramName + ": " + expandWord(paramDesc.parts[1], varFuncs), true
 	}
 
 	return paramValue, true
 }
 
-func expandParamAlternativeValue(paramName, paramValue string, paramDesc paramDesc, lookupVar LookupVar, lookupHomeDir LookupVar, assignVar AssignVar) (string, bool) {
+func expandParamAlternativeValue(paramName, paramValue string, paramDesc paramDesc, varFuncs VarFuncs) (string, bool) {
 	// do we need to return the alternative value?
 	if paramValue != "" {
-		return expandWord(paramDesc.parts[1], lookupVar, lookupHomeDir, assignVar), true
+		return expandWord(paramDesc.parts[1], varFuncs), true
 	}
 
 	return paramValue, true
 }
 
-func expandParamSubstring(paramName, paramValue string, paramDesc paramDesc, lookupVar LookupVar, lookupHomeDir LookupVar, assignVar AssignVar) (string, bool) {
+func expandParamSubstring(paramName, paramValue string, paramDesc paramDesc, varFuncs VarFuncs) (string, bool) {
 	start, err := strconv.Atoi(paramDesc.parts[1])
 	if err != nil {
 		return "", false
@@ -252,7 +252,7 @@ func expandParamSubstring(paramName, paramValue string, paramDesc paramDesc, loo
 	return paramValue[start:], true
 }
 
-func expandParamSubstringLength(paramName, paramValue string, paramDesc paramDesc, lookupVar LookupVar, lookupHomeDir LookupVar, assignVar AssignVar) (string, bool) {
+func expandParamSubstringLength(paramName, paramValue string, paramDesc paramDesc, varFuncs VarFuncs) (string, bool) {
 	start, err := strconv.Atoi(paramDesc.parts[1])
 	if err != nil {
 		return "", false
@@ -268,6 +268,11 @@ func expandParamSubstringLength(paramName, paramValue string, paramDesc paramDes
 
 	return paramValue[start:end], true
 }
+
+// func expandParamPrefixNames(paramName, paramValue string, paramDesc paramDesc, varFuncs VarFuncs) (string, bool) {
+// 	varNames := varFuncs.MatchVarNames(paramName)
+// 	return strings.Join(varNames, " "), true
+// }
 
 func expandParamValue(key string, lookupVar LookupVar) <-chan string {
 	// we'll send the results bit by bit via this channel

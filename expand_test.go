@@ -476,35 +476,37 @@ func TestExpand(t *testing.T) {
 		tmpFile.Close()
 
 		// now, setup everything we need to test this internally
-		assignVar := func(key string, value string) error {
-			if len(testData.vars) == 0 {
-				testData.vars = make(map[string]string)
-			}
-			testData.vars[key] = value
+		varFuncs := VarFuncs{
+			AssignToVar: func(key string, value string) error {
+				if len(testData.vars) == 0 {
+					testData.vars = make(map[string]string)
+				}
+				testData.vars[key] = value
 
-			return nil
-		}
+				return nil
+			},
 
-		varLookup := func(key string) (string, bool) {
-			// special case - positional parameter
-			retval, ok := testData.positionalVars[key]
-			if ok {
-				return retval, true
-			}
-			// general case
-			retval, ok = testData.vars[key]
-			if ok {
-				return retval, true
-			}
-			return "", false
-		}
+			LookupVar: func(key string) (string, bool) {
+				// special case - positional parameter
+				retval, ok := testData.positionalVars[key]
+				if ok {
+					return retval, true
+				}
+				// general case
+				retval, ok = testData.vars[key]
+				if ok {
+					return retval, true
+				}
+				return "", false
+			},
 
-		homeDirLookup := func(key string) (string, bool) {
-			retval, ok := testData.homedirs[key]
-			if ok {
-				return retval, true
-			}
-			return "", false
+			LookupHomeDir: func(key string) (string, bool) {
+				retval, ok := testData.homedirs[key]
+				if ok {
+					return retval, true
+				}
+				return "", false
+			},
 		}
 
 		// shorthand
@@ -518,7 +520,7 @@ func TestExpand(t *testing.T) {
 		shellRawResult, _ := cmd.CombinedOutput()
 		shellActualResult := strings.TrimSpace(string(shellRawResult))
 
-		internalActualResult := Expand(input, varLookup, homeDirLookup, assignVar)
+		internalActualResult := Expand(input, varFuncs)
 		// special case - the result is a side effect, not a direct string
 		// expansion
 		if testData.actualResult != nil {

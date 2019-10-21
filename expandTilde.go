@@ -54,7 +54,7 @@ import (
 //
 // This function is exported because (for UNIX shell compatibility), you
 // should call this function when setting variables.
-func ExpandTilde(input string, lookupVar LookupVar, lookupHomeDir LookupVar) string {
+func ExpandTilde(input string, varFuncs VarFuncs) string {
 	// we expand in a strictly left-to-right manner
 	for i := 0; i < len(input); i++ {
 		if input[i] == '\\' {
@@ -66,14 +66,14 @@ func ExpandTilde(input string, lookupVar LookupVar, lookupHomeDir LookupVar) str
 				i = varEnd
 			}
 		} else if input[i] == '~' {
-			input, _ = matchAndExpandTilde(input, i, lookupVar, lookupHomeDir)
+			input, _ = matchAndExpandTilde(input, i, varFuncs)
 		}
 	}
 
 	return input
 }
 
-func matchAndExpandTilde(input string, start int, lookupVar, lookupHomeDir LookupVar) (string, bool) {
+func matchAndExpandTilde(input string, start int, varFuncs VarFuncs) (string, bool) {
 	var ok bool
 
 	// are we looking at a tilde w/ optional prefix??
@@ -91,22 +91,22 @@ func matchAndExpandTilde(input string, start int, lookupVar, lookupHomeDir Looku
 	// build the replacement
 	switch tildePrefix.kind {
 	case tildePrefixHome:
-		repl, ok = lookupVar("HOME")
+		repl, ok = varFuncs.LookupVar("HOME")
 		if !ok {
 			return input, false
 		}
 	case tildePrefixPwd:
-		repl, ok = lookupVar("PWD")
+		repl, ok = varFuncs.LookupVar("PWD")
 		if !ok {
 			return input, false
 		}
 	case tildePrefixOldPwd:
-		repl, ok = lookupVar("OLDPWD")
+		repl, ok = varFuncs.LookupVar("OLDPWD")
 		if !ok {
 			return input, false
 		}
 	case tildePrefixUsername:
-		repl, ok = lookupHomeDir(tildePrefix.prefix)
+		repl, ok = varFuncs.LookupHomeDir(tildePrefix.prefix)
 		if !ok {
 			return input, false
 		}
