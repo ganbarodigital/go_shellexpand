@@ -35,6 +35,8 @@
 
 package shellexpand
 
+import "strings"
+
 // expandParams will expand any ${VAR} or $VAR
 //
 // $var -> value of var
@@ -87,7 +89,7 @@ package shellexpand
 //
 // it's up to the caller to ensure lookupVar() can provide a value for any
 // of these params
-func expandParameter(input string, lookupVar LookupVar) string {
+func expandParameters(input string, lookupVar LookupVar) string {
 	// we expand in a strictly left-to-right manner
 	for i := 0; i < len(input); i++ {
 		if input[i] == '\\' {
@@ -96,13 +98,48 @@ func expandParameter(input string, lookupVar LookupVar) string {
 		} else if input[i] == '$' {
 			varEnd, ok := matchVar(input, i)
 			if ok {
-				_, ok := parseParameter(input[i : varEnd+1])
-				if ok {
-					i = varEnd
+				paramDesc, ok := parseParameter(input[i : varEnd+1])
+				if !ok {
+					continue
 				}
+
+				replacement := expandParameter(paramDesc, lookupVar)
+				var buf strings.Builder
+
+				if i > 0 {
+					buf.WriteString(input[0:i])
+				}
+				buf.WriteString(replacement)
+
+				if i < len(input) {
+					buf.WriteString(input[varEnd+1:])
+				}
+
+				input = buf.String()
 			}
 		}
 	}
 
 	return input
+}
+
+func expandParameter(paramDesc paramDesc, lookupVar LookupVar) string {
+	// what we will (eventually) send back
+	var retval string
+
+	// ... but only if all is well
+	var ok bool
+
+	switch paramDesc.kind {
+	case paramExpandToValue:
+		retval, ok = lookupVar(paramDesc.parts[0])
+	}
+
+	// are we happy with our attempted expansion?
+	if !ok {
+		return ""
+	}
+
+	// if we get here, then yes, we are happy
+	return retval
 }
