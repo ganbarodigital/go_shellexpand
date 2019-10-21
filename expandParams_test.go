@@ -47,6 +47,7 @@ import (
 )
 
 type expandParamsTestData struct {
+	homedirs       map[string]string
 	vars           map[string]string
 	input          string
 	expectedResult string
@@ -98,6 +99,40 @@ func TestExpandParams(t *testing.T) {
 			input:          "${!PARAM1}",
 			expectedResult: "foo",
 		},
+		// simple param, default value triggered
+		{
+			vars: map[string]string{
+				"PARAM1": "",
+			},
+			input:          "${PARAM1:-foo}",
+			expectedResult: "foo",
+		},
+		// simple param, default value NOT triggered
+		{
+			vars: map[string]string{
+				"PARAM1": "foo",
+			},
+			input:          "${PARAM1:-bar}",
+			expectedResult: "foo",
+		},
+		// simple param, default value triggered, indirection
+		{
+			vars: map[string]string{
+				"PARAM1": "PARAM2",
+				"PARAM2": "",
+			},
+			input:          "${!PARAM1:-foo}",
+			expectedResult: "foo",
+		},
+		// simple param, default value NOT triggered, indirection
+		{
+			vars: map[string]string{
+				"PARAM1": "PARAM2",
+				"PARAM2": "foo",
+			},
+			input:          "${!PARAM1:-bar}",
+			expectedResult: "foo",
+		},
 	}
 
 	for _, testData := range testDataSets {
@@ -130,6 +165,13 @@ func TestExpandParams(t *testing.T) {
 			}
 			return "", false
 		}
+		homeDirLookup := func(key string) (string, bool) {
+			retval, ok := testData.homedirs[key]
+			if ok {
+				return retval, true
+			}
+			return "", false
+		}
 
 		// shorthand
 		input := testData.input
@@ -142,7 +184,7 @@ func TestExpandParams(t *testing.T) {
 		shellRawResult, shellErr := cmd.CombinedOutput()
 		shellActualResult := strings.TrimSpace(string(shellRawResult))
 
-		internalActualResult := expandParameters(input, varLookup)
+		internalActualResult := expandParameters(input, varLookup, homeDirLookup)
 
 		// ----------------------------------------------------------------
 		// test the results

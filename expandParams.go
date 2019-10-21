@@ -89,7 +89,7 @@ import "strings"
 //
 // it's up to the caller to ensure lookupVar() can provide a value for any
 // of these params
-func expandParameters(input string, lookupVar LookupVar) string {
+func expandParameters(input string, lookupVar LookupVar, lookupHomeDir LookupVar) string {
 	// we expand in a strictly left-to-right manner
 	for i := 0; i < len(input); i++ {
 		if input[i] == '\\' {
@@ -103,7 +103,7 @@ func expandParameters(input string, lookupVar LookupVar) string {
 					continue
 				}
 
-				replacement := expandParameter(paramDesc, lookupVar)
+				replacement := expandParameter(paramDesc, lookupVar, lookupHomeDir)
 				var buf strings.Builder
 
 				if i > 0 {
@@ -123,7 +123,7 @@ func expandParameters(input string, lookupVar LookupVar) string {
 	return input
 }
 
-func expandParameter(paramDesc paramDesc, lookupVar LookupVar) string {
+func expandParameter(paramDesc paramDesc, lookupVar LookupVar, lookupHomeDir LookupVar) string {
 	// what we will (eventually) send back
 	var retval string
 
@@ -133,6 +133,8 @@ func expandParameter(paramDesc paramDesc, lookupVar LookupVar) string {
 	switch paramDesc.kind {
 	case paramExpandToValue:
 		retval, ok = expandParamToValue(paramDesc, lookupVar)
+	case paramExpandWithDefaultValue:
+		retval, ok = expandParamWithDefaultValue(paramDesc, lookupVar, lookupHomeDir)
 	}
 
 	// are we happy with our attempted expansion?
@@ -164,4 +166,24 @@ func expandParamToValue(paramDesc paramDesc, lookupVar LookupVar) (string, bool)
 
 	// do the lookup
 	return lookupVar(varName)
+}
+
+func expandParamWithDefaultValue(paramDesc paramDesc, lookupVar LookupVar, lookupHomeDir LookupVar) (string, bool) {
+	// (possibly) shorthand
+	varName := paramDesc.parts[0]
+
+	// are we supporting indirection?
+	if paramDesc.indirect {
+		varName = expandParamWithIndirection(varName, lookupVar)
+	}
+
+	// do the lookup
+	retval, ok := lookupVar(varName)
+
+	// do we need to return the default value?
+	if !ok || retval == "" {
+		return expandWord(paramDesc.parts[1], lookupVar, lookupHomeDir), true
+	}
+
+	return retval, ok
 }
