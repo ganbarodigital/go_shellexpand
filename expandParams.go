@@ -137,17 +137,24 @@ func expandParameter(paramDesc paramDesc, lookupVar LookupVar, lookupHomeDir Loo
 	// to store it temporarily
 	var buf string
 
-	// step 1: we (nearly) always expand the parameter first
+	// step 1: we need to expand the paramName first, to support any
+	// possible use of indirection
+	paramName, ok := expandParamName(paramDesc, lookupVar)
+
+	// step 2: we need to feed that into all the different ways that
+	// parameters can be expanded in strings
 	//
-	// the only exception is when we're called on to SET a default value
-	for paramValue := range expandParamByLookup(paramDesc.parts[0], paramDesc.indirect, lookupVar) {
+	// this is complicated by some parameters ($*, $@, and arrays if we
+	// ever add support for them in the future) having the expansion applied
+	// to each part of their value
+	for paramValue := range expandParamValue(paramName, lookupVar) {
 		switch paramDesc.kind {
 		case paramExpandToValue:
-			buf, ok = expandParamToValue(paramValue, paramDesc, lookupVar)
+			buf, ok = expandParamToValue(paramName, paramValue, paramDesc, lookupVar)
 		case paramExpandWithDefaultValue:
-			buf, ok = expandParamWithDefaultValue(paramValue, paramDesc, lookupVar, lookupHomeDir, assignVar)
+			buf, ok = expandParamWithDefaultValue(paramName, paramValue, paramDesc, lookupVar, lookupHomeDir, assignVar)
 		case paramExpandSetDefaultValue:
-			buf, ok = expandParamSetDefaultValue(paramValue, paramDesc, lookupVar, lookupHomeDir, assignVar)
+			buf, ok = expandParamSetDefaultValue(paramName, paramValue, paramDesc, lookupVar, lookupHomeDir, assignVar)
 		}
 
 		retval = append(retval, buf)
@@ -162,6 +169,16 @@ func expandParameter(paramDesc paramDesc, lookupVar LookupVar, lookupHomeDir Loo
 	return strings.Join(retval, " ")
 }
 
+func expandParamName(paramDesc paramDesc, lookupVar LookupVar) (string, bool) {
+	varName := paramDesc.parts[0]
+	ok := true
+	if paramDesc.indirect {
+		varName, ok = lookupVar(varName)
+	}
+
+	return varName, ok
+}
+
 func expandParamWithIndirection(paramName string, lookupVar LookupVar) string {
 	retval, ok := lookupVar(paramName)
 	if !ok {
@@ -171,12 +188,12 @@ func expandParamWithIndirection(paramName string, lookupVar LookupVar) string {
 	return retval
 }
 
-func expandParamToValue(paramValue string, paramDesc paramDesc, lookupVar LookupVar) (string, bool) {
+func expandParamToValue(paramName, paramValue string, paramDesc paramDesc, lookupVar LookupVar) (string, bool) {
 	// nothing else to do
 	return paramValue, true
 }
 
-func expandParamWithDefaultValue(paramValue string, paramDesc paramDesc, lookupVar LookupVar, lookupHomeDir LookupVar, assignVar AssignVar) (string, bool) {
+func expandParamWithDefaultValue(paramName, paramValue string, paramDesc paramDesc, lookupVar LookupVar, lookupHomeDir LookupVar, assignVar AssignVar) (string, bool) {
 	// do we need to return the default value?
 	if paramValue == "" {
 		return expandWord(paramDesc.parts[1], lookupVar, lookupHomeDir, assignVar), true
@@ -185,23 +202,23 @@ func expandParamWithDefaultValue(paramValue string, paramDesc paramDesc, lookupV
 	return paramValue, true
 }
 
-func expandParamSetDefaultValue(paramValue string, paramDesc paramDesc, lookupVar LookupVar, lookupHomeDir LookupVar, assignVar AssignVar) (string, bool) {
+func expandParamSetDefaultValue(paramName, paramValue string, paramDesc paramDesc, lookupVar LookupVar, lookupHomeDir LookupVar, assignVar AssignVar) (string, bool) {
 	// do we need to do anything?
 	if paramValue != "" {
 		return paramValue, true
 	}
 
 	// at this point, we need to assign a new value
-	err := assignVar(paramDesc.parts[0], expandWord(paramDesc.parts[1], lookupVar, lookupHomeDir, assignVar))
+	err := assignVar(paramName, expandWord(paramDesc.parts[1], lookupVar, lookupHomeDir, assignVar))
 	if err != nil {
 		return "", false
 	}
 
 	// all done
-	return lookupVar(paramDesc.parts[0])
+	return lookupVar(paramName)
 }
 
-func expandParamByLookup(key string, indirection bool, lookupVar LookupVar) <-chan string {
+func expandParamValue(key string, lookupVar LookupVar) <-chan string {
 	// we'll send the results bit by bit via this channel
 	chn := make(chan string)
 
@@ -234,9 +251,6 @@ func expandParamByLookup(key string, indirection bool, lookupVar LookupVar) <-ch
 	} else {
 		go func() {
 			retval, _ := lookupVar(key)
-			if indirection {
-				retval = expandParamWithIndirection(retval, lookupVar)
-			}
 			chn <- retval
 			close(chn)
 		}()

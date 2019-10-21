@@ -359,6 +359,21 @@ func TestExpand(t *testing.T) {
 				return testData.vars["PARAM1"]
 			},
 		},
+		// indirect param, default value set to word expansion
+		{
+			vars: map[string]string{
+				"PARAM1": "PARAM2",
+			},
+			input: "${!PARAM1:=foo}",
+			shellExtra: []string{
+				"dummy=${!PARAM1:=foo}",
+				"echo $PARAM2",
+			},
+			expectedResult: "foo",
+			actualResult: func(testData expandTestData) string {
+				return testData.vars["PARAM2"]
+			},
+		},
 	}
 
 	for _, testData := range testDataSets {
@@ -471,25 +486,15 @@ func TestExpand(t *testing.T) {
 
 // 	// if you add a test here, you must also add it to the main
 // 	// Expand test suite
-// 	testDataSets := []expandParamsTestData{
-// 		// simple param, positional var $10
-// 		//
-// 		// this is NOT supported by bash
+// 	testDataSets := []expandTestData{
+// 		// simple param, braces, indirection
 // 		{
-// 			positionalVars: map[string]string{
-// 				"$1":  "foo",
-// 				"$2":  "bar",
-// 				"$3":  "alfred",
-// 				"$4":  "trout",
-// 				"$5":  "haddock",
-// 				"$6":  "cod",
-// 				"$7":  "plaice",
-// 				"$8":  "pollock",
-// 				"$9":  "whitebait",
-// 				"$10": "bank",
+// 			vars: map[string]string{
+// 				"PARAM1": "PARAM2",
+// 				"PARAM2": "foo",
 // 			},
-// 			input:          "$10",
-// 			expectedResult: "foo0",
+// 			input:          "${!PARAM1}",
+// 			expectedResult: "foo",
 // 		},
 // 	}
 
@@ -511,9 +516,20 @@ func TestExpand(t *testing.T) {
 // 			}
 // 			buf.WriteString("\n")
 // 		}
-// 		buf.WriteString("echo ")
-// 		buf.WriteString(testData.input)
-// 		buf.WriteString("\n")
+
+// 		// do we need to write any extra steps to get the shell to tell us
+// 		// what the outcome was?
+// 		if len(testData.shellExtra) > 0 {
+// 			for _, line := range testData.shellExtra {
+// 				buf.WriteString(line)
+// 				buf.WriteRune('\n')
+// 			}
+// 		} else {
+// 			// no, we can simply echo the string we are expanding
+// 			buf.WriteString("echo ")
+// 			buf.WriteString(testData.input)
+// 			buf.WriteString("\n")
+// 		}
 
 // 		// create the shell script we'll use to verify that internal behaviour
 // 		// matches actual shell script behaviour
@@ -530,6 +546,15 @@ func TestExpand(t *testing.T) {
 // 		tmpFile.Close()
 
 // 		// now, setup everything we need to test this internally
+// 		assignVar := func(key string, value string) error {
+// 			if len(testData.vars) == 0 {
+// 				testData.vars = make(map[string]string)
+// 			}
+// 			testData.vars[key] = value
+
+// 			return nil
+// 		}
+
 // 		varLookup := func(key string) (string, bool) {
 // 			// special case - positional parameter
 // 			retval, ok := testData.positionalVars[key]
@@ -543,6 +568,7 @@ func TestExpand(t *testing.T) {
 // 			}
 // 			return "", false
 // 		}
+
 // 		homeDirLookup := func(key string) (string, bool) {
 // 			retval, ok := testData.homedirs[key]
 // 			if ok {
@@ -562,7 +588,12 @@ func TestExpand(t *testing.T) {
 // 		shellRawResult, shellErr := cmd.CombinedOutput()
 // 		shellActualResult := strings.TrimSpace(string(shellRawResult))
 
-// 		internalActualResult := expandParameters(input, varLookup, homeDirLookup, assignVar)
+// 		internalActualResult := Expand(input, varLookup, homeDirLookup, assignVar)
+// 		// special case - the result is a side effect, not a direct string
+// 		// expansion
+// 		if testData.actualResult != nil {
+// 			internalActualResult = testData.actualResult(testData)
+// 		}
 
 // 		// ----------------------------------------------------------------
 // 		// test the results
