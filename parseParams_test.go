@@ -87,6 +87,33 @@ func TestParseParamNoBraces(t *testing.T) {
 	assert.Equal(t, expectedResult, actualResult)
 }
 
+func TestParseParamMustHaveBalancedBraces(t *testing.T) {
+	t.Parallel()
+
+	testDataSet := []string{
+		"${noClosingBrace",
+		"$noOpeningBrace}",
+	}
+
+	for _, testData := range testDataSet {
+		// ----------------------------------------------------------------
+		// setup your test
+
+		expectedResult := paramDesc{}
+
+		// ----------------------------------------------------------------
+		// perform the change
+
+		actualResult, ok := parseParameter(testData)
+
+		// ----------------------------------------------------------------
+		// test the results
+
+		assert.False(t, ok)
+		assert.Equal(t, expectedResult, actualResult)
+	}
+}
+
 func TestParseParamSimpleBraces(t *testing.T) {
 	t.Parallel()
 
