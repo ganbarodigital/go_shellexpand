@@ -133,6 +133,15 @@ func TestExpandParams(t *testing.T) {
 			input:          "${!PARAM1:-bar}",
 			expectedResult: "foo",
 		},
+		// simple param, default value triggered AND expanded
+		{
+			vars: map[string]string{
+				"PARAM1": "",
+				"PARAM2": "bar",
+			},
+			input:          "${PARAM1:-${PARAM2}}",
+			expectedResult: "bar",
+		},
 	}
 
 	for _, testData := range testDataSets {
