@@ -3465,25 +3465,31 @@ func TestParseParamSearchReplaceLongestFirstMatch(t *testing.T) {
 func TestParseParamSearchReplaceLongestFirstMatchWithNoReplacement(t *testing.T) {
 	t.Parallel()
 
-	// ----------------------------------------------------------------
-	// setup your test
-
-	testData := "${VAR/FOO/}"
-	expectedResult := paramDesc{
-		kind:  paramExpandSearchReplaceLongestFirstMatch,
-		parts: []string{"VAR", "FOO", ""},
+	testDataSet := []string{
+		"${VAR/FOO}",
+		"${VAR/FOO/}",
 	}
 
-	// ----------------------------------------------------------------
-	// perform the change
+	for _, testData := range testDataSet {
+		// ----------------------------------------------------------------
+		// setup your test
 
-	actualResult, ok := parseParameter(testData)
+		expectedResult := paramDesc{
+			kind:  paramExpandSearchReplaceLongestFirstMatch,
+			parts: []string{"VAR", "FOO", ""},
+		}
 
-	// ----------------------------------------------------------------
-	// test the results
+		// ----------------------------------------------------------------
+		// perform the change
 
-	assert.True(t, ok)
-	assert.Equal(t, expectedResult, actualResult)
+		actualResult, ok := parseParameter(testData)
+
+		// ----------------------------------------------------------------
+		// test the results
+
+		assert.True(t, ok)
+		assert.Equal(t, expectedResult, actualResult)
+	}
 }
 
 func TestParseParamSearchReplaceLongestFirstMatchWithNoSearchOrReplacement(t *testing.T) {
