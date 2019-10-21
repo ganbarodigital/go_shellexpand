@@ -157,6 +157,8 @@ func expandParameter(paramDesc paramDesc, lookupVar LookupVar, lookupHomeDir Loo
 			buf, ok = expandParamSetDefaultValue(paramName, paramValue, paramDesc, lookupVar, lookupHomeDir, assignVar)
 		case paramExpandWriteError:
 			buf, ok = expandParamWriteError(paramName, paramValue, paramDesc, lookupVar, lookupHomeDir, assignVar)
+		case paramExpandAlternativeValue:
+			buf, ok = expandParamAlternativeValue(paramName, paramValue, paramDesc, lookupVar, lookupHomeDir, assignVar)
 		}
 
 		retval = append(retval, buf)
@@ -224,6 +226,15 @@ func expandParamWriteError(paramName, paramValue string, paramDesc paramDesc, lo
 	// do we have a value?
 	if paramValue == "" {
 		return paramName + ": " + expandWord(paramDesc.parts[1], lookupVar, lookupHomeDir, assignVar), true
+	}
+
+	return paramValue, true
+}
+
+func expandParamAlternativeValue(paramName, paramValue string, paramDesc paramDesc, lookupVar LookupVar, lookupHomeDir LookupVar, assignVar AssignVar) (string, bool) {
+	// do we need to return the alternative value?
+	if paramValue != "" {
+		return expandWord(paramDesc.parts[1], lookupVar, lookupHomeDir, assignVar), true
 	}
 
 	return paramValue, true

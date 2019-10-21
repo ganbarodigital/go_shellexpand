@@ -384,6 +384,14 @@ func TestExpand(t *testing.T) {
 			expectedResult:       "foo: not set",
 			resultSubstringMatch: true,
 		},
+		// simple param, use alternative var
+		{
+			vars: map[string]string{
+				"foo": "bar",
+			},
+			input:          "${foo:+alternative}",
+			expectedResult: "alternative",
+		},
 	}
 
 	for _, testData := range testDataSets {
