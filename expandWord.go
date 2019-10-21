@@ -41,12 +41,12 @@ package shellexpand
 // It is not completely UNIX shell-compatible:
 //
 // * no support for command expansion
-func expandWord(input string, lookupVar LookupVar, lookupHomeDir LookupVar) string {
+func expandWord(input string, lookupVar LookupVar, lookupHomeDir LookupVar, assignVar AssignVar) string {
 	// step 1: tilde expansion
 	input = ExpandTilde(input, lookupVar, lookupHomeDir)
 
 	// step 2: parameter expansion
-	input = expandParameters(input, lookupVar, lookupHomeDir)
+	input = expandParameters(input, lookupVar, lookupHomeDir, assignVar)
 
 	// step 3: arithmetic expansion
 

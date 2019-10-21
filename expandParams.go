@@ -92,7 +92,7 @@ import (
 //
 // it's up to the caller to ensure lookupVar() can provide a value for any
 // of these params
-func expandParameters(input string, lookupVar LookupVar, lookupHomeDir LookupVar) string {
+func expandParameters(input string, lookupVar LookupVar, lookupHomeDir LookupVar, assignVar AssignVar) string {
 	// we expand in a strictly left-to-right manner
 	for i := 0; i < len(input); i++ {
 		if input[i] == '\\' {
@@ -106,7 +106,7 @@ func expandParameters(input string, lookupVar LookupVar, lookupHomeDir LookupVar
 					continue
 				}
 
-				replacement := expandParameter(paramDesc, lookupVar, lookupHomeDir)
+				replacement := expandParameter(paramDesc, lookupVar, lookupHomeDir, assignVar)
 				var buf strings.Builder
 
 				if i > 0 {
@@ -126,7 +126,7 @@ func expandParameters(input string, lookupVar LookupVar, lookupHomeDir LookupVar
 	return input
 }
 
-func expandParameter(paramDesc paramDesc, lookupVar LookupVar, lookupHomeDir LookupVar) string {
+func expandParameter(paramDesc paramDesc, lookupVar LookupVar, lookupHomeDir LookupVar, assignVar AssignVar) string {
 	// what we will (eventually) send back
 	var retval []string
 
@@ -145,7 +145,9 @@ func expandParameter(paramDesc paramDesc, lookupVar LookupVar, lookupHomeDir Loo
 		case paramExpandToValue:
 			buf, ok = expandParamToValue(paramValue, paramDesc, lookupVar)
 		case paramExpandWithDefaultValue:
-			buf, ok = expandParamWithDefaultValue(paramValue, paramDesc, lookupVar, lookupHomeDir)
+			buf, ok = expandParamWithDefaultValue(paramValue, paramDesc, lookupVar, lookupHomeDir, assignVar)
+		case paramExpandSetDefaultValue:
+			buf, ok = expandParamSetDefaultValue(paramValue, paramDesc, lookupVar, lookupHomeDir, assignVar)
 		}
 
 		retval = append(retval, buf)
@@ -174,13 +176,29 @@ func expandParamToValue(paramValue string, paramDesc paramDesc, lookupVar Lookup
 	return paramValue, true
 }
 
-func expandParamWithDefaultValue(paramValue string, paramDesc paramDesc, lookupVar LookupVar, lookupHomeDir LookupVar) (string, bool) {
+func expandParamWithDefaultValue(paramValue string, paramDesc paramDesc, lookupVar LookupVar, lookupHomeDir LookupVar, assignVar AssignVar) (string, bool) {
 	// do we need to return the default value?
 	if paramValue == "" {
-		return expandWord(paramDesc.parts[1], lookupVar, lookupHomeDir), true
+		return expandWord(paramDesc.parts[1], lookupVar, lookupHomeDir, assignVar), true
 	}
 
 	return paramValue, true
+}
+
+func expandParamSetDefaultValue(paramValue string, paramDesc paramDesc, lookupVar LookupVar, lookupHomeDir LookupVar, assignVar AssignVar) (string, bool) {
+	// do we need to do anything?
+	if paramValue != "" {
+		return paramValue, true
+	}
+
+	// at this point, we need to assign a new value
+	err := assignVar(paramDesc.parts[0], expandWord(paramDesc.parts[1], lookupVar, lookupHomeDir, assignVar))
+	if err != nil {
+		return "", false
+	}
+
+	// all done
+	return lookupVar(paramDesc.parts[0])
 }
 
 func expandParamByLookup(key string, indirection bool, lookupVar LookupVar) <-chan string {
