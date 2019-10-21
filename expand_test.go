@@ -50,6 +50,7 @@ import (
 type expandTestData struct {
 	homedirs             map[string]string
 	positionalVars       map[string]string
+	specialVars          map[string]string
 	vars                 map[string]string
 	input                string
 	shellExtra           []string
@@ -452,6 +453,26 @@ func TestExpand(t *testing.T) {
 			input:          "${#foo}",
 			expectedResult: "10",
 		},
+		// number of positional parameters
+		{
+			specialVars: map[string]string{
+				"$#": "10",
+			},
+			positionalVars: map[string]string{
+				"$1":  "foo",
+				"$2":  "bar",
+				"$3":  "alfred",
+				"$4":  "trout",
+				"$5":  "haddock",
+				"$6":  "cod",
+				"$7":  "plaice",
+				"$8":  "pollock",
+				"$9":  "whitebait",
+				"$10": "bank",
+			},
+			input:          "${#*}",
+			expectedResult: "10",
+		},
 	}
 
 	for _, testData := range testDataSets {
@@ -513,8 +534,13 @@ func TestExpand(t *testing.T) {
 			},
 
 			LookupVar: func(key string) (string, bool) {
+				// special case - special parameter
+				retval, ok := testData.specialVars[key]
+				if ok {
+					return retval, true
+				}
 				// special case - positional parameter
-				retval, ok := testData.positionalVars[key]
+				retval, ok = testData.positionalVars[key]
 				if ok {
 					return retval, true
 				}

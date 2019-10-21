@@ -157,18 +157,25 @@ func expandParameter(paramDesc paramDesc, varFuncs VarFuncs) string {
 	// possible use of indirection
 	paramName, ok := expandParamName(paramDesc, varFuncs.LookupVar)
 
-	// step 2: we need to feed that into all the different ways that
-	// parameters can be expanded in strings
-	//
-	// this is complicated by some parameters ($*, $@, and arrays if we
-	// ever add support for them in the future) having the expansion applied
-	// to each part of their value
-	for paramValue := range expandParamValue(paramName, varFuncs.LookupVar) {
-		expandFunc, ok := paramExpandFuncs[paramDesc.kind]
-		if ok {
-			buf, ok = expandFunc(paramName, paramValue, paramDesc, varFuncs)
-		}
+	switch paramDesc.kind {
+	case paramExpandNoOfPositionalParams:
+		// special case
+		buf, ok = varFuncs.LookupVar("$#")
 		retval = append(retval, buf)
+	default:
+		// step 2: we need to feed that into all the different ways that
+		// parameters can be expanded in strings
+		//
+		// this is complicated by some parameters ($*, $@, and arrays if we
+		// ever add support for them in the future) having the expansion applied
+		// to each part of their value
+		for paramValue := range expandParamValue(paramName, varFuncs.LookupVar) {
+			expandFunc, ok := paramExpandFuncs[paramDesc.kind]
+			if ok {
+				buf, ok = expandFunc(paramName, paramValue, paramDesc, varFuncs)
+			}
+			retval = append(retval, buf)
+		}
 	}
 
 	// are we happy with our attempted expansion?
