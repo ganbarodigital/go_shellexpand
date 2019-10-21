@@ -126,7 +126,19 @@ func expandParameters(input string, lookupVar LookupVar, lookupHomeDir LookupVar
 	return input
 }
 
+type paramExpandFunc func(string, string, paramDesc, LookupVar, LookupVar, AssignVar) (string, bool)
+
 func expandParameter(paramDesc paramDesc, lookupVar LookupVar, lookupHomeDir LookupVar, assignVar AssignVar) string {
+	paramExpandFuncs := map[int]paramExpandFunc{
+		paramExpandToValue:          expandParamToValue,
+		paramExpandWithDefaultValue: expandParamWithDefaultValue,
+		paramExpandSetDefaultValue:  expandParamSetDefaultValue,
+		paramExpandWriteError:       expandParamWriteError,
+		paramExpandAlternativeValue: expandParamAlternativeValue,
+		paramExpandSubstring:        expandParamSubstring,
+		paramExpandSubstringLength:  expandParamSubstringLength,
+	}
+
 	// what we will (eventually) send back
 	var retval []string
 
@@ -148,23 +160,10 @@ func expandParameter(paramDesc paramDesc, lookupVar LookupVar, lookupHomeDir Loo
 	// ever add support for them in the future) having the expansion applied
 	// to each part of their value
 	for paramValue := range expandParamValue(paramName, lookupVar) {
-		switch paramDesc.kind {
-		case paramExpandToValue:
-			buf, ok = expandParamToValue(paramName, paramValue, paramDesc, lookupVar)
-		case paramExpandWithDefaultValue:
-			buf, ok = expandParamWithDefaultValue(paramName, paramValue, paramDesc, lookupVar, lookupHomeDir, assignVar)
-		case paramExpandSetDefaultValue:
-			buf, ok = expandParamSetDefaultValue(paramName, paramValue, paramDesc, lookupVar, lookupHomeDir, assignVar)
-		case paramExpandWriteError:
-			buf, ok = expandParamWriteError(paramName, paramValue, paramDesc, lookupVar, lookupHomeDir, assignVar)
-		case paramExpandAlternativeValue:
-			buf, ok = expandParamAlternativeValue(paramName, paramValue, paramDesc, lookupVar, lookupHomeDir, assignVar)
-		case paramExpandSubstring:
-			buf, ok = expandParamSubstring(paramName, paramValue, paramDesc, lookupVar, lookupHomeDir, assignVar)
-		case paramExpandSubstringLength:
-			buf, ok = expandParamSubstringLength(paramName, paramValue, paramDesc, lookupVar, lookupHomeDir, assignVar)
+		expandFunc, ok := paramExpandFuncs[paramDesc.kind]
+		if ok {
+			buf, ok = expandFunc(paramName, paramValue, paramDesc, lookupVar, lookupHomeDir, assignVar)
 		}
-
 		retval = append(retval, buf)
 	}
 
@@ -196,7 +195,7 @@ func expandParamWithIndirection(paramName string, lookupVar LookupVar) string {
 	return retval
 }
 
-func expandParamToValue(paramName, paramValue string, paramDesc paramDesc, lookupVar LookupVar) (string, bool) {
+func expandParamToValue(paramName, paramValue string, paramDesc paramDesc, lookupVar LookupVar, lookupHomeDir LookupVar, assignVar AssignVar) (string, bool) {
 	// nothing else to do
 	return paramValue, true
 }
