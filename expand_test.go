@@ -409,6 +409,23 @@ func TestExpand(t *testing.T) {
 			input:          "${!foo:3}",
 			expectedResult: "4567890",
 		},
+		// simple param, expand substring to given length
+		{
+			vars: map[string]string{
+				"foo": "1234567890",
+			},
+			input:          "${foo:3:4}",
+			expectedResult: "4567",
+		},
+		// simple param, expand substring to given length with indirection
+		{
+			vars: map[string]string{
+				"foo": "bar",
+				"bar": "1234567890",
+			},
+			input:          "${!foo:3:4}",
+			expectedResult: "4567",
+		},
 	}
 
 	for _, testData := range testDataSets {
