@@ -36,6 +36,7 @@
 package shellexpand
 
 import (
+	"sort"
 	"strconv"
 	"strings"
 )
@@ -130,14 +131,15 @@ type paramExpandFunc func(string, string, paramDesc, VarFuncs) (string, bool)
 
 func expandParameter(paramDesc paramDesc, varFuncs VarFuncs) string {
 	paramExpandFuncs := map[int]paramExpandFunc{
-		paramExpandToValue:          expandParamToValue,
-		paramExpandWithDefaultValue: expandParamWithDefaultValue,
-		paramExpandSetDefaultValue:  expandParamSetDefaultValue,
-		paramExpandWriteError:       expandParamWriteError,
-		paramExpandAlternativeValue: expandParamAlternativeValue,
-		paramExpandSubstring:        expandParamSubstring,
-		paramExpandSubstringLength:  expandParamSubstringLength,
-		paramExpandPrefixNames:      expandParamPrefixNames,
+		paramExpandToValue:                 expandParamToValue,
+		paramExpandWithDefaultValue:        expandParamWithDefaultValue,
+		paramExpandSetDefaultValue:         expandParamSetDefaultValue,
+		paramExpandWriteError:              expandParamWriteError,
+		paramExpandAlternativeValue:        expandParamAlternativeValue,
+		paramExpandSubstring:               expandParamSubstring,
+		paramExpandSubstringLength:         expandParamSubstringLength,
+		paramExpandPrefixNames:             expandParamPrefixNames,
+		paramExpandPrefixNamesDoubleQuoted: expandParamPrefixNames,
 	}
 
 	// what we will (eventually) send back
@@ -272,6 +274,7 @@ func expandParamSubstringLength(paramName, paramValue string, paramDesc paramDes
 
 func expandParamPrefixNames(paramName, paramValue string, paramDesc paramDesc, varFuncs VarFuncs) (string, bool) {
 	varNames := varFuncs.MatchVarNames(paramName)
+	sort.Strings(varNames)
 	return strings.Join(varNames, " "), true
 }
 

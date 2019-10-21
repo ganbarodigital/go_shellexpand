@@ -435,6 +435,15 @@ func TestExpand(t *testing.T) {
 			input:          "${!foo*}",
 			expectedResult: "foo1 foo2",
 		},
+		// expand param names by prefix with @ suffix
+		{
+			vars: map[string]string{
+				"foo1": "bar",
+				"foo2": "humbug",
+			},
+			input:          "${!foo@}",
+			expectedResult: "foo1 foo2",
+		},
 	}
 
 	for _, testData := range testDataSets {
