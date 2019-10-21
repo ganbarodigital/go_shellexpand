@@ -493,6 +493,14 @@ func TestExpand(t *testing.T) {
 			input:          "${#@}",
 			expectedResult: "10",
 		},
+		// number of positional parameters via $@
+		{
+			vars: map[string]string{
+				"PARAM1": "docdoc",
+			},
+			input:          "${PARAM1#doc}",
+			expectedResult: "doc",
+		},
 	}
 
 	for _, testData := range testDataSets {

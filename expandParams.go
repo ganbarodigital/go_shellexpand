@@ -131,16 +131,17 @@ type paramExpandFunc func(string, string, paramDesc, VarFuncs) (string, bool)
 
 func expandParameter(paramDesc paramDesc, varFuncs VarFuncs) string {
 	paramExpandFuncs := map[int]paramExpandFunc{
-		paramExpandToValue:                 expandParamToValue,
-		paramExpandWithDefaultValue:        expandParamWithDefaultValue,
-		paramExpandSetDefaultValue:         expandParamSetDefaultValue,
-		paramExpandWriteError:              expandParamWriteError,
-		paramExpandAlternativeValue:        expandParamAlternativeValue,
-		paramExpandSubstring:               expandParamSubstring,
-		paramExpandSubstringLength:         expandParamSubstringLength,
-		paramExpandPrefixNames:             expandParamPrefixNames,
-		paramExpandPrefixNamesDoubleQuoted: expandParamPrefixNames,
-		paramExpandParamLength:             expandParamLength,
+		paramExpandToValue:                   expandParamToValue,
+		paramExpandWithDefaultValue:          expandParamWithDefaultValue,
+		paramExpandSetDefaultValue:           expandParamSetDefaultValue,
+		paramExpandWriteError:                expandParamWriteError,
+		paramExpandAlternativeValue:          expandParamAlternativeValue,
+		paramExpandSubstring:                 expandParamSubstring,
+		paramExpandSubstringLength:           expandParamSubstringLength,
+		paramExpandPrefixNames:               expandParamPrefixNames,
+		paramExpandPrefixNamesDoubleQuoted:   expandParamPrefixNames,
+		paramExpandParamLength:               expandParamLength,
+		paramExpandRemovePrefixShortestMatch: expandParamRemovePrefixShortestMatch,
 	}
 
 	// what we will (eventually) send back
@@ -288,6 +289,14 @@ func expandParamPrefixNames(paramName, paramValue string, paramDesc paramDesc, v
 
 func expandParamLength(paramName, paramValue string, paramDesc paramDesc, varFuncs VarFuncs) (string, bool) {
 	return strconv.Itoa(len(paramValue)), true
+}
+
+func expandParamRemovePrefixShortestMatch(paramName, paramValue string, paramDesc paramDesc, varFuncs VarFuncs) (string, bool) {
+	if strings.HasPrefix(paramValue, paramDesc.parts[1]) {
+		return paramValue[len(paramDesc.parts[1]):], true
+	}
+
+	return paramValue, true
 }
 
 func expandParamValue(key string, lookupVar LookupVar) <-chan string {
