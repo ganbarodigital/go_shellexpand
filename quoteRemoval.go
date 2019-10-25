@@ -35,30 +35,19 @@
 
 package shellexpand
 
-// Expand replaces ${var} and $var in the input string. Variable values
-// are found by calling the supplied mapping function.
-//
-// This is a replacement for Golang's `os.Expand()` that supports full
-// UNIX shell string expansion. It is not a drop-in replacement, but it
-// should be straight-forward to migrate from `os.Expand()`
-func Expand(input string, varFuncs VarFuncs) (string, error) {
-	// step 1: brace expansion
-	input = expandBraces(input)
+import "strings"
 
-	// step 2: tilde expansion
-	input = ExpandTilde(input, varFuncs)
+func expandQuoteRemoval(input string) string {
+	var buf strings.Builder
 
-	// step 3: parameter & variable expansion
-	var err error
-	input, err = expandParameters(input, varFuncs)
-	if err != nil {
-		return "", err
+	for _, c := range input {
+		switch c {
+		case '\\':
+			// do nothing
+		default:
+			buf.WriteRune(c)
+		}
 	}
 
-	// step 4: arithmetic expansion
-	// step 5: quote removal
-	input = expandQuoteRemoval(input)
-
-	// all done
-	return input, nil
+	return buf.String()
 }

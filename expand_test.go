@@ -64,6 +64,14 @@ func TestExpand(t *testing.T) {
 
 	// our master set of all UNIX shell string expansion permutations
 	testDataSets := []expandTestData{
+		// simple string, w/ escaped braces
+		{
+			vars: map[string]string{
+				"PARAM1": "foo",
+			},
+			input:          "\\{PARAM1\\}",
+			expectedResult: "{PARAM1}",
+		},
 		// simple param, no braces
 		{
 			vars: map[string]string{
