@@ -153,6 +153,7 @@ func expandParameter(paramDesc paramDesc, varFuncs VarFuncs) (string, error) {
 		paramExpandRemoveSuffixLongestMatch:  expandParamRemoveSuffixLongestMatch,
 		paramExpandUppercaseFirstChar:        expandParamUppercaseFirstChar,
 		paramExpandUppercaseAllChars:         expandParamUppercaseAllChars,
+		paramExpandLowercaseFirstChar:        expandParamLowercaseFirstChar,
 	}
 
 	// what we will (eventually) send back
@@ -434,6 +435,29 @@ func expandParamUppercaseAllChars(paramName, paramValue string, paramDesc paramD
 
 	// all done
 	return buf.String(), true, nil
+}
+
+func expandParamLowercaseFirstChar(paramName, paramValue string, paramDesc paramDesc, varFuncs VarFuncs) (string, bool, error) {
+	for pos, firstChar := range paramValue {
+		// empty pattern?
+		if len(paramDesc.parts[1]) == 0 {
+			return string(unicode.ToLower(firstChar)) + paramValue[pos+1:], true, nil
+		}
+
+		g := glob.NewGlob(paramDesc.parts[1])
+		success, err := g.Match(string(firstChar))
+		if err != nil {
+			return "", false, err
+		}
+		if success {
+			return string(unicode.ToLower(firstChar)) + paramValue[pos+1:], true, nil
+		}
+
+		return paramValue, true, nil
+	}
+
+	// empty value
+	return "", true, nil
 }
 
 func expandParamValue(key string, lookupVar LookupVar) <-chan string {
