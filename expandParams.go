@@ -195,7 +195,9 @@ func expandParameter(paramDesc paramDesc, varFuncs VarFuncs) (string, error) {
 					return "", err
 				}
 			}
-			retval = append(retval, buf)
+			if len(buf) > 0 {
+				retval = append(retval, buf)
+			}
 		}
 	}
 

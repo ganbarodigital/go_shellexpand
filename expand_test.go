@@ -501,6 +501,24 @@ func TestExpand(t *testing.T) {
 			input:          "${PARAM1#d*c}",
 			expectedResult: "doc",
 		},
+		// remove prefix, shortest match, applied to $*
+		{
+			positionalVars: map[string]string{
+				"$1":  "foo",
+				"$2":  "bar",
+				"$3":  "alfred",
+				"$4":  "trout",
+				"$5":  "haddock",
+				"$6":  "cod",
+				"$7":  "plaice",
+				"$8":  "pollock",
+				"$9":  "whitebait",
+				"$10": "bank",
+				"$#":  "10",
+			},
+			input:          "${*#[a-z]}",
+			expectedResult: "oo ar lfred rout addock od laice ollock hitebait ank",
+		},
 		// remove prefix longest match
 		{
 			vars: map[string]string{
@@ -508,6 +526,24 @@ func TestExpand(t *testing.T) {
 			},
 			input:          "${PARAM1##d*c}",
 			expectedResult: "go",
+		},
+		// remove prefix, longest match, applied to $*
+		{
+			positionalVars: map[string]string{
+				"$1":  "foo",
+				"$2":  "bar",
+				"$3":  "alfred",
+				"$4":  "trout",
+				"$5":  "haddock",
+				"$6":  "cod",
+				"$7":  "plaice",
+				"$8":  "pollock",
+				"$9":  "whitebait",
+				"$10": "bank",
+				"$#":  "10",
+			},
+			input:          "${*##*o}",
+			expectedResult: "bar alfred ut ck d plaice ck whitebait bank",
 		},
 		// remove suffix shortest match
 		{
@@ -517,6 +553,24 @@ func TestExpand(t *testing.T) {
 			input:          "${PARAM1%d*c}",
 			expectedResult: "godoc",
 		},
+		// remove suffix, shortest match, applied to $*
+		{
+			positionalVars: map[string]string{
+				"$1":  "foo",
+				"$2":  "bar",
+				"$3":  "alfred",
+				"$4":  "trout",
+				"$5":  "haddock",
+				"$6":  "cod",
+				"$7":  "plaice",
+				"$8":  "pollock",
+				"$9":  "whitebait",
+				"$10": "bank",
+				"$#":  "10",
+			},
+			input:          "${*%o*}",
+			expectedResult: "fo bar alfred tr hadd c plaice poll whitebait bank",
+		},
 		// remove suffix longest match
 		{
 			vars: map[string]string{
@@ -524,6 +578,24 @@ func TestExpand(t *testing.T) {
 			},
 			input:          "${PARAM1%%d*c}",
 			expectedResult: "go",
+		},
+		// remove suffix, longest match, applied to $*
+		{
+			positionalVars: map[string]string{
+				"$1":  "foo",
+				"$2":  "bar",
+				"$3":  "alfred",
+				"$4":  "trout",
+				"$5":  "haddock",
+				"$6":  "cod",
+				"$7":  "plaice",
+				"$8":  "pollock",
+				"$9":  "whitebait",
+				"$10": "bank",
+				"$#":  "10",
+			},
+			input:          "${*%%o*}",
+			expectedResult: "f bar alfred tr hadd c plaice p whitebait bank",
 		},
 		// uppercase first letter, no replacement pattern
 		{
