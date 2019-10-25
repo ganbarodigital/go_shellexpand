@@ -39,6 +39,7 @@ import (
 	"sort"
 	"strconv"
 	"strings"
+	"unicode"
 
 	glob "github.com/ganbarodigital/go_glob"
 )
@@ -150,6 +151,7 @@ func expandParameter(paramDesc paramDesc, varFuncs VarFuncs) (string, error) {
 		paramExpandRemovePrefixLongestMatch:  expandParamRemovePrefixLongestMatch,
 		paramExpandRemoveSuffixShortestMatch: expandParamRemoveSuffixShortestMatch,
 		paramExpandRemoveSuffixLongestMatch:  expandParamRemoveSuffixLongestMatch,
+		paramExpandUppercaseFirstChar:        expandParamUppercaseFirstChar,
 	}
 
 	// what we will (eventually) send back
@@ -382,6 +384,29 @@ func expandParamRemoveSuffixLongestMatch(paramName, paramValue string, paramDesc
 	}
 
 	return paramValue, true, nil
+}
+
+func expandParamUppercaseFirstChar(paramName, paramValue string, paramDesc paramDesc, varFuncs VarFuncs) (string, bool, error) {
+	for pos, firstChar := range paramValue {
+		// empty pattern?
+		if len(paramDesc.parts[1]) == 0 {
+			return string(unicode.ToUpper(firstChar)) + paramValue[pos+1:], true, nil
+		}
+
+		g := glob.NewGlob(paramDesc.parts[1])
+		success, err := g.Match(paramValue)
+		if err != nil {
+			return "", false, err
+		}
+		if success {
+			return string(unicode.ToUpper(firstChar)) + paramValue[pos+1:], true, nil
+		}
+
+		return paramValue, true, nil
+	}
+
+	// empty value
+	return "", true, nil
 }
 
 func expandParamValue(key string, lookupVar LookupVar) <-chan string {

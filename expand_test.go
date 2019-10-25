@@ -525,6 +525,14 @@ func TestExpand(t *testing.T) {
 			input:          "${PARAM1%%d*c}",
 			expectedResult: "go",
 		},
+		// uppercase first letter
+		{
+			vars: map[string]string{
+				"PARAM1": "alfred",
+			},
+			input:          "${PARAM1^}",
+			expectedResult: "Alfred",
+		},
 	}
 
 	for _, testData := range testDataSets {
