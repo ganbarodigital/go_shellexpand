@@ -5506,8 +5506,8 @@ func TestParseParamLowercaseAllCharsWithNoReplacement(t *testing.T) {
 		// setup your test
 
 		expectedResult := paramDesc{
-			kind:  paramExpandToValue,
-			parts: []string{"VAR"},
+			kind:  paramExpandLowercaseAllChars,
+			parts: []string{"VAR", ""},
 		}
 
 		// ----------------------------------------------------------------
