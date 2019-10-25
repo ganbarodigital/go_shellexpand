@@ -39,6 +39,8 @@ import (
 	"sort"
 	"strconv"
 	"strings"
+
+	glob "github.com/ganbarodigital/go_glob"
 )
 
 // expandParams will expand any ${VAR} or $VAR
@@ -145,6 +147,7 @@ func expandParameter(paramDesc paramDesc, varFuncs VarFuncs) (string, error) {
 		paramExpandPrefixNamesDoubleQuoted:   expandParamPrefixNames,
 		paramExpandParamLength:               expandParamLength,
 		paramExpandRemovePrefixShortestMatch: expandParamRemovePrefixShortestMatch,
+		paramExpandRemovePrefixLongestMatch:  expandParamRemovePrefixLongestMatch,
 	}
 
 	// what we will (eventually) send back
@@ -217,96 +220,132 @@ func expandParamWithIndirection(paramName string, lookupVar LookupVar) string {
 	return retval
 }
 
-func expandParamToValue(paramName, paramValue string, paramDesc paramDesc, varFuncs VarFuncs) (string, bool) {
+func expandParamToValue(paramName, paramValue string, paramDesc paramDesc, varFuncs VarFuncs) (string, bool, error) {
 	// nothing else to do
-	return paramValue, true
+	return paramValue, true, nil
 }
 
-func expandParamWithDefaultValue(paramName, paramValue string, paramDesc paramDesc, varFuncs VarFuncs) (string, bool) {
+func expandParamWithDefaultValue(paramName, paramValue string, paramDesc paramDesc, varFuncs VarFuncs) (string, bool, error) {
 	// do we need to return the default value?
-	if paramValue == "" {
-		return expandWord(paramDesc.parts[1], varFuncs), true
+	if paramValue != "" {
+		return paramValue, true, nil
 	}
 
-	return paramValue, true
+	retval, err := expandWord(paramDesc.parts[1], varFuncs)
+	return retval, true, err
 }
 
-func expandParamSetDefaultValue(paramName, paramValue string, paramDesc paramDesc, varFuncs VarFuncs) (string, bool) {
+func expandParamSetDefaultValue(paramName, paramValue string, paramDesc paramDesc, varFuncs VarFuncs) (string, bool, error) {
 	// do we need to do anything?
 	if paramValue != "" {
-		return paramValue, true
+		return paramValue, true, nil
 	}
 
 	// at this point, we need to assign a new value
-	err := varFuncs.AssignToVar(paramName, expandWord(paramDesc.parts[1], varFuncs))
+	word, err := expandWord(paramDesc.parts[1], varFuncs)
 	if err != nil {
-		return "", false
+		return "", false, err
+	}
+	err = varFuncs.AssignToVar(paramName, word)
+	if err != nil {
+		return "", false, err
 	}
 
 	// all done
-	return varFuncs.LookupVar(paramName)
+	retval, success := varFuncs.LookupVar(paramName)
+	return retval, success, nil
 }
 
-func expandParamWriteError(paramName, paramValue string, paramDesc paramDesc, varFuncs VarFuncs) (string, bool) {
+func expandParamWriteError(paramName, paramValue string, paramDesc paramDesc, varFuncs VarFuncs) (string, bool, error) {
 	// do we have a value?
-	if paramValue == "" {
-		return paramName + ": " + expandWord(paramDesc.parts[1], varFuncs), true
-	}
-
-	return paramValue, true
-}
-
-func expandParamAlternativeValue(paramName, paramValue string, paramDesc paramDesc, varFuncs VarFuncs) (string, bool) {
-	// do we need to return the alternative value?
 	if paramValue != "" {
-		return expandWord(paramDesc.parts[1], varFuncs), true
+		return paramValue, true, nil
 	}
 
-	return paramValue, true
-}
-
-func expandParamSubstring(paramName, paramValue string, paramDesc paramDesc, varFuncs VarFuncs) (string, bool) {
-	start, err := strconv.Atoi(paramDesc.parts[1])
+	word, err := expandWord(paramDesc.parts[1], varFuncs)
 	if err != nil {
-		return "", false
+		return "", false, err
 	}
 
-	return paramValue[start:], true
+	return paramName + ": " + word, true, nil
 }
 
-func expandParamSubstringLength(paramName, paramValue string, paramDesc paramDesc, varFuncs VarFuncs) (string, bool) {
+func expandParamAlternativeValue(paramName, paramValue string, paramDesc paramDesc, varFuncs VarFuncs) (string, bool, error) {
+	// do we need to return the alternative value?
+	if paramValue == "" {
+		return paramValue, true, nil
+	}
+
+	word, err := expandWord(paramDesc.parts[1], varFuncs)
+	if err != nil {
+		return "", false, err
+	}
+
+	return word, true, nil
+}
+
+func expandParamSubstring(paramName, paramValue string, paramDesc paramDesc, varFuncs VarFuncs) (string, bool, error) {
 	start, err := strconv.Atoi(paramDesc.parts[1])
 	if err != nil {
-		return "", false
+		return "", false, err
+	}
+
+	return paramValue[start:], true, nil
+}
+
+func expandParamSubstringLength(paramName, paramValue string, paramDesc paramDesc, varFuncs VarFuncs) (string, bool, error) {
+	start, err := strconv.Atoi(paramDesc.parts[1])
+	if err != nil {
+		return "", false, err
 	}
 	amount, err := strconv.Atoi(paramDesc.parts[2])
 	if err != nil {
-		return "", false
+		return "", false, err
 	}
 	end := start + amount
 	if amount > len(paramValue) {
 		amount = len(paramValue)
 	}
 
-	return paramValue[start:end], true
+	return paramValue[start:end], true, nil
 }
 
-func expandParamPrefixNames(paramName, paramValue string, paramDesc paramDesc, varFuncs VarFuncs) (string, bool) {
+func expandParamPrefixNames(paramName, paramValue string, paramDesc paramDesc, varFuncs VarFuncs) (string, bool, error) {
 	varNames := varFuncs.MatchVarNames(paramName)
 	sort.Strings(varNames)
-	return strings.Join(varNames, " "), true
+	return strings.Join(varNames, " "), true, nil
 }
 
-func expandParamLength(paramName, paramValue string, paramDesc paramDesc, varFuncs VarFuncs) (string, bool) {
-	return strconv.Itoa(len(paramValue)), true
+func expandParamLength(paramName, paramValue string, paramDesc paramDesc, varFuncs VarFuncs) (string, bool, error) {
+	return strconv.Itoa(len(paramValue)), true, nil
 }
 
-func expandParamRemovePrefixShortestMatch(paramName, paramValue string, paramDesc paramDesc, varFuncs VarFuncs) (string, bool) {
-	if strings.HasPrefix(paramValue, paramDesc.parts[1]) {
-		return paramValue[len(paramDesc.parts[1]):], true
+func expandParamRemovePrefixShortestMatch(paramName, paramValue string, paramDesc paramDesc, varFuncs VarFuncs) (string, bool, error) {
+	g := glob.NewGlob(paramDesc.parts[1])
+
+	pos, success, err := g.MatchShortestPrefix(paramValue)
+	if err != nil {
+		return "", false, err
+	}
+	if success {
+		return paramValue[pos:], true, nil
 	}
 
-	return paramValue, true
+	return paramValue, true, nil
+}
+
+func expandParamRemovePrefixLongestMatch(paramName, paramValue string, paramDesc paramDesc, varFuncs VarFuncs) (string, bool, error) {
+	g := glob.NewGlob(paramDesc.parts[1])
+
+	pos, success, err := g.MatchLongestPrefix(paramValue)
+	if err != nil {
+		return "", false, err
+	}
+	if success {
+		return paramValue[pos:], true, nil
+	}
+
+	return paramValue, true, nil
 }
 
 func expandParamValue(key string, lookupVar LookupVar) <-chan string {

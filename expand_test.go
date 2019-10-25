@@ -493,13 +493,21 @@ func TestExpand(t *testing.T) {
 			input:          "${#@}",
 			expectedResult: "10",
 		},
-		// number of positional parameters via $@
+		// remove prefix shortest match
 		{
 			vars: map[string]string{
 				"PARAM1": "docdoc",
 			},
-			input:          "${PARAM1#doc}",
+			input:          "${PARAM1#d*c}",
 			expectedResult: "doc",
+		},
+		// remove prefix longest match
+		{
+			vars: map[string]string{
+				"PARAM1": "docdocgo",
+			},
+			input:          "${PARAM1##d*c}",
+			expectedResult: "go",
 		},
 	}
 
