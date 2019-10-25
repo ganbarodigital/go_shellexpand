@@ -97,13 +97,30 @@ import (
 // it's up to the caller to ensure lookupVar() can provide a value for any
 // of these params
 func expandParameters(input string, varFuncs VarFuncs) (string, error) {
+	// keep track of whether we're dealing with an escaped character
+	// or not
+	inEscape := false
+
+	// keep track of the end of the last param we matched
+	varEnd := -1
+
+	// and this will be where we build up our return value
+	var buf strings.Builder
+
 	// we expand in a strictly left-to-right manner
-	for i := 0; i < len(input); i++ {
-		if input[i] == '\\' {
+	for i, c := range input {
+		if i <= varEnd {
+			// skip over chars we've already matched
+		} else if inEscape {
 			// skip over escaped characters
-			i++
-		} else if input[i] == '$' {
-			varEnd, ok := matchVar(input, i)
+			inEscape = false
+			buf.WriteRune(c)
+		} else if c == '\\' {
+			// skip over escaped characters
+			inEscape = true
+		} else if c == '$' {
+			var ok bool
+			varEnd, ok = matchVar(input, i)
 			if ok {
 				paramDesc, ok := parseParameter(input[i : varEnd+1])
 				if !ok {
@@ -114,23 +131,15 @@ func expandParameters(input string, varFuncs VarFuncs) (string, error) {
 				if err != nil {
 					return input, err
 				}
-				var buf strings.Builder
 
-				if i > 0 {
-					buf.WriteString(input[0:i])
-				}
 				buf.WriteString(replacement)
-
-				if i < len(input) {
-					buf.WriteString(input[varEnd+1:])
-				}
-
-				input = buf.String()
 			}
+		} else {
+			buf.WriteRune(c)
 		}
 	}
 
-	return input, nil
+	return buf.String(), nil
 }
 
 type paramExpandFunc func(string, string, paramDesc, VarFuncs) (string, bool, error)
