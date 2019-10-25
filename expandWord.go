@@ -41,15 +41,19 @@ package shellexpand
 // It is not completely UNIX shell-compatible:
 //
 // * no support for command expansion
-func expandWord(input string, varFuncs VarFuncs) string {
+func expandWord(input string, varFuncs VarFuncs) (string, error) {
 	// step 1: tilde expansion
 	input = ExpandTilde(input, varFuncs)
 
 	// step 2: parameter expansion
-	input = expandParameters(input, varFuncs)
+	var err error
+	input, err = expandParameters(input, varFuncs)
+	if err != nil {
+		return "", err
+	}
 
 	// step 3: arithmetic expansion
 
 	// all done
-	return input
+	return input, nil
 }

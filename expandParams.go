@@ -93,7 +93,7 @@ import (
 //
 // it's up to the caller to ensure lookupVar() can provide a value for any
 // of these params
-func expandParameters(input string, varFuncs VarFuncs) string {
+func expandParameters(input string, varFuncs VarFuncs) (string, error) {
 	// we expand in a strictly left-to-right manner
 	for i := 0; i < len(input); i++ {
 		if input[i] == '\\' {
@@ -107,7 +107,10 @@ func expandParameters(input string, varFuncs VarFuncs) string {
 					continue
 				}
 
-				replacement := expandParameter(paramDesc, varFuncs)
+				replacement, err := expandParameter(paramDesc, varFuncs)
+				if err != nil {
+					return input, err
+				}
 				var buf strings.Builder
 
 				if i > 0 {
@@ -124,12 +127,12 @@ func expandParameters(input string, varFuncs VarFuncs) string {
 		}
 	}
 
-	return input
+	return input, nil
 }
 
-type paramExpandFunc func(string, string, paramDesc, VarFuncs) (string, bool)
+type paramExpandFunc func(string, string, paramDesc, VarFuncs) (string, bool, error)
 
-func expandParameter(paramDesc paramDesc, varFuncs VarFuncs) string {
+func expandParameter(paramDesc paramDesc, varFuncs VarFuncs) (string, error) {
 	paramExpandFuncs := map[int]paramExpandFunc{
 		paramExpandToValue:                   expandParamToValue,
 		paramExpandWithDefaultValue:          expandParamWithDefaultValue,
@@ -156,7 +159,10 @@ func expandParameter(paramDesc paramDesc, varFuncs VarFuncs) string {
 
 	// step 1: we need to expand the paramName first, to support any
 	// possible use of indirection
-	paramName, ok := expandParamName(paramDesc, varFuncs.LookupVar)
+	paramName, ok, err := expandParamName(paramDesc, varFuncs.LookupVar)
+	if err != nil {
+		return "", err
+	}
 
 	switch paramDesc.kind {
 	case paramExpandNoOfPositionalParams:
@@ -173,7 +179,11 @@ func expandParameter(paramDesc paramDesc, varFuncs VarFuncs) string {
 		for paramValue := range expandParamValue(paramName, varFuncs.LookupVar) {
 			expandFunc, ok := paramExpandFuncs[paramDesc.kind]
 			if ok {
-				buf, ok = expandFunc(paramName, paramValue, paramDesc, varFuncs)
+				var err error
+				buf, ok, err = expandFunc(paramName, paramValue, paramDesc, varFuncs)
+				if err != nil {
+					return "", err
+				}
 			}
 			retval = append(retval, buf)
 		}
@@ -181,21 +191,21 @@ func expandParameter(paramDesc paramDesc, varFuncs VarFuncs) string {
 
 	// are we happy with our attempted expansion?
 	if !ok {
-		return ""
+		return "", nil
 	}
 
 	// if we get here, then yes, we are happy
-	return strings.Join(retval, " ")
+	return strings.Join(retval, " "), nil
 }
 
-func expandParamName(paramDesc paramDesc, lookupVar LookupVar) (string, bool) {
+func expandParamName(paramDesc paramDesc, lookupVar LookupVar) (string, bool, error) {
 	varName := paramDesc.parts[0]
 	ok := true
 	if paramDesc.indirect {
 		varName, ok = lookupVar(varName)
 	}
 
-	return varName, ok
+	return varName, ok, nil
 }
 
 func expandParamWithIndirection(paramName string, lookupVar LookupVar) string {

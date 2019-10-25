@@ -612,7 +612,7 @@ func TestExpand(t *testing.T) {
 		shellRawResult, _ := cmd.CombinedOutput()
 		shellActualResult := strings.TrimSpace(string(shellRawResult))
 
-		internalActualResult := Expand(input, varFuncs)
+		internalActualResult, _ := Expand(input, varFuncs)
 		// special case - the result is a side effect, not a direct string
 		// expansion
 		if testData.actualResult != nil {
