@@ -48,7 +48,7 @@ func TestMatchVarSingleSet(t *testing.T) {
 	// setup your test
 
 	testData := "this ${is} a test"
-	expectedEnd := 9
+	expectedEnd := 10
 
 	// ----------------------------------------------------------------
 	// perform the change
@@ -69,7 +69,7 @@ func TestMatchVarNestedSet(t *testing.T) {
 	// setup your test
 
 	testData := "this ${HOME:${TMPDIR:-/var/tmp}} a test"
-	expectedEnd := 31
+	expectedEnd := 32
 
 	// ----------------------------------------------------------------
 	// perform the change
@@ -132,7 +132,7 @@ func TestMatchVarSupportsMissingOpeningBrace(t *testing.T) {
 	// setup your test
 
 	testData := "this $HOME a test"
-	expectedEnd := 9
+	expectedEnd := 10
 
 	// ----------------------------------------------------------------
 	// perform the change
@@ -143,7 +143,7 @@ func TestMatchVarSupportsMissingOpeningBrace(t *testing.T) {
 	// test the results
 
 	assert.Equal(t, expectedEnd, actualEnd)
-	assert.Equal(t, testData[5:actualEnd+1], "$HOME")
+	assert.Equal(t, testData[5:actualEnd], "$HOME")
 	assert.True(t, ok)
 }
 
@@ -196,7 +196,7 @@ func TestMatchVarIgnoresEscapedClosingBrace(t *testing.T) {
 	// setup your test
 
 	testData := "${HOME\\}}"
-	expectedEnd := 8
+	expectedEnd := 9
 
 	// ----------------------------------------------------------------
 	// perform the change
@@ -253,7 +253,7 @@ func TestMatchVarKnownParamOperators(t *testing.T) {
 		testResult, ok := matchVar(testData[i], 0)
 
 		assert.True(t, ok)
-		assert.Equal(t, testData[i], testData[i][0:testResult+1])
+		assert.Equal(t, testData[i], testData[i][0:testResult])
 	}
 
 	// ----------------------------------------------------------------

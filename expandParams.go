@@ -109,7 +109,7 @@ func expandParameters(input string, varFuncs VarFuncs) (string, error) {
 
 	// we expand in a strictly left-to-right manner
 	for i, c := range input {
-		if i <= varEnd {
+		if i < varEnd {
 			// skip over chars we've already matched
 		} else if inEscape {
 			// skip over escaped characters
@@ -122,7 +122,7 @@ func expandParameters(input string, varFuncs VarFuncs) (string, error) {
 			var ok bool
 			varEnd, ok = matchVar(input, i)
 			if ok {
-				paramDesc, ok := parseParameter(input[i : varEnd+1])
+				paramDesc, ok := parseParameter(input[i:varEnd])
 				if !ok {
 					continue
 				}

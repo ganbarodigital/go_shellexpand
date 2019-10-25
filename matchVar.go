@@ -51,7 +51,7 @@ func matchVar(input string, start int) (int, bool) {
 	// special case: positional parameters are not subject to normal
 	// matching rules (sigh)
 	if isNumericChar(input[start+1]) {
-		return start + 1, true
+		return start + 2, true
 	}
 
 	// general case - a non-positional parameter that may be wrapped
@@ -67,13 +67,13 @@ func matchVar(input string, start int) (int, bool) {
 			braceDepth--
 
 			if braceDepth == 0 {
-				return i, true
+				return i + 1, true
 			}
 		} else if input[i] == ' ' {
 			if braceDepth == 0 {
 				// we must be looking at a var that was not surrounded
 				// by braces
-				return i - 1, true
+				return i, true
 			}
 
 			// no spaces allowed inside a var name
@@ -83,7 +83,7 @@ func matchVar(input string, start int) (int, bool) {
 
 	// end of the string
 	if braceDepth == 0 {
-		return len(input) - 1, true
+		return len(input), true
 	}
 
 	// we did not find a matching closing brace
