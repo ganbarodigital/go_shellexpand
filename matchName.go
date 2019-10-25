@@ -35,18 +35,25 @@
 
 package shellexpand
 
+import "unicode/utf8"
+
 func matchName(input string, start int) (int, int, bool) {
+	// what are we looking at?
+	r, w := utf8.DecodeRuneInString(input[start:])
+
 	// a name is a word consisting of:
 	//
 	// alphanumeric characters and underscores
 	// beginning with alphabetic character or underscore
 
-	if !isNameStartChar(input[start]) {
+	if !isNameStartChar(r) {
 		return paramTypeInvalid, 0, false
 	}
 
-	for i := start + 1; i < len(input); i++ {
-		if !isNameBodyChar(input[i]) {
+	for i := start + w; i < len(input); i += w {
+		r, w = utf8.DecodeRuneInString(input[i:])
+
+		if !isNameBodyChar(r) {
 			return paramTypeName, i - 1, true
 		}
 	}

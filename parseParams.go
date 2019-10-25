@@ -213,7 +213,7 @@ func parseParameter(input string) (paramDesc, bool) {
 	}
 
 	// special case - handle ${#parameter} here
-	if input[0:3] == "${#" && (isNameStartChar(input[3]) || isNumericStartChar(input[3]) || isShellSpecialChar(input[3])) {
+	if input[0:3] == "${#" && (isNameStartChar(rune(input[3])) || isNumericStartChar(rune(input[3])) || isShellSpecialChar(rune(input[3]))) {
 		// we don't check the boolean return value, because we're 100%
 		// guaranteed to match the 1st char
 		paramType, paramEnd, _ = matchParam(input, 3)

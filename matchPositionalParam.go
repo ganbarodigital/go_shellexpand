@@ -35,13 +35,18 @@
 
 package shellexpand
 
+import "unicode/utf8"
+
 func matchPositionalParam(input string, start int) (int, int, bool) {
+	// what are we looking at?
+	r, _ := utf8.DecodeRuneInString(input[start:])
+
 	// a positional param is a single numerical char
 	//
 	// real shells only support $0...$9 inclusive
 	// they do NOT support $10, $11, $12 and so on
 
-	if isNumericChar(input[start]) {
+	if isNumericChar(r) {
 		return paramTypePositional, start, true
 	}
 

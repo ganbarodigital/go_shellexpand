@@ -35,9 +35,14 @@
 
 package shellexpand
 
+import "unicode/utf8"
+
 func matchSpecialParam(input string, start int) (int, int, bool) {
+	// what are we looking at?
+	r, _ := utf8.DecodeRuneInString(input[start:])
+
 	// a special param is a single character
-	if !isShellSpecialChar(input[start]) {
+	if !isShellSpecialChar(r) {
 		return paramTypeInvalid, 0, false
 	}
 

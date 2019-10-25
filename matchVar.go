@@ -50,7 +50,7 @@ func matchVar(input string, start int) (int, bool) {
 	//
 	// special case: positional parameters are not subject to normal
 	// matching rules (sigh)
-	if isNumericChar(input[start+1]) {
+	if isNumericChar(rune(input[start+1])) {
 		return start + 2, true
 	}
 

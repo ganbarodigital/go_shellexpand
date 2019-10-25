@@ -35,25 +35,25 @@
 
 package shellexpand
 
-func isAlphaChar(char byte) bool {
+func isAlphaChar(char rune) bool {
 	return 'a' <= char && char <= 'z' || 'A' <= char && char <= 'Z'
 }
 
-func isAlphaNumericChar(char byte) bool {
+func isAlphaNumericChar(char rune) bool {
 	return isNumericChar(char) || isAlphaChar(char)
 }
 
-func isNumericChar(char byte) bool {
+func isNumericChar(char rune) bool {
 	return '0' <= char && char <= '9'
 }
 
-func isNumericStartChar(char byte) bool {
+func isNumericStartChar(char rune) bool {
 	return '1' <= char && char <= '9'
 }
 
 func isNumericString(input string) bool {
-	for i := 0; i < len(input); i++ {
-		if !isNumericChar(input[i]) {
+	for _, c := range input {
+		if !isNumericChar(c) {
 			return false
 		}
 	}
@@ -68,12 +68,12 @@ func isSignedNumericString(input string) bool {
 	}
 
 	// no leading zeros allowed ... but can be a negative value
-	if input[0] != '-' && !isNumericStartChar(input[0]) {
+	if input[0] != '-' && !isNumericStartChar(rune(input[0])) {
 		return false
 	}
 
 	for i := 1; i < len(input); i++ {
-		if !isNumericChar(input[i]) {
+		if !isNumericChar(rune(input[i])) {
 			return false
 		}
 	}
@@ -86,12 +86,12 @@ func isNumericStringWithoutLeadingZero(input string) bool {
 		return false
 	}
 
-	if !isNumericStartChar(input[0]) {
+	if !isNumericStartChar(rune(input[0])) {
 		return false
 	}
 
 	for i := 1; i < len(input); i++ {
-		if !isNumericChar(input[i]) {
+		if !isNumericChar(rune(input[i])) {
 			return false
 		}
 	}
@@ -99,24 +99,14 @@ func isNumericStringWithoutLeadingZero(input string) bool {
 	return true
 }
 
-func isNameBodyChar(char byte) bool {
+func isNameBodyChar(char rune) bool {
 	return isAlphaNumericChar(char) || char == '_'
 }
 
-func isNameStartChar(char byte) bool {
+func isNameStartChar(char rune) bool {
 	return isAlphaChar(char) || char == '_'
 }
 
-func isShellSpecialChar(char byte) bool {
+func isShellSpecialChar(char rune) bool {
 	return char == '#' || char == '*' || char == '?' || char == '!' || char == '$' || char == '-' || char == '@' || char == '0'
-}
-
-func isShellSpecialString(input string) bool {
-	// check for special variables
-	if len(input) == 1 {
-		return isShellSpecialChar(input[0])
-	}
-
-	// check for positional parameters
-	return isNumericStringWithoutLeadingZero(input)
 }
