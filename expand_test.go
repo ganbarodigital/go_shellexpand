@@ -64,6 +64,30 @@ func TestExpand(t *testing.T) {
 
 	// our master set of all UNIX shell string expansion permutations
 	testDataSets := []expandTestData{
+		// simple string, w/ brace expansion
+		{
+			vars: map[string]string{
+				"PARAM1": "foo",
+			},
+			input:          "ab{c,d,e}fg",
+			expectedResult: "abcfg abdfg abefg",
+		},
+		// simple string, w/ mismatched braces
+		{
+			vars: map[string]string{
+				"PARAM1": "foo",
+			},
+			input:          "ab{c,d,efg",
+			expectedResult: "ab{c,d,efg",
+		},
+		// simple string, w/ single pattern
+		{
+			vars: map[string]string{
+				"PARAM1": "foo",
+			},
+			input:          "ab{c}de",
+			expectedResult: "ab{c}de",
+		},
 		// simple string, w/ escaped braces
 		{
 			vars: map[string]string{
@@ -71,6 +95,30 @@ func TestExpand(t *testing.T) {
 			},
 			input:          "\\{PARAM1\\}",
 			expectedResult: "{PARAM1}",
+		},
+		// simple string, w/ alpha sequence
+		{
+			vars: map[string]string{
+				"PARAM1": "foo",
+			},
+			input:          "ab{a..g..2}de",
+			expectedResult: "abade abcde abede abgde",
+		},
+		// simple string, w/ alpha sequence descending
+		{
+			vars: map[string]string{
+				"PARAM1": "foo",
+			},
+			input:          "ab{g..a..2}de",
+			expectedResult: "abgde abede abcde abade",
+		},
+		// simple string, w/ numerical sequence
+		{
+			vars: map[string]string{
+				"PARAM1": "foo",
+			},
+			input:          "ab{1..11..3}de",
+			expectedResult: "ab1de ab4de ab7de ab10de",
 		},
 		// simple param, no braces
 		{

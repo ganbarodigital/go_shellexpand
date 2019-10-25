@@ -360,26 +360,17 @@ func parseSequence(pattern string) (braceSequence, bool) {
 	isNumericStart := isNumericString(parts[0])
 	isNumericEnd := isNumericString(parts[1])
 
-	if len(parts[0]) == 1 && len(parts[1]) == 1 {
-		// we have chars or all-numbers
-		if isNumericStart && isNumericEnd {
-			// all numbers
-			retval.start, _ = strconv.Atoi(parts[0])
-			retval.end, _ = strconv.Atoi(parts[1])
-		} else {
-			// must be chars
-			retval.chars = true
-			retval.start = int(parts[0][0])
-			retval.end = int(parts[1][0])
-		}
-	} else {
-		// if we get here, both parts must be numbers
-		if !isNumericStart || !isNumericEnd {
-			return braceSequence{}, false
-		}
-
+	if isNumericStart && isNumericEnd {
+		// all numbers
 		retval.start, _ = strconv.Atoi(parts[0])
 		retval.end, _ = strconv.Atoi(parts[1])
+	} else if isNumericStart != isNumericEnd {
+		return braceSequence{}, false
+	} else {
+		// must be chars
+		retval.chars = true
+		retval.start = int(parts[0][0])
+		retval.end = int(parts[1][0])
 	}
 
 	// do we have an incr element?
@@ -390,14 +381,17 @@ func parseSequence(pattern string) (braceSequence, bool) {
 		}
 		retval.incr = incr
 	} else {
-		// no we do not, so we must set it ourselves
-		if retval.start < retval.end {
-			// low to high
-			retval.incr = 1
-		} else {
-			// high to low
-			retval.incr = -1
+		retval.incr = 1
+	}
+
+	// now we just need to make sure the incr element goes in the same
+	// direction as the range itself does
+	if retval.start < retval.end {
+		if retval.incr < 0 {
+			retval.incr = 0 - retval.incr
 		}
+	} else if retval.incr > 0 {
+		retval.incr = 0 - retval.incr
 	}
 
 	// all done
