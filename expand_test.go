@@ -509,6 +509,14 @@ func TestExpand(t *testing.T) {
 			input:          "${PARAM1##d*c}",
 			expectedResult: "go",
 		},
+		// remove suffix shortest match
+		{
+			vars: map[string]string{
+				"PARAM1": "godocdoc",
+			},
+			input:          "${PARAM1%d*c}",
+			expectedResult: "godoc",
+		},
 	}
 
 	for _, testData := range testDataSets {

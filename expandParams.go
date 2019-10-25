@@ -148,6 +148,7 @@ func expandParameter(paramDesc paramDesc, varFuncs VarFuncs) (string, error) {
 		paramExpandParamLength:               expandParamLength,
 		paramExpandRemovePrefixShortestMatch: expandParamRemovePrefixShortestMatch,
 		paramExpandRemovePrefixLongestMatch:  expandParamRemovePrefixLongestMatch,
+		paramExpandRemoveSuffixShortestMatch: expandParamRemoveSuffixShortestMatch,
 	}
 
 	// what we will (eventually) send back
@@ -343,6 +344,23 @@ func expandParamRemovePrefixLongestMatch(paramName, paramValue string, paramDesc
 	}
 	if success {
 		return paramValue[pos:], true, nil
+	}
+
+	return paramValue, true, nil
+}
+
+func expandParamRemoveSuffixShortestMatch(paramName, paramValue string, paramDesc paramDesc, varFuncs VarFuncs) (string, bool, error) {
+	g := glob.NewGlob(paramDesc.parts[1])
+
+	pos, success, err := g.MatchShortestSuffix(paramValue)
+	if err != nil {
+		return "", false, err
+	}
+	if success {
+		if pos < len(paramValue) {
+			return paramValue[:pos], true, nil
+		}
+		return "", true, nil
 	}
 
 	return paramValue, true, nil
