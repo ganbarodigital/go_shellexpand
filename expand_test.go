@@ -120,6 +120,14 @@ func TestExpand(t *testing.T) {
 			input:          "ab{1..11..3}de",
 			expectedResult: "ab1de ab4de ab7de ab10de",
 		},
+		// simple string, w/ numerical sequence and incr in wrong direction
+		{
+			vars: map[string]string{
+				"PARAM1": "foo",
+			},
+			input:          "ab{1..11..-3}de",
+			expectedResult: "ab1de ab4de ab7de ab10de",
+		},
 		// simple param, no braces
 		{
 			vars: map[string]string{
