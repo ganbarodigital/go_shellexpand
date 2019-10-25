@@ -57,19 +57,26 @@ func matchVar(input string, start int) (int, bool) {
 	// general case - a non-positional parameter that may be wrapped
 	// in braces
 	braceDepth := 0
-	for i := start + 1; i < len(input); i++ {
-		if input[i] == '\\' {
+	inEscape := false
+	for i, c := range input[start:] {
+		// remember that we're probably looking part-way through a string!
+		i += start
+
+		// are we dealing with an escaped char?
+		if inEscape {
+			inEscape = false
+		} else if c == '\\' {
 			// skip escaped chars
-			i++
-		} else if input[i] == '{' {
+			inEscape = true
+		} else if c == '{' {
 			braceDepth++
-		} else if input[i] == '}' {
+		} else if c == '}' {
 			braceDepth--
 
 			if braceDepth == 0 {
 				return i + 1, true
 			}
-		} else if input[i] == ' ' {
+		} else if c == ' ' {
 			if braceDepth == 0 {
 				// we must be looking at a var that was not surrounded
 				// by braces
