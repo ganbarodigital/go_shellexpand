@@ -49,6 +49,7 @@ func TestIsAlphaCharReturnsTrueForLowercaseChars(t *testing.T) {
 		// setup your test
 
 		expectedResult := true
+
 		// ----------------------------------------------------------------
 		// perform the change
 
@@ -69,6 +70,7 @@ func TestIsAlphaCharReturnsTrueForUppercaseChars(t *testing.T) {
 		// setup your test
 
 		expectedResult := true
+
 		// ----------------------------------------------------------------
 		// perform the change
 
@@ -89,6 +91,7 @@ func TestIsAlphaCharReturnsFalseOtherwise(t *testing.T) {
 		// setup your test
 
 		expectedResult := false
+
 		// ----------------------------------------------------------------
 		// perform the change
 
@@ -99,4 +102,64 @@ func TestIsAlphaCharReturnsFalseOtherwise(t *testing.T) {
 
 		assert.Equal(t, expectedResult, actualResult)
 	}
+}
+
+func TestIsSignedNumericStringReturnsTrueForZero(t *testing.T) {
+	t.Parallel()
+
+	// ----------------------------------------------------------------
+	// setup your test
+
+	testData := "0"
+	expectedResult := true
+
+	// ----------------------------------------------------------------
+	// perform the change
+
+	actualResult := isSignedNumericString(testData)
+
+	// ----------------------------------------------------------------
+	// test the results
+
+	assert.Equal(t, expectedResult, actualResult)
+}
+
+func TestIsSignedNumericStringReturnsFalseIfNumberStartsWithLeadingZero(t *testing.T) {
+	t.Parallel()
+
+	// ----------------------------------------------------------------
+	// setup your test
+
+	testData := "0123"
+	expectedResult := false
+
+	// ----------------------------------------------------------------
+	// perform the change
+
+	actualResult := isSignedNumericString(testData)
+
+	// ----------------------------------------------------------------
+	// test the results
+
+	assert.Equal(t, expectedResult, actualResult)
+}
+
+func TestIsNumericStringWithoutLeadingZeroReturnsFalseForEmptyString(t *testing.T) {
+	t.Parallel()
+
+	// ----------------------------------------------------------------
+	// setup your test
+
+	testData := ""
+	expectedResult := false
+
+	// ----------------------------------------------------------------
+	// perform the change
+
+	actualResult := isNumericStringWithoutLeadingZero(testData)
+
+	// ----------------------------------------------------------------
+	// test the results
+
+	assert.Equal(t, expectedResult, actualResult)
 }
