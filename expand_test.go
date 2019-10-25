@@ -605,6 +605,38 @@ func TestExpand(t *testing.T) {
 			input:          "${PARAM1,[0-9]}",
 			expectedResult: "ALFRED",
 		},
+		// lowercase all chars, no replacement pattern
+		{
+			vars: map[string]string{
+				"PARAM1": "ALFRED",
+			},
+			input:          "${PARAM1,,}",
+			expectedResult: "alfred",
+		},
+		// lowercase all chars, replacement pattern matches
+		{
+			vars: map[string]string{
+				"PARAM1": "ALFRED",
+			},
+			input:          "${PARAM1,,[A-Z]}",
+			expectedResult: "alfred",
+		},
+		// lowercase all chars, replacement pattern partial matches
+		{
+			vars: map[string]string{
+				"PARAM1": "ALFRED",
+			},
+			input:          "${PARAM1,,[A-M]}",
+			expectedResult: "alfRed",
+		},
+		// lowercase all chars, replacement pattern does not match
+		{
+			vars: map[string]string{
+				"PARAM1": "ALFRED",
+			},
+			input:          "${PARAM1,,[0-9]}",
+			expectedResult: "ALFRED",
+		},
 	}
 
 	for _, testData := range testDataSets {
