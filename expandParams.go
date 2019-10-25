@@ -394,7 +394,7 @@ func expandParamUppercaseFirstChar(paramName, paramValue string, paramDesc param
 		}
 
 		g := glob.NewGlob(paramDesc.parts[1])
-		success, err := g.Match(paramValue)
+		success, err := g.Match(string(firstChar))
 		if err != nil {
 			return "", false, err
 		}

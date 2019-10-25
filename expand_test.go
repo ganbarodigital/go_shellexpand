@@ -525,13 +525,29 @@ func TestExpand(t *testing.T) {
 			input:          "${PARAM1%%d*c}",
 			expectedResult: "go",
 		},
-		// uppercase first letter
+		// uppercase first letter, no replacement pattern
 		{
 			vars: map[string]string{
 				"PARAM1": "alfred",
 			},
 			input:          "${PARAM1^}",
 			expectedResult: "Alfred",
+		},
+		// uppercase first letter, replacement pattern matches
+		{
+			vars: map[string]string{
+				"PARAM1": "alfred",
+			},
+			input:          "${PARAM1^[a-z]}",
+			expectedResult: "Alfred",
+		},
+		// uppercase first letter, replacement pattern does not match
+		{
+			vars: map[string]string{
+				"PARAM1": "alfred",
+			},
+			input:          "${PARAM1^[A-Z]}",
+			expectedResult: "alfred",
 		},
 	}
 
