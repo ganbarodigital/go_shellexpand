@@ -479,12 +479,6 @@ func parseParameter(input string) (paramDesc, bool) {
 		return retval, true
 
 	case paramOpLowercaseFirstChar:
-		// according to my testing, if there's nothing after the operand,
-		// UNIX shells simply do an expand-to-value
-		if opEnd == maxInput {
-			retval.kind = paramExpandToValue
-			return retval, true
-		}
 		retval.kind = paramExpandLowercaseFirstChar
 		retval.parts = append(retval.parts, input[opEnd+1:inputLen])
 		return retval, true
