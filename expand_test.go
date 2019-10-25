@@ -517,6 +517,14 @@ func TestExpand(t *testing.T) {
 			input:          "${PARAM1%d*c}",
 			expectedResult: "godoc",
 		},
+		// remove suffix longest match
+		{
+			vars: map[string]string{
+				"PARAM1": "godocdoc",
+			},
+			input:          "${PARAM1%%d*c}",
+			expectedResult: "go",
+		},
 	}
 
 	for _, testData := range testDataSets {
