@@ -55,6 +55,7 @@ type expandTestData struct {
 	input                string
 	shellExtra           []string
 	expectedResult       string
+	expectedError        string
 	resultSubstringMatch bool
 	actualResult         func(expandTestData) string
 }
@@ -709,6 +710,15 @@ func TestExpand(t *testing.T) {
 			input:          "${PARAM1,,[0-9]}",
 			expectedResult: "ALFRED",
 		},
+		// lowercase all chars, invalid pattern
+		{
+			vars: map[string]string{
+				"PARAM1": "ALFRED",
+			},
+			input:          "${PARAM1,,[0-9}",
+			expectedResult: "",
+			expectedError:  "bad or unsupported glob pattern '[0-9': error parsing regexp: missing closing ]: `[0-9$`",
+		},
 	}
 
 	for _, testData := range testDataSets {
@@ -812,6 +822,7 @@ func TestExpand(t *testing.T) {
 		// shorthand
 		input := testData.input
 		expectedResult := testData.expectedResult
+		expectedError := testData.expectedError
 
 		// ----------------------------------------------------------------
 		// perform the change
@@ -820,7 +831,7 @@ func TestExpand(t *testing.T) {
 		shellRawResult, _ := cmd.CombinedOutput()
 		shellActualResult := strings.TrimSpace(string(shellRawResult))
 
-		internalActualResult, _ := Expand(input, varFuncs)
+		internalActualResult, internalActualError := Expand(input, varFuncs)
 		// special case - the result is a side effect, not a direct string
 		// expansion
 		if testData.actualResult != nil {
@@ -831,12 +842,27 @@ func TestExpand(t *testing.T) {
 		// test the results
 
 		// assert.Nil(t, shellErr)
-		if testData.resultSubstringMatch {
-			assert.Contains(t, shellActualResult, expectedResult, buf.String())
-			assert.Contains(t, internalActualResult, expectedResult, testData)
+		if len(expectedError) > 0 {
+			assert.Error(t, internalActualError)
+			assert.Equal(t, expectedError, internalActualError.Error())
+
+			// if we are in an error situation, we don't care what
+			// the shell did
+			if testData.resultSubstringMatch {
+				assert.Contains(t, internalActualResult, expectedResult, testData)
+			} else {
+				assert.Equal(t, expectedResult, internalActualResult, testData)
+			}
 		} else {
-			assert.Equal(t, expectedResult, shellActualResult, buf.String())
-			assert.Equal(t, expectedResult, internalActualResult, testData)
+			assert.Nil(t, internalActualError)
+
+			if testData.resultSubstringMatch {
+				assert.Contains(t, shellActualResult, expectedResult, buf.String())
+				assert.Contains(t, internalActualResult, expectedResult, testData)
+			} else {
+				assert.Equal(t, expectedResult, shellActualResult, buf.String())
+				assert.Equal(t, expectedResult, internalActualResult, testData)
+			}
 		}
 	}
 }
