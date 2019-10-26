@@ -6987,3 +6987,23 @@ func TestParseParamPlingSingleQuotedDoesNotSupportIndirection(t *testing.T) {
 	assert.False(t, ok)
 	assert.Equal(t, expectedResult, actualResult)
 }
+
+func TestParseParameterOpReturnsEmptyResultForUnknownOperationType(t *testing.T) {
+	t.Parallel()
+
+	// ----------------------------------------------------------------
+	// setup your test
+
+	expectedResult := paramDesc{}
+
+	// ----------------------------------------------------------------
+	// perform the change
+
+	actualResult, ok := parseParameterOp("${PARAM1:-valid}", paramDesc{}, 100000, 16)
+
+	// ----------------------------------------------------------------
+	// test the results
+
+	assert.False(t, ok)
+	assert.Equal(t, expectedResult, actualResult)
+}

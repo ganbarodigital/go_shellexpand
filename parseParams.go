@@ -305,6 +305,14 @@ func parseParameter(input string) (paramDesc, bool) {
 		return paramDesc{}, false
 	}
 
+	return parseParameterOp(input[:inputLen], retval, opType, opEnd)
+}
+
+func parseParameterOp(input string, retval paramDesc, opType, opEnd int) (paramDesc, bool) {
+	// shorthand
+	inputLen := len(input)
+	maxInput := inputLen - 1
+
 	switch opType {
 	case paramOpUseDefaultValue:
 		retval.kind = paramExpandWithDefaultValue
