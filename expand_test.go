@@ -782,6 +782,31 @@ func TestExpandParamToAlternativeValue(t *testing.T) {
 		vars: map[string]string{
 			"foo": "bar",
 		},
+		input:                "${foo:+${bar##abc[}}",
+		expectedError:        "bad or unsupported glob pattern 'abc[': error parsing regexp: missing closing ]: `[`",
+		resultSubstringMatch: true,
+	}
+	testExpandTestCase(t, testData)
+}
+
+func TestExpandParamNotToAlternativeValue(t *testing.T) {
+	// simple param, use alternative value
+	testData := expandTestData{
+		vars: map[string]string{
+			"foo": "",
+		},
+		input:          "${foo:+alternative}",
+		expectedResult: "",
+	}
+	testExpandTestCase(t, testData)
+}
+
+func TestExpandParamToAlternativeValueWithErroredWordExpansion(t *testing.T) {
+	// simple param, use alternative value
+	testData := expandTestData{
+		vars: map[string]string{
+			"foo": "bar",
+		},
 		input:          "${foo:+alternative}",
 		expectedResult: "alternative",
 	}
