@@ -310,15 +310,24 @@ func expandParamSubstring(paramName, paramValue string, paramDesc paramDesc, var
 }
 
 func expandParamSubstringLength(paramName, paramValue string, paramDesc paramDesc, varFuncs VarFuncs) (string, bool, error) {
+	// where do we start from?
 	start, err := strconv.Atoi(paramDesc.parts[1])
 	if err != nil {
 		return paramValue, true, nil
 	}
+	// range overflow?
+	if start > len(paramValue) {
+		return "", true, nil
+	}
+
+	// and where do we end?
 	amount, err := strconv.Atoi(paramDesc.parts[2])
 	if err != nil {
 		return "", false, nil
 	}
 	end := start + amount
+
+	// watch out for this range overflowing too!
 	if end > len(paramValue) {
 		end = len(paramValue)
 	}
