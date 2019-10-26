@@ -59,7 +59,8 @@ type expandTestData struct {
 	expectedError        string
 	resultSubstringMatch bool
 	actualResult         func(expandTestData) string
-	AssignToVar          AssignVar
+	assignToVar          AssignVar
+	lookupVar            LookupVar
 }
 
 func TestExpandBraceExpansion(t *testing.T) {
@@ -202,6 +203,15 @@ func TestExpandSimpleParam(t *testing.T) {
 		},
 		input:          "$PARAM1",
 		expectedResult: "foo",
+	}
+	testExpandTestCase(t, testData)
+}
+
+func TestExpandUnsetParam(t *testing.T) {
+	// unset param, no braces
+	testData := expandTestData{
+		input:          "$PARAM1",
+		expectedResult: "",
 	}
 	testExpandTestCase(t, testData)
 }
@@ -517,6 +527,15 @@ func TestExpandParamWithIndirection(t *testing.T) {
 	testExpandTestCase(t, testData)
 }
 
+func TestExpandUnsetParamWithIndirection(t *testing.T) {
+	// unset param, with indirection
+	testData := expandTestData{
+		input:          "${!PARAM1}",
+		expectedResult: "",
+	}
+	testExpandTestCase(t, testData)
+}
+
 func TestExpandParamToDefaultValue(t *testing.T) {
 	// simple param, default value triggered
 	testData := expandTestData{
@@ -678,7 +697,7 @@ func TestExpandParamSetToDefaultValueWithErroredAssignment(t *testing.T) {
 		actualResult: func(testData expandTestData) string {
 			return testData.vars["PARAM1"]
 		},
-		AssignToVar: func(key, value string) error {
+		assignToVar: func(key, value string) error {
 			return fmt.Errorf("assignment error")
 		},
 	}
@@ -1278,8 +1297,13 @@ func testExpandTestCase(t *testing.T, testData expandTestData) {
 			return retval
 		},
 	}
-	if testData.AssignToVar != nil {
-		varFuncs.AssignToVar = testData.AssignToVar
+
+	// do we need more specific behaviour for this test?
+	if testData.assignToVar != nil {
+		varFuncs.AssignToVar = testData.assignToVar
+	}
+	if testData.lookupVar != nil {
+		varFuncs.LookupVar = testData.lookupVar
 	}
 
 	// shorthand
