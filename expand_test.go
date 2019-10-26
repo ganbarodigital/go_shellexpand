@@ -899,6 +899,18 @@ func TestExpandParamSubstringLengthInvalidLength(t *testing.T) {
 	testExpandTestCase(t, testData)
 }
 
+func TestExpandParamSubstringLengthTooLength(t *testing.T) {
+	// simple param, expand substring w/ too long
+	testData := expandTestData{
+		vars: map[string]string{
+			"foo": "1234567890",
+		},
+		input:          "${foo:1:100}",
+		expectedResult: "234567890",
+	}
+	testExpandTestCase(t, testData)
+}
+
 func TestExpandParamNamesByPrefixStar(t *testing.T) {
 	// expand param names by prefix with * suffix
 	testData := expandTestData{

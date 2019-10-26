@@ -319,8 +319,8 @@ func expandParamSubstringLength(paramName, paramValue string, paramDesc paramDes
 		return "", false, nil
 	}
 	end := start + amount
-	if amount > len(paramValue) {
-		amount = len(paramValue)
+	if end > len(paramValue) {
+		end = len(paramValue)
 	}
 
 	return paramValue[start:end], true, nil
