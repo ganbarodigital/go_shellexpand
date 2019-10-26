@@ -182,74 +182,58 @@ func expandParameter(paramDesc paramDesc, varFuncs VarFuncs) (string, error) {
 	// what we will (eventually) send back
 	var retval []string
 
-	// ... but only if all is well
-	var ok bool
-
 	// and, because we may be building it up bit by bit, we need somewhere
 	// to store it temporarily
 	var buf string
 
 	// step 1: we need to expand the paramName first, to support any
 	// possible use of indirection
-	paramName, ok, err := expandParamName(paramDesc, varFuncs.LookupVar)
-	if err != nil {
-		return "", err
-	}
-
-	switch paramDesc.kind {
-	case paramExpandNoOfPositionalParams:
-		// special case
-		buf, ok = varFuncs.LookupVar("$#")
-		retval = append(retval, buf)
-	default:
-		// step 2: we need to feed that into all the different ways that
-		// parameters can be expanded in strings
-		//
-		// this is complicated by some parameters ($*, $@, and arrays if we
-		// ever add support for them in the future) having the expansion applied
-		// to each part of their value
-		for paramValue := range expandParamValue(paramName, varFuncs.LookupVar) {
-			expandFunc, ok := paramExpandFuncs[paramDesc.kind]
-			if ok {
-				var err error
-				buf, ok, err = expandFunc(paramName, paramValue, paramDesc, varFuncs)
-				if err != nil {
-					return "", err
-				}
-
-				if len(buf) > 0 {
-					retval = append(retval, buf)
-				}
-			}
-		}
-	}
-
-	// are we happy with our attempted expansion?
+	paramName, ok := expandParamName(paramDesc, varFuncs.LookupVar)
 	if !ok {
 		return "", nil
+	}
+
+	// special case
+	if paramDesc.kind == paramExpandNoOfPositionalParams {
+		buf, ok = varFuncs.LookupVar("$#")
+		return buf, nil
+	}
+
+	// step 2: we need to feed that into all the different ways that
+	// parameters can be expanded in strings
+	//
+	// this is complicated by some parameters ($*, $@, and arrays if we
+	// ever add support for them in the future) having the expansion applied
+	// to each part of their value
+	for paramValue := range expandParamValue(paramName, varFuncs.LookupVar) {
+		expandFunc, ok := paramExpandFuncs[paramDesc.kind]
+		if !ok {
+			return "", nil
+		}
+
+		var err error
+		buf, ok, err = expandFunc(paramName, paramValue, paramDesc, varFuncs)
+		if err != nil {
+			return "", err
+		}
+
+		if len(buf) > 0 {
+			retval = append(retval, buf)
+		}
 	}
 
 	// if we get here, then yes, we are happy
 	return strings.Join(retval, " "), nil
 }
 
-func expandParamName(paramDesc paramDesc, lookupVar LookupVar) (string, bool, error) {
+func expandParamName(paramDesc paramDesc, lookupVar LookupVar) (string, bool) {
 	varName := paramDesc.parts[0]
 	ok := true
 	if paramDesc.indirect {
 		varName, ok = lookupVar(varName)
 	}
 
-	return varName, ok, nil
-}
-
-func expandParamWithIndirection(paramName string, lookupVar LookupVar) string {
-	retval, ok := lookupVar(paramName)
-	if !ok {
-		return ""
-	}
-
-	return retval
+	return varName, ok
 }
 
 func expandParamToValue(paramName, paramValue string, paramDesc paramDesc, varFuncs VarFuncs) (string, bool, error) {
