@@ -736,6 +736,46 @@ func TestExpandParamErrorWritten(t *testing.T) {
 	testExpandTestCase(t, testData)
 }
 
+func TestExpandParamErrorWrittenWithWordExpansion(t *testing.T) {
+	// simple param, error written
+	testData := expandTestData{
+		vars: map[string]string{
+			"foo": "",
+			"bar": "not set",
+		},
+		input:                "${foo:?${bar}}",
+		expectedResult:       "foo: not set",
+		resultSubstringMatch: true,
+	}
+	testExpandTestCase(t, testData)
+}
+
+func TestExpandParamErrorWrittenWithErroredWordExpansion(t *testing.T) {
+	// simple param, error written
+	testData := expandTestData{
+		vars: map[string]string{
+			"foo": "",
+			"bar": "not set",
+		},
+		input:                "${foo:?${bar##abc[}}",
+		expectedError:        "bad or unsupported glob pattern 'abc[': error parsing regexp: missing closing ]: `[`",
+		resultSubstringMatch: true,
+	}
+	testExpandTestCase(t, testData)
+}
+
+func TestExpandParamErrorNotWritten(t *testing.T) {
+	// simple param, error written
+	testData := expandTestData{
+		vars: map[string]string{
+			"foo": "bar",
+		},
+		input:          "${foo:?not set}",
+		expectedResult: "bar",
+	}
+	testExpandTestCase(t, testData)
+}
+
 func TestExpandParamToAlternativeValue(t *testing.T) {
 	// simple param, use alternative value
 	testData := expandTestData{
