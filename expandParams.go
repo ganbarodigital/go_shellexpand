@@ -316,7 +316,7 @@ func expandParamSubstringLength(paramName, paramValue string, paramDesc paramDes
 	}
 	amount, err := strconv.Atoi(paramDesc.parts[2])
 	if err != nil {
-		return "", false, err
+		return "", false, nil
 	}
 	end := start + amount
 	if amount > len(paramValue) {
