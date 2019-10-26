@@ -1045,6 +1045,18 @@ func TestExpandParamRemoveShortestPrefix(t *testing.T) {
 	testExpandTestCase(t, testData)
 }
 
+func TestExpandParamRemoveShortestPrefixDoesNotMatchPattern(t *testing.T) {
+	// remove prefix shortest match
+	testData := expandTestData{
+		vars: map[string]string{
+			"PARAM1": "docdoc",
+		},
+		input:          "${PARAM1#aaa}",
+		expectedResult: "docdoc",
+	}
+	testExpandTestCase(t, testData)
+}
+
 func TestExpandPositionalParamsRemoveShortestPrefix(t *testing.T) {
 	// remove prefix, shortest match, applied to $*
 	testData := expandTestData{
