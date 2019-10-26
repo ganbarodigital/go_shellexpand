@@ -312,7 +312,7 @@ func expandParamSubstring(paramName, paramValue string, paramDesc paramDesc, var
 func expandParamSubstringLength(paramName, paramValue string, paramDesc paramDesc, varFuncs VarFuncs) (string, bool, error) {
 	start, err := strconv.Atoi(paramDesc.parts[1])
 	if err != nil {
-		return "", false, err
+		return paramValue, true, nil
 	}
 	amount, err := strconv.Atoi(paramDesc.parts[2])
 	if err != nil {
