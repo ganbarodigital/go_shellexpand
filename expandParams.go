@@ -403,10 +403,8 @@ func expandParamRemoveSuffixLongestMatch(paramName, paramValue string, paramDesc
 		return "", false, err
 	}
 	if success {
-		if pos < len(paramValue) {
-			return paramValue[:pos], true, nil
-		}
-		return "", true, nil
+		// it is impossible for 'pos' to be out-of-bounds
+		return paramValue[:pos], true, nil
 	}
 
 	return paramValue, true, nil

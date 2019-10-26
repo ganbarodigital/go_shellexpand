@@ -1149,6 +1149,18 @@ func TestExpandParamRemoveShortestSuffixMatchesEmptyPattern(t *testing.T) {
 	testExpandTestCase(t, testData)
 }
 
+func TestExpandParamRemoveShortestSuffixInvalidPattern(t *testing.T) {
+	// remove suffix shortest match
+	testData := expandTestData{
+		vars: map[string]string{
+			"PARAM1": "godocdoc",
+		},
+		input:         "${PARAM1%abc[}",
+		expectedError: "bad or unsupported glob pattern 'abc[': error parsing regexp: missing closing ]: `[$`",
+	}
+	testExpandTestCase(t, testData)
+}
+
 func TestExpandPositionalParamsRemoveShortestSuffix(t *testing.T) {
 	// remove suffix, shortest match, applied to $*
 	testData := expandTestData{
@@ -1183,6 +1195,18 @@ func TestExpandParamRemoveLongestSuffix(t *testing.T) {
 	testExpandTestCase(t, testData)
 }
 
+func TestExpandParamRemoveLongestSuffixMatchesEmptyPattern(t *testing.T) {
+	// remove suffix longest match
+	testData := expandTestData{
+		vars: map[string]string{
+			"PARAM1": "godocdoc",
+		},
+		input:          "${PARAM1%%*}",
+		expectedResult: "",
+	}
+	testExpandTestCase(t, testData)
+}
+
 func TestExpandPositionalParamsRemoveLongestSuffix(t *testing.T) {
 	// remove suffix, longest match, applied to $*
 	testData := expandTestData{
@@ -1201,6 +1225,18 @@ func TestExpandPositionalParamsRemoveLongestSuffix(t *testing.T) {
 		},
 		input:          "${*%%o*}",
 		expectedResult: "f bar alfred tr hadd c plaice p whitebait bank",
+	}
+	testExpandTestCase(t, testData)
+}
+
+func TestExpandParamRemoveLongestSuffixInvalidPattern(t *testing.T) {
+	// remove suffix shortest match
+	testData := expandTestData{
+		vars: map[string]string{
+			"PARAM1": "godocdoc",
+		},
+		input:         "${PARAM1%%abc[}",
+		expectedError: "bad or unsupported glob pattern 'abc[': error parsing regexp: missing closing ]: `[$`",
 	}
 	testExpandTestCase(t, testData)
 }
