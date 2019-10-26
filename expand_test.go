@@ -59,6 +59,7 @@ type expandTestData struct {
 	expectedError        string
 	resultSubstringMatch bool
 	actualResult         func(expandTestData) string
+	AssignToVar          AssignVar
 }
 
 func TestExpandBraceExpansion(t *testing.T) {
@@ -604,6 +605,25 @@ func TestExpandParamSetToDefaultValue(t *testing.T) {
 	testExpandTestCase(t, testData)
 }
 
+func TestExpandParamNotSetToDefaultValue(t *testing.T) {
+	// simple param, default value set
+	testData := expandTestData{
+		vars: map[string]string{
+			"PARAM1": "bar",
+		},
+		input: "${PARAM1:=foo}",
+		shellExtra: []string{
+			"dummy=${PARAM1:=foo}",
+			"echo $PARAM1",
+		},
+		expectedResult: "bar",
+		actualResult: func(testData expandTestData) string {
+			return testData.vars["PARAM1"]
+		},
+	}
+	testExpandTestCase(t, testData)
+}
+
 func TestExpandParamSetToDefaultValueWithWordExpansion(t *testing.T) {
 	// simple param, default value set to word expansion
 	testData := expandTestData{
@@ -618,6 +638,48 @@ func TestExpandParamSetToDefaultValueWithWordExpansion(t *testing.T) {
 		expectedResult: "bar",
 		actualResult: func(testData expandTestData) string {
 			return testData.vars["PARAM1"]
+		},
+	}
+	testExpandTestCase(t, testData)
+}
+
+func TestExpandParamSetToDefaultValueWithErroredWordExpansion(t *testing.T) {
+	// simple param, default value set
+	testData := expandTestData{
+		vars: map[string]string{
+			"PARAM1": "",
+			"PARAM2": "dummy",
+		},
+		input: "${PARAM1:=${PARAM2##abc[}}",
+		shellExtra: []string{
+			"dummy=${PARAM1:=foo}",
+			"echo $PARAM1",
+		},
+		expectedError: "bad or unsupported glob pattern 'abc[': error parsing regexp: missing closing ]: `[`",
+		actualResult: func(testData expandTestData) string {
+			return testData.vars["PARAM1"]
+		},
+	}
+	testExpandTestCase(t, testData)
+}
+
+func TestExpandParamSetToDefaultValueWithErroredAssignment(t *testing.T) {
+	// simple param, default value set
+	testData := expandTestData{
+		vars: map[string]string{
+			"PARAM1": "",
+		},
+		input: "${PARAM1:=foo}",
+		shellExtra: []string{
+			"dummy=${PARAM1:=foo}",
+			"echo $PARAM1",
+		},
+		expectedError: "assignment error",
+		actualResult: func(testData expandTestData) string {
+			return testData.vars["PARAM1"]
+		},
+		AssignToVar: func(key, value string) error {
+			return fmt.Errorf("assignment error")
 		},
 	}
 	testExpandTestCase(t, testData)
@@ -1215,6 +1277,9 @@ func testExpandTestCase(t *testing.T, testData expandTestData) {
 
 			return retval
 		},
+	}
+	if testData.AssignToVar != nil {
+		varFuncs.AssignToVar = testData.AssignToVar
 	}
 
 	// shorthand
