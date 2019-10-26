@@ -306,6 +306,11 @@ func expandParamSubstring(paramName, paramValue string, paramDesc paramDesc, var
 		return paramValue, true, nil
 	}
 
+	// range overflow?
+	if start > len(paramValue) {
+		return "", true, nil
+	}
+
 	return paramValue[start:], true, nil
 }
 
