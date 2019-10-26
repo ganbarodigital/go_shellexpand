@@ -69,3 +69,99 @@ func TestExpandParameterReturnsEmptyStringForUnsupportedParamOp(t *testing.T) {
 	assert.Nil(t, err)
 	assert.Equal(t, expectedResult, actualResult)
 }
+
+func TestExpandParamValueReturnsEmptyStringWhenDollarHashNotSet(t *testing.T) {
+	t.Parallel()
+
+	// ----------------------------------------------------------------
+	// setup your test
+
+	lookupVar := func(key string) (string, bool) {
+		switch key {
+		case "$#":
+			return "", false
+		case "$1":
+			return "one", true
+		default:
+			return "default", true
+		}
+	}
+	expectedResult := []string{""}
+
+	// ----------------------------------------------------------------
+	// perform the change
+
+	actualResult := []string{}
+	for r := range expandParamValue("$*", lookupVar) {
+		actualResult = append(actualResult, r)
+	}
+
+	// ----------------------------------------------------------------
+	// test the results
+
+	assert.Equal(t, expectedResult, actualResult)
+}
+
+func TestExpandParamValueReturnsEmptyStringWhenDollarHashHasEmptyValue(t *testing.T) {
+	t.Parallel()
+
+	// ----------------------------------------------------------------
+	// setup your test
+
+	lookupVar := func(key string) (string, bool) {
+		switch key {
+		case "$#":
+			return "", true
+		case "$1":
+			return "one", true
+		default:
+			return "default", true
+		}
+	}
+	expectedResult := []string{""}
+
+	// ----------------------------------------------------------------
+	// perform the change
+
+	actualResult := []string{}
+	for r := range expandParamValue("$*", lookupVar) {
+		actualResult = append(actualResult, r)
+	}
+
+	// ----------------------------------------------------------------
+	// test the results
+
+	assert.Equal(t, expectedResult, actualResult)
+}
+
+func TestExpandParamValueReturnsEmptyStringWhenDollarHashNotNumericValue(t *testing.T) {
+	t.Parallel()
+
+	// ----------------------------------------------------------------
+	// setup your test
+
+	lookupVar := func(key string) (string, bool) {
+		switch key {
+		case "$#":
+			return "hello", true
+		case "$1":
+			return "one", true
+		default:
+			return "default", true
+		}
+	}
+	expectedResult := []string{""}
+
+	// ----------------------------------------------------------------
+	// perform the change
+
+	actualResult := []string{}
+	for r := range expandParamValue("$*", lookupVar) {
+		actualResult = append(actualResult, r)
+	}
+
+	// ----------------------------------------------------------------
+	// test the results
+
+	assert.Equal(t, expectedResult, actualResult)
+}

@@ -514,30 +514,28 @@ func expandParamValue(key string, lookupVar LookupVar) <-chan string {
 
 	// are we expanding the positional parameters?
 	if key == "$@" || key == "$*" {
-		// how many positional parameters are there?
-		//
-		// we rely on $# being correctly set by the caller
-		rawMax, ok := lookupVar("$#")
-		if !ok {
-			chn <- ""
-			close(chn)
-		} else {
-			maxI, err := strconv.Atoi(rawMax)
-			if err != nil {
+		go func() {
+			// how many positional parameters are there?
+			//
+			// we rely on $# being correctly set by the caller
+			rawMax, ok := lookupVar("$#")
+			if !ok {
 				chn <- ""
-				close(chn)
 			} else {
-				go func() {
+				maxI, err := strconv.Atoi(rawMax)
+				if err != nil {
+					chn <- ""
+				} else {
 					for i := 1; i <= maxI; i++ {
 						retval, ok := lookupVar("$" + strconv.Itoa(i))
 						if ok {
 							chn <- retval
 						}
 					}
-					close(chn)
-				}()
+				}
 			}
-		}
+			close(chn)
+		}()
 	} else {
 		go func() {
 			retval, _ := lookupVar(key)
