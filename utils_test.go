@@ -124,6 +124,44 @@ func TestIsSignedNumericStringReturnsTrueForZero(t *testing.T) {
 	assert.Equal(t, expectedResult, actualResult)
 }
 
+func TestIsSignedNumericStringReturnsTrueForPositiveNumbers(t *testing.T) {
+	t.Parallel()
+
+	for _, testData := range []string{
+		"1",
+		"2",
+		"3",
+		"4",
+		"5",
+		"6",
+		"7",
+		"8",
+		"9",
+		"10",
+		"11",
+		"12",
+		"23",
+		"14",
+		"1576",
+		"15157",
+	} {
+		// ----------------------------------------------------------------
+		// setup your test
+
+		expectedResult := true
+
+		// ----------------------------------------------------------------
+		// perform the change
+
+		actualResult := isSignedNumericString(testData)
+
+		// ----------------------------------------------------------------
+		// test the results
+
+		assert.Equal(t, expectedResult, actualResult)
+	}
+}
+
 func TestIsSignedNumericStringReturnsFalseIfNumberStartsWithLeadingZero(t *testing.T) {
 	t.Parallel()
 
@@ -157,6 +195,26 @@ func TestIsNumericStringWithoutLeadingZeroReturnsFalseForEmptyString(t *testing.
 	// perform the change
 
 	actualResult := isNumericStringWithoutLeadingZero(testData)
+
+	// ----------------------------------------------------------------
+	// test the results
+
+	assert.Equal(t, expectedResult, actualResult)
+}
+
+func TestIsSignedNumericStringReturnsFalseIfNumberContainsLetters(t *testing.T) {
+	t.Parallel()
+
+	// ----------------------------------------------------------------
+	// setup your test
+
+	testData := "123abc"
+	expectedResult := false
+
+	// ----------------------------------------------------------------
+	// perform the change
+
+	actualResult := isSignedNumericString(testData)
 
 	// ----------------------------------------------------------------
 	// test the results
