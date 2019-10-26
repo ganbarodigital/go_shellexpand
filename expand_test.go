@@ -1265,6 +1265,18 @@ func TestExpandParamUppercaseFirstLetterWithPattern(t *testing.T) {
 	testExpandTestCase(t, testData)
 }
 
+func TestExpandParamUppercaseFirstLetterEmptyParam(t *testing.T) {
+	// uppercase first letter, replacement pattern matches
+	testData := expandTestData{
+		vars: map[string]string{
+			"PARAM1": "",
+		},
+		input:          "${PARAM1^[a-z]}",
+		expectedResult: "",
+	}
+	testExpandTestCase(t, testData)
+}
+
 func TestExpandParamUppercaseFirstLetterDoesNotMatchPattern(t *testing.T) {
 	// uppercase first letter, replacement pattern does not match
 	testData := expandTestData{
@@ -1273,6 +1285,18 @@ func TestExpandParamUppercaseFirstLetterDoesNotMatchPattern(t *testing.T) {
 		},
 		input:          "${PARAM1^[A-Z]}",
 		expectedResult: "alfred",
+	}
+	testExpandTestCase(t, testData)
+}
+
+func TestExpandParamUppercaseFirstCharInvalidPattern(t *testing.T) {
+	testData := expandTestData{
+		vars: map[string]string{
+			"PARAM1": "ALFRED",
+		},
+		input:          "${PARAM1^[0-9}",
+		expectedResult: "",
+		expectedError:  "bad or unsupported glob pattern '[0-9': error parsing regexp: missing closing ]: `[0-9$`",
 	}
 	testExpandTestCase(t, testData)
 }
@@ -1301,6 +1325,18 @@ func TestExpandParamUppercaseAllCharsMatchesPattern(t *testing.T) {
 	testExpandTestCase(t, testData)
 }
 
+func TestExpandParamUppercaseAllCharsEmptyParam(t *testing.T) {
+	// uppercase all chars, variable is empty
+	testData := expandTestData{
+		vars: map[string]string{
+			"PARAM1": "",
+		},
+		input:          "${PARAM1^[a-z]}",
+		expectedResult: "",
+	}
+	testExpandTestCase(t, testData)
+}
+
 func TestExpandParamUppercaseAllCharsPartiallyMatchesPattern(t *testing.T) {
 	// uppercase all chars, replacement pattern partial matches
 	testData := expandTestData{
@@ -1321,6 +1357,18 @@ func TestExpandUppercaseAllCharsDoNotMatchPattern(t *testing.T) {
 		},
 		input:          "${PARAM1^^[0-9]}",
 		expectedResult: "alfred",
+	}
+	testExpandTestCase(t, testData)
+}
+
+func TestExpandParamUppercaseAllCharsInvalidPattern(t *testing.T) {
+	testData := expandTestData{
+		vars: map[string]string{
+			"PARAM1": "ALFRED",
+		},
+		input:          "${PARAM1^^[0-9}",
+		expectedResult: "",
+		expectedError:  "bad or unsupported glob pattern '[0-9': error parsing regexp: missing closing ]: `[0-9$`",
 	}
 	testExpandTestCase(t, testData)
 }
@@ -1349,6 +1397,18 @@ func TestExpandParamLowercaseFirstCharMatchesPattern(t *testing.T) {
 	testExpandTestCase(t, testData)
 }
 
+func TestExpandParamLowercaseFirstCharEmptyParam(t *testing.T) {
+	// lowercase first letter, param is empty
+	testData := expandTestData{
+		vars: map[string]string{
+			"PARAM1": "",
+		},
+		input:          "${PARAM1,[A-Z]}",
+		expectedResult: "",
+	}
+	testExpandTestCase(t, testData)
+}
+
 func TestExpandParamLowercaseFirstCharDoesNotMatchPattern(t *testing.T) {
 	// lowercase first letter, replacement pattern does not match
 	testData := expandTestData{
@@ -1357,6 +1417,18 @@ func TestExpandParamLowercaseFirstCharDoesNotMatchPattern(t *testing.T) {
 		},
 		input:          "${PARAM1,[0-9]}",
 		expectedResult: "ALFRED",
+	}
+	testExpandTestCase(t, testData)
+}
+
+func TestExpandParamLowercaseFirstCharInvalidPattern(t *testing.T) {
+	testData := expandTestData{
+		vars: map[string]string{
+			"PARAM1": "ALFRED",
+		},
+		input:          "${PARAM1,[0-9}",
+		expectedResult: "",
+		expectedError:  "bad or unsupported glob pattern '[0-9': error parsing regexp: missing closing ]: `[0-9$`",
 	}
 	testExpandTestCase(t, testData)
 }
