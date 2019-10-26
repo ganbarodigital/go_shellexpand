@@ -140,7 +140,7 @@ func parseParameter(input string) (paramDesc, bool) {
 		if !ok {
 			return paramDesc{}, false
 		}
-		if paramEnd != maxInput {
+		if paramEnd != inputLen {
 			return paramDesc{}, false
 		}
 
@@ -219,7 +219,7 @@ func parseParameter(input string) (paramDesc, bool) {
 		paramType, paramEnd, _ = matchParam(input, 3)
 
 		// there can't be anything else in the input string
-		if paramEnd == maxInput {
+		if paramEnd == inputLen {
 			switch paramType {
 			case paramTypeName:
 				return paramDesc{
@@ -285,13 +285,13 @@ func parseParameter(input string) (paramDesc, bool) {
 	}
 	switch paramType {
 	case paramTypeName:
-		retval.parts = append(retval.parts, input[start:paramEnd+1])
+		retval.parts = append(retval.parts, input[start:paramEnd])
 	default:
-		retval.parts = append(retval.parts, "$"+input[start:paramEnd+1])
+		retval.parts = append(retval.parts, "$"+input[start:paramEnd])
 	}
 
 	// special case - is that it?
-	if paramEnd == maxInput {
+	if paramEnd == inputLen {
 		retval.kind = paramExpandToValue
 		return retval, true
 	}
@@ -299,7 +299,7 @@ func parseParameter(input string) (paramDesc, bool) {
 	// what kind of operator do we have?
 	//
 	// remember that it may be the last part of the parameter expansion
-	opStart := paramEnd + 1
+	opStart := paramEnd
 	opType, opEnd, ok = matchParamOp(input, opStart)
 	if !ok {
 		return paramDesc{}, false

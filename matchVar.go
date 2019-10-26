@@ -35,14 +35,11 @@
 
 package shellexpand
 
-func matchVar(input string, start int) (int, bool) {
-	// have we started on a dollar?
-	if input[start] != '$' {
-		return 0, false
-	}
+import "unicode/utf8"
 
-	// is the dollar escaped?
-	if start > 0 && input[start-1] == '\\' {
+func matchVar(input string) (int, bool) {
+	// have we started on a dollar?
+	if input[0] != '$' {
 		return 0, false
 	}
 
@@ -50,17 +47,19 @@ func matchVar(input string, start int) (int, bool) {
 	//
 	// special case: positional parameters are not subject to normal
 	// matching rules (sigh)
-	if isNumericChar(rune(input[start+1])) {
-		return start + 2, true
+	if isNumericChar(rune(input[1])) {
+		return 2, true
 	}
 
 	// general case - a non-positional parameter that may be wrapped
 	// in braces
 	braceDepth := 0
 	inEscape := false
-	for i, c := range input[start:] {
-		// remember that we're probably looking part-way through a string!
-		i += start
+	w := 0
+	var c rune
+	for i := 0; i < len(input); i += w {
+		// what are we looking at?
+		c, w = utf8.DecodeRuneInString(input[i:])
 
 		// are we dealing with an escaped char?
 		if inEscape {
@@ -74,7 +73,7 @@ func matchVar(input string, start int) (int, bool) {
 			braceDepth--
 
 			if braceDepth == 0 {
-				return i + 1, true
+				return i + w, true
 			}
 		} else if c == ' ' {
 			if braceDepth == 0 {

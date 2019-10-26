@@ -37,14 +37,14 @@ package shellexpand
 
 import "unicode/utf8"
 
-func matchSpecialParam(input string, start int) (int, int, bool) {
+func matchSpecialParam(input string) (int, int, bool) {
 	// what are we looking at?
-	r, _ := utf8.DecodeRuneInString(input[start:])
+	r, w := utf8.DecodeRuneInString(input)
 
 	// a special param is a single character
 	if !isShellSpecialChar(r) {
 		return paramTypeInvalid, 0, false
 	}
 
-	return paramTypeSpecial, start, true
+	return paramTypeSpecial, w, true
 }

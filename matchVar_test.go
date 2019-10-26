@@ -47,13 +47,13 @@ func TestMatchVarSingleSet(t *testing.T) {
 	// ----------------------------------------------------------------
 	// setup your test
 
-	testData := "this ${is} a test"
-	expectedEnd := 10
+	testData := "${this} is a test"
+	expectedEnd := 7
 
 	// ----------------------------------------------------------------
 	// perform the change
 
-	actualEnd, ok := matchVar(testData, 5)
+	actualEnd, ok := matchVar(testData)
 
 	// ----------------------------------------------------------------
 	// test the results
@@ -68,13 +68,13 @@ func TestMatchVarNestedSet(t *testing.T) {
 	// ----------------------------------------------------------------
 	// setup your test
 
-	testData := "this ${HOME:${TMPDIR:-/var/tmp}} a test"
-	expectedEnd := 32
+	testData := "${HOME:${TMPDIR:-/var/tmp}} a test"
+	expectedEnd := 27
 
 	// ----------------------------------------------------------------
 	// perform the change
 
-	actualEnd, ok := matchVar(testData, 5)
+	actualEnd, ok := matchVar(testData)
 
 	// ----------------------------------------------------------------
 	// test the results
@@ -83,40 +83,19 @@ func TestMatchVarNestedSet(t *testing.T) {
 	assert.True(t, ok)
 }
 
-func TestMatchVarIgnoresEscapedDollar(t *testing.T) {
-	t.Parallel()
-
-	// ----------------------------------------------------------------
-	// setup your test
-
-	testData := "this \\${HOME:${TMPDIR:-/var/tmp}} a test"
-	expectedEnd := 0
-
-	// ----------------------------------------------------------------
-	// perform the change
-
-	actualEnd, ok := matchVar(testData, 6)
-
-	// ----------------------------------------------------------------
-	// test the results
-
-	assert.Equal(t, expectedEnd, actualEnd)
-	assert.False(t, ok)
-}
-
 func TestMatchVarIgnoresMissingDollar(t *testing.T) {
 	t.Parallel()
 
 	// ----------------------------------------------------------------
 	// setup your test
 
-	testData := "this {HOME:${TMPDIR:-/var/tmp}} a test"
+	testData := "{HOME:${TMPDIR:-/var/tmp}} a test"
 	expectedEnd := 0
 
 	// ----------------------------------------------------------------
 	// perform the change
 
-	actualEnd, ok := matchVar(testData, 6)
+	actualEnd, ok := matchVar(testData)
 
 	// ----------------------------------------------------------------
 	// test the results
@@ -131,19 +110,19 @@ func TestMatchVarSupportsMissingOpeningBrace(t *testing.T) {
 	// ----------------------------------------------------------------
 	// setup your test
 
-	testData := "this $HOME a test"
-	expectedEnd := 10
+	testData := "$HOME a test"
+	expectedEnd := 5
 
 	// ----------------------------------------------------------------
 	// perform the change
 
-	actualEnd, ok := matchVar(testData, 5)
+	actualEnd, ok := matchVar(testData)
 
 	// ----------------------------------------------------------------
 	// test the results
 
 	assert.Equal(t, expectedEnd, actualEnd)
-	assert.Equal(t, testData[5:actualEnd], "$HOME")
+	assert.Equal(t, testData[:actualEnd], "$HOME")
 	assert.True(t, ok)
 }
 
@@ -153,13 +132,13 @@ func TestMatchVarIgnoresMissingClosingBraceMidString(t *testing.T) {
 	// ----------------------------------------------------------------
 	// setup your test
 
-	testData := "this ${HOME a test"
+	testData := "${HOME a test"
 	expectedEnd := 0
 
 	// ----------------------------------------------------------------
 	// perform the change
 
-	actualEnd, ok := matchVar(testData, 5)
+	actualEnd, ok := matchVar(testData)
 
 	// ----------------------------------------------------------------
 	// test the results
@@ -180,7 +159,7 @@ func TestMatchVarIgnoresMissingClosingBraceWholeString(t *testing.T) {
 	// ----------------------------------------------------------------
 	// perform the change
 
-	actualEnd, ok := matchVar(testData, 0)
+	actualEnd, ok := matchVar(testData)
 
 	// ----------------------------------------------------------------
 	// test the results
@@ -201,7 +180,7 @@ func TestMatchVarIgnoresEscapedClosingBrace(t *testing.T) {
 	// ----------------------------------------------------------------
 	// perform the change
 
-	actualEnd, ok := matchVar(testData, 0)
+	actualEnd, ok := matchVar(testData)
 
 	// ----------------------------------------------------------------
 	// test the results
@@ -250,10 +229,10 @@ func TestMatchVarKnownParamOperators(t *testing.T) {
 	// perform the change
 
 	for i := range testData {
-		testResult, ok := matchVar(testData[i], 0)
+		testResult, ok := matchVar(testData[i])
 
 		assert.True(t, ok)
-		assert.Equal(t, testData[i], testData[i][0:testResult])
+		assert.Equal(t, testData[i], testData[i][:testResult])
 	}
 
 	// ----------------------------------------------------------------

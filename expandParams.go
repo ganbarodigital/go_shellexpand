@@ -120,8 +120,9 @@ func expandParameters(input string, varFuncs VarFuncs) (string, error) {
 			inEscape = true
 		} else if c == '$' {
 			var ok bool
-			varEnd, ok = matchVar(input, i)
+			varEnd, ok = matchVar(input[i:])
 			if ok {
+				varEnd += i
 				paramDesc, ok := parseParameter(input[i:varEnd])
 				if !ok {
 					continue

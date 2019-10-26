@@ -58,7 +58,7 @@ func matchParam(input string, start int) (int, int, bool) {
 	var paramEnd int
 	var ok bool
 
-	paramCheckers := []func(string, int) (int, int, bool){
+	paramCheckers := []func(string) (int, int, bool){
 		matchPositionalParam,
 		matchSpecialParam,
 		matchName,
@@ -66,9 +66,9 @@ func matchParam(input string, start int) (int, int, bool) {
 
 	for i := 0; i < len(paramCheckers); i++ {
 		paramChecker := paramCheckers[i]
-		paramType, paramEnd, ok = paramChecker(input, start)
+		paramType, paramEnd, ok = paramChecker(input[start:])
 		if ok {
-			return paramType, paramEnd, true
+			return paramType, start + paramEnd, true
 		}
 	}
 

@@ -47,9 +47,9 @@ func expandBraces(input string) string {
 			// skip over escaped characters
 			i++
 		} else if input[i] == '$' {
-			varEnd, ok := matchVar(input, i)
+			varEnd, ok := matchVar(input[i:])
 			if ok {
-				i = varEnd
+				i += varEnd - 1
 			}
 		} else if input[i] == '{' {
 			var ok bool
@@ -216,9 +216,9 @@ func matchPattern(input string, start int) (int, bool) {
 			// skip over escaped character
 			i++
 		} else if input[i] == '$' {
-			varEnd, ok := matchVar(input, i)
+			varEnd, ok := matchVar(input[i:])
 			if ok {
-				i = varEnd
+				i += varEnd - 1
 			}
 		} else if input[i] == '{' {
 			braceDepth++

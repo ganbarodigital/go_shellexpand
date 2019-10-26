@@ -37,9 +37,9 @@ package shellexpand
 
 import "unicode/utf8"
 
-func matchPositionalParam(input string, start int) (int, int, bool) {
+func matchPositionalParam(input string) (int, int, bool) {
 	// what are we looking at?
-	r, _ := utf8.DecodeRuneInString(input[start:])
+	r, w := utf8.DecodeRuneInString(input)
 
 	// a positional param is a single numerical char
 	//
@@ -47,7 +47,7 @@ func matchPositionalParam(input string, start int) (int, int, bool) {
 	// they do NOT support $10, $11, $12 and so on
 
 	if isNumericChar(r) {
-		return paramTypePositional, start, true
+		return paramTypePositional, w, true
 	}
 
 	return paramTypeInvalid, 0, false

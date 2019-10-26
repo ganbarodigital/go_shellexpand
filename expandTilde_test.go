@@ -475,13 +475,13 @@ func TestMatchTildePrefixWithHomedir(t *testing.T) {
 	// ----------------------------------------------------------------
 	// setup your test
 
-	testData := "ls ~/path/to/folder"
-	expectedResult := 3
+	testData := "~/path/to/folder"
+	expectedResult := 1
 
 	// ----------------------------------------------------------------
 	// perform the change
 
-	actualResult, ok := matchTildePrefix(testData, 3)
+	actualResult, ok := matchTildePrefix(testData)
 
 	// ----------------------------------------------------------------
 	// test the results
@@ -496,13 +496,13 @@ func TestMatchTildePrefixWithPwd(t *testing.T) {
 	// ----------------------------------------------------------------
 	// setup your test
 
-	testData := "ls ~+/src"
-	expectedResult := 4
+	testData := "~+/src"
+	expectedResult := 2
 
 	// ----------------------------------------------------------------
 	// perform the change
 
-	actualResult, ok := matchTildePrefix(testData, 3)
+	actualResult, ok := matchTildePrefix(testData)
 
 	// ----------------------------------------------------------------
 	// test the results
@@ -517,13 +517,13 @@ func TestMatchTildePrefixWithOldPwd(t *testing.T) {
 	// ----------------------------------------------------------------
 	// setup your test
 
-	testData := "ls ~-/bin"
-	expectedResult := 4
+	testData := "~-/bin"
+	expectedResult := 2
 
 	// ----------------------------------------------------------------
 	// perform the change
 
-	actualResult, ok := matchTildePrefix(testData, 3)
+	actualResult, ok := matchTildePrefix(testData)
 
 	// ----------------------------------------------------------------
 	// test the results
@@ -538,13 +538,13 @@ func TestMatchTildePrefixWithUsername(t *testing.T) {
 	// ----------------------------------------------------------------
 	// setup your test
 
-	testData := "ls ~stuart"
-	expectedResult := 9
+	testData := "~stuart"
+	expectedResult := 7
 
 	// ----------------------------------------------------------------
 	// perform the change
 
-	actualResult, ok := matchTildePrefix(testData, 3)
+	actualResult, ok := matchTildePrefix(testData)
 
 	// ----------------------------------------------------------------
 	// test the results
@@ -559,13 +559,13 @@ func TestMatchTildePrefixWithoutTilde(t *testing.T) {
 	// ----------------------------------------------------------------
 	// setup your test
 
-	testData := "ls /root"
-	expectedResult := 3
+	testData := "/root"
+	expectedResult := 0
 
 	// ----------------------------------------------------------------
 	// perform the change
 
-	actualResult, ok := matchTildePrefix(testData, 3)
+	actualResult, ok := matchTildePrefix(testData)
 
 	// ----------------------------------------------------------------
 	// test the results
@@ -580,13 +580,13 @@ func TestMatchTildePrefixIgnoresEscapedSlashes(t *testing.T) {
 	// ----------------------------------------------------------------
 	// setup your test
 
-	testData := "ls ~\\/path/to/folder"
-	expectedResult := 9
+	testData := "~\\/path/to/folder"
+	expectedResult := 7
 
 	// ----------------------------------------------------------------
 	// perform the change
 
-	actualResult, ok := matchTildePrefix(testData, 3)
+	actualResult, ok := matchTildePrefix(testData)
 
 	// ----------------------------------------------------------------
 	// test the results
@@ -615,7 +615,7 @@ func TestMatchAndExpandTildeIgnoresNonPrefix(t *testing.T) {
 	// ----------------------------------------------------------------
 	// perform the change
 
-	actualResult, ok := matchAndExpandTilde(testData, 0, varFuncs)
+	actualResult, ok := matchAndExpandTilde(testData, varFuncs)
 
 	// ----------------------------------------------------------------
 	// test the results

@@ -37,6 +37,7 @@ package shellexpand
 
 import (
 	"strings"
+	"unicode/utf8"
 )
 
 // ExpandTilde will expand any '~' at the start of a word as follows:
@@ -55,35 +56,42 @@ import (
 // This function is exported because (for UNIX shell compatibility), you
 // should call this function when setting variables.
 func ExpandTilde(input string, varFuncs VarFuncs) string {
-	// we expand in a strictly left-to-right manner
-	for i := 0; i < len(input); i++ {
-		if input[i] == '\\' {
+	w := 0
+	inEscape := false
+	for i := 0; i < len(input); i += w {
+		var c rune
+		c, w = utf8.DecodeRuneInString(input[i:])
+		if inEscape {
+			// skip over escaped character
+			inEscape = false
+		} else if c == '\\' {
 			// skip over escaped characters
-			i++
-		} else if input[i] == '$' {
-			varEnd, ok := matchVar(input, i)
+			inEscape = true
+		} else if c == '$' {
+			varEnd, ok := matchVar(input[i:])
 			if ok {
-				i = varEnd
+				i += varEnd - 1
+				w = 0
 			}
-		} else if input[i] == '~' {
-			input, _ = matchAndExpandTilde(input, i, varFuncs)
+		} else if c == '~' {
+			input, _ = matchAndExpandTilde(input[i:], varFuncs)
 		}
 	}
 
 	return input
 }
 
-func matchAndExpandTilde(input string, start int, varFuncs VarFuncs) (string, bool) {
+func matchAndExpandTilde(input string, varFuncs VarFuncs) (string, bool) {
 	var ok bool
 
 	// are we looking at a tilde w/ optional prefix??
-	prefixEnd, ok := matchTildePrefix(input, start)
+	prefixEnd, ok := matchTildePrefix(input)
 	if !ok {
 		return input, false
 	}
 
 	// what kind of prefix are we looking at?
-	tildePrefix, _ := parseTildePrefix(input[start : prefixEnd+1])
+	tildePrefix, _ := parseTildePrefix(input[:prefixEnd])
 
 	// this will hold our replacement
 	var repl string
@@ -113,35 +121,39 @@ func matchAndExpandTilde(input string, start int, varFuncs VarFuncs) (string, bo
 	}
 
 	var buf strings.Builder
-	if start > 0 {
-		buf.WriteString(input[:start])
-	}
 	buf.WriteString(repl)
 	if prefixEnd < len(input) {
-		buf.WriteString(input[prefixEnd+1:])
+		buf.WriteString(input[prefixEnd:])
 	}
 
 	return buf.String(), true
 }
 
-func matchTildePrefix(input string, start int) (int, bool) {
+func matchTildePrefix(input string) (int, bool) {
 	// are we looking at the start of a prefix?
-	if input[start] != '~' {
-		return start, false
+	if input[0] != '~' {
+		return 0, false
 	}
 
 	// find the end of the prefix
-	for i := start; i < len(input); i++ {
-		if input[i] == '\\' {
+	var c rune
+	w := 0
+	inEscape := false
+	for i := 0; i < len(input); i += w {
+		c, w = utf8.DecodeRuneInString(input[i:])
+		if inEscape {
 			// skip over escaped character
-			i++
-		} else if input[i] == '/' || input[i] == ' ' {
-			return i - 1, true
+			inEscape = false
+		} else if c == '\\' {
+			// skip over escaped character
+			inEscape = true
+		} else if c == '/' || c == ' ' {
+			return i, true
 		}
 	}
 
 	// if we get here, the '~' prefix is the last part of the string
-	return len(input) - 1, true
+	return len(input), true
 }
 
 const (

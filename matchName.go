@@ -37,9 +37,9 @@ package shellexpand
 
 import "unicode/utf8"
 
-func matchName(input string, start int) (int, int, bool) {
+func matchName(input string) (int, int, bool) {
 	// what are we looking at?
-	r, w := utf8.DecodeRuneInString(input[start:])
+	r, w := utf8.DecodeRuneInString(input)
 
 	// a name is a word consisting of:
 	//
@@ -50,13 +50,13 @@ func matchName(input string, start int) (int, int, bool) {
 		return paramTypeInvalid, 0, false
 	}
 
-	for i := start + w; i < len(input); i += w {
+	for i := w; i < len(input); i += w {
 		r, w = utf8.DecodeRuneInString(input[i:])
 
 		if !isNameBodyChar(r) {
-			return paramTypeName, i - 1, true
+			return paramTypeName, i, true
 		}
 	}
 
-	return paramTypeName, len(input) - 1, true
+	return paramTypeName, len(input), true
 }
