@@ -134,7 +134,7 @@ func expandParameters(input string, varFuncs VarFuncs) (string, error) {
 					continue
 				}
 
-				replacement, err := expandParameter(paramDesc, varFuncs)
+				replacement, err := expandParameter(input[i:varEnd], paramDesc, varFuncs)
 				if err != nil {
 					return input, err
 				}
@@ -157,7 +157,7 @@ func expandParameters(input string, varFuncs VarFuncs) (string, error) {
 
 type paramExpandFunc func(string, string, paramDesc, VarFuncs) (string, bool, error)
 
-func expandParameter(paramDesc paramDesc, varFuncs VarFuncs) (string, error) {
+func expandParameter(original string, paramDesc paramDesc, varFuncs VarFuncs) (string, error) {
 	paramExpandFuncs := map[int]paramExpandFunc{
 		paramExpandToValue:                   expandParamToValue,
 		paramExpandWithDefaultValue:          expandParamWithDefaultValue,
