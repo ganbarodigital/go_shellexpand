@@ -911,6 +911,18 @@ func TestExpandParamSubstringLengthStartsAfterInputEnd(t *testing.T) {
 	testExpandTestCase(t, testData)
 }
 
+func TestExpandParamSubstringLengthStartsNegative(t *testing.T) {
+	// simple param, expand substring w/ too long
+	testData := expandTestData{
+		vars: map[string]string{
+			"foo": "1234567890",
+		},
+		input:          "${foo:-100:2}",
+		expectedResult: "1234567890",
+	}
+	testExpandTestCase(t, testData)
+}
+
 func TestExpandParamSubstringLengthTooLength(t *testing.T) {
 	// simple param, expand substring w/ too long
 	testData := expandTestData{
