@@ -341,14 +341,12 @@ func parseParameter(input string) (paramDesc, bool) {
 		if len(parts) > 2 {
 			return paramDesc{}, false
 		}
-		for _, part := range parts {
-			// offset and length can both be negative
-			// although until we have arithmetic expansion, there's no
-			// way to pass a negative offset into this function
-			if !isSignedNumericString(part) {
-				return paramDesc{}, false
-			}
-		}
+
+		// NOTE
+		//
+		// we don't want to check that the offset and length are numeric
+		//
+		// that's best handled in the expansion function
 
 		// do we have a string length to limit our expansion?
 		if len(parts) == 1 {

@@ -303,7 +303,7 @@ func expandParamAlternativeValue(paramName, paramValue string, paramDesc paramDe
 func expandParamSubstring(paramName, paramValue string, paramDesc paramDesc, varFuncs VarFuncs) (string, bool, error) {
 	start, err := strconv.Atoi(paramDesc.parts[1])
 	if err != nil {
-		return "", false, err
+		return paramValue, true, nil
 	}
 
 	return paramValue[start:], true, nil

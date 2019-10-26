@@ -800,6 +800,18 @@ func TestExpandParamSubstring(t *testing.T) {
 	testExpandTestCase(t, testData)
 }
 
+func TestExpandParamSubstringInvalidOffset(t *testing.T) {
+	// simple param, expand substring to end of value
+	testData := expandTestData{
+		vars: map[string]string{
+			"foo": "1234567890",
+		},
+		input:          "${foo:a}",
+		expectedResult: "1234567890",
+	}
+	testExpandTestCase(t, testData)
+}
+
 func TestExpandParamSubstringWithIndirection(t *testing.T) {
 	// simple param, expand substring to end of value with indirection
 	testData := expandTestData{

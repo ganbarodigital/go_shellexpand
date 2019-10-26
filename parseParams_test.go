@@ -37,6 +37,7 @@ package shellexpand
 
 import (
 	"strconv"
+	"strings"
 	"testing"
 
 	"github.com/stretchr/testify/assert"
@@ -1486,7 +1487,7 @@ func TestParseParamSubstringMustHaveOffset(t *testing.T) {
 	assert.Equal(t, expectedResult, actualResult)
 }
 
-func TestParseParamSubstringOffsetMustBeNumeric(t *testing.T) {
+func TestParseParamSubstringOffsetDoesNotEnforceNumeric(t *testing.T) {
 	t.Parallel()
 
 	testDataSet := []string{
@@ -1499,8 +1500,11 @@ func TestParseParamSubstringOffsetMustBeNumeric(t *testing.T) {
 		// ----------------------------------------------------------------
 		// setup your test
 
+		expectedResult := paramDesc{
+			kind:  paramExpandSubstring,
+			parts: []string{"VAR", testData},
+		}
 		testData := "${VAR:" + testData + "}"
-		expectedResult := paramDesc{}
 
 		// ----------------------------------------------------------------
 		// perform the change
@@ -1510,7 +1514,7 @@ func TestParseParamSubstringOffsetMustBeNumeric(t *testing.T) {
 		// ----------------------------------------------------------------
 		// test the results
 
-		assert.False(t, ok)
+		assert.True(t, ok)
 		assert.Equal(t, expectedResult, actualResult)
 	}
 }
@@ -1812,7 +1816,7 @@ func TestParseParamSubstringLengthSupportsNegativeLength(t *testing.T) {
 	assert.Equal(t, expectedResult, actualResult)
 }
 
-func TestParseParamSubstringLengthMustBeNumeric(t *testing.T) {
+func TestParseParamSubstringLengthDoesNotEnforceNumeric(t *testing.T) {
 	t.Parallel()
 
 	testDataSet := []string{
@@ -1825,8 +1829,11 @@ func TestParseParamSubstringLengthMustBeNumeric(t *testing.T) {
 		// ----------------------------------------------------------------
 		// setup your test
 
+		expectedResult := paramDesc{
+			kind:  paramExpandSubstringLength,
+			parts: strings.Split("VAR:"+testData, ":"),
+		}
 		testData := "${VAR:" + testData + "}"
-		expectedResult := paramDesc{}
 
 		// ----------------------------------------------------------------
 		// perform the change
@@ -1836,7 +1843,7 @@ func TestParseParamSubstringLengthMustBeNumeric(t *testing.T) {
 		// ----------------------------------------------------------------
 		// test the results
 
-		assert.False(t, ok)
+		assert.True(t, ok)
 		assert.Equal(t, expectedResult, actualResult)
 	}
 }
