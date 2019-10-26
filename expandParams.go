@@ -389,7 +389,7 @@ func expandParamRemoveSuffixShortestMatch(paramName, paramValue string, paramDes
 		if pos < len(paramValue) {
 			return paramValue[:pos], true, nil
 		}
-		return "", true, nil
+		return paramValue, true, nil
 	}
 
 	return paramValue, true, nil

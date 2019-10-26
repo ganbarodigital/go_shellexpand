@@ -1125,6 +1125,30 @@ func TestExpandParamRemoveShortestSuffix(t *testing.T) {
 	testExpandTestCase(t, testData)
 }
 
+func TestExpandParamRemoveShortestSuffixDoesNotMatchPattern(t *testing.T) {
+	// remove suffix shortest match
+	testData := expandTestData{
+		vars: map[string]string{
+			"PARAM1": "godocdoc",
+		},
+		input:          "${PARAM1%aaa}",
+		expectedResult: "godocdoc",
+	}
+	testExpandTestCase(t, testData)
+}
+
+func TestExpandParamRemoveShortestSuffixMatchesEmptyPattern(t *testing.T) {
+	// remove suffix shortest match
+	testData := expandTestData{
+		vars: map[string]string{
+			"PARAM1": "godocdoc",
+		},
+		input:          "${PARAM1%*}",
+		expectedResult: "godocdoc",
+	}
+	testExpandTestCase(t, testData)
+}
+
 func TestExpandPositionalParamsRemoveShortestSuffix(t *testing.T) {
 	// remove suffix, shortest match, applied to $*
 	testData := expandTestData{
