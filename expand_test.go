@@ -55,6 +55,7 @@ type expandTestData struct {
 	input                string
 	shellExtra           []string
 	expectedResult       string
+	expectedShellResult  string
 	expectedError        string
 	resultSubstringMatch bool
 	actualResult         func(expandTestData) string
@@ -474,29 +475,33 @@ func TestExpandSimpleParamInBracesAndInLongerString(t *testing.T) {
 	testExpandTestCase(t, testData)
 }
 
-// func TestExpandInvalidUnterminatedParamInLongerString(t *testing.T) {
-// 	// invalid (unterminated) param inside longer string, braces
-// 	testData := expandTestData{
-// 		vars: map[string]string{
-// 			"PARAM1": "foo",
-// 		},
-// 		input:          "this is all ${++bar",
-// 		expectedResult: "this is all ${++bar",
-// 	}
-// 	testExpandTestCase(t, testData)
-// }
+func TestExpandInvalidUnterminatedParamInLongerString(t *testing.T) {
+	// invalid (unterminated) param inside longer string, braces
+	testData := expandTestData{
+		vars: map[string]string{
+			"PARAM1": "foo",
+		},
+		input:                "this is all ${++bar",
+		expectedResult:       "this is all ${++bar",
+		expectedShellResult:  "unexpected EOF while looking for matching `}'",
+		resultSubstringMatch: true,
+	}
+	testExpandTestCase(t, testData)
+}
 
-// func TestExpandInvalidParamNameInLongerString(t *testing.T) {
-// 	// invalid param inside longer string, braces
-// 	testData := expandTestData{
-// 		vars: map[string]string{
-// 			"PARAM1": "foo",
-// 		},
-// 		input:          "this is all ${++}bar",
-// 		expectedResult: "this is all ${++}bar",
-// 	}
-// 	testExpandTestCase(t, testData)
-// }
+func TestExpandInvalidParamNameInLongerString(t *testing.T) {
+	// invalid param inside longer string, braces
+	testData := expandTestData{
+		vars: map[string]string{
+			"PARAM1": "foo",
+		},
+		input:                "this is all ${++}bar",
+		expectedResult:       "this is all ${++}bar",
+		expectedShellResult:  "${++}bar: bad substitution",
+		resultSubstringMatch: true,
+	}
+	testExpandTestCase(t, testData)
+}
 
 func TestExpandParamWithIndirection(t *testing.T) {
 	// simple param, braces, indirection
@@ -1250,7 +1255,11 @@ func testExpandTestCase(t *testing.T, testData expandTestData) {
 		assert.Nil(t, internalActualError)
 
 		if testData.resultSubstringMatch {
-			assert.Contains(t, shellActualResult, expectedResult, buf.String())
+			if len(testData.expectedShellResult) > 0 {
+				assert.Contains(t, shellActualResult, testData.expectedShellResult, buf.String())
+			} else {
+				assert.Contains(t, shellActualResult, expectedResult, buf.String())
+			}
 			assert.Contains(t, internalActualResult, expectedResult, testData)
 		} else {
 			assert.Equal(t, expectedResult, shellActualResult, buf.String())

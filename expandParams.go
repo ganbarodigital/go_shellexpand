@@ -40,6 +40,7 @@ import (
 	"strconv"
 	"strings"
 	"unicode"
+	"unicode/utf8"
 
 	glob "github.com/ganbarodigital/go_glob"
 )
@@ -108,16 +109,19 @@ func expandParameters(input string, varFuncs VarFuncs) (string, error) {
 	var buf strings.Builder
 
 	// we expand in a strictly left-to-right manner
-	for i, c := range input {
-		if i < varEnd {
-			// skip over chars we've already matched
-		} else if inEscape {
+	var c rune
+	w := 0
+	for i := 0; i < len(input); {
+		c, w = utf8.DecodeRuneInString(input[i:])
+		if inEscape {
 			// skip over escaped characters
 			inEscape = false
 			buf.WriteRune(c)
+			i += w
 		} else if c == '\\' {
 			// skip over escaped characters
 			inEscape = true
+			i += w
 		} else if c == '$' {
 			var ok bool
 			varEnd, ok = matchVar(input[i:])
@@ -125,6 +129,8 @@ func expandParameters(input string, varFuncs VarFuncs) (string, error) {
 				varEnd += i
 				paramDesc, ok := parseParameter(input[i:varEnd])
 				if !ok {
+					buf.WriteRune(c)
+					i += w
 					continue
 				}
 
@@ -134,9 +140,15 @@ func expandParameters(input string, varFuncs VarFuncs) (string, error) {
 				}
 
 				buf.WriteString(replacement)
+
+				i = varEnd
+			} else {
+				buf.WriteRune(c)
+				i += w
 			}
 		} else {
 			buf.WriteRune(c)
+			i += w
 		}
 	}
 
