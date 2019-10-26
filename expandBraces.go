@@ -38,58 +38,88 @@ package shellexpand
 import (
 	"strconv"
 	"strings"
+	"unicode/utf8"
 )
 
 func expandBraces(input string) string {
+	// this is what we're assessing
+	var r rune
+
+	// this is always how many bytes 'r' is
+	w := 0
+
+	// this is true when we are skipping over escaped characters
+	inEscape := false
+
 	// we expand in a strictly left-to-right manner
-	for i := 0; i < len(input); i++ {
-		if input[i] == '\\' {
-			// skip over escaped characters
-			i++
-		} else if input[i] == '$' {
+	for i := 0; i < len(input); {
+		r, w = utf8.DecodeRuneInString(input[i:])
+
+		// what are we looking at?
+		if inEscape {
+			// skip over escaped character
+			inEscape = false
+			i += w
+		} else if r == '\\' {
+			// next character is escaped
+			inEscape = true
+			i += w
+		} else if r == '$' {
+			// possible variable?
+			//
+			// variables are immune to brace expansion
 			varEnd, ok := matchVar(input[i:])
 			if ok {
 				i += varEnd - 1
+			} else {
+				i += w
 			}
-		} else if input[i] == '{' {
+		} else if r == '{' {
+			// probably the start of something we can expand
 			var ok bool
 			input, ok = matchAndExpandSequence(input, i)
 			if !ok {
 				input, ok = matchAndExpandPattern(input, i)
 			}
+			i += w
+		} else {
+			// just another character, nothing for us to do with it
+			i += w
 		}
 	}
 
+	// all done
 	return input
 }
 
-func expandPattern(input, part string, i, patternEnd, preambleStart, postscriptEnd int) string {
+func expandPattern(preamble, part, postscript string) string {
 	// we'll build our substitution here
 	var buf strings.Builder
 
-	// do we have a preamble to add?
-	if preambleStart < i {
-		buf.WriteString(input[preambleStart:i])
+	// may be empty
+	if len(preamble) > 0 {
+		buf.WriteString(preamble)
 	}
 
 	// we always have a pattern part to add
 	buf.WriteString(part)
 
-	// do we have a postscript to add?
-	if postscriptEnd > patternEnd+1 {
-		buf.WriteString(input[patternEnd+1 : postscriptEnd])
+	// may also be empty
+	if len(postscript) > 0 {
+		buf.WriteString(postscript)
 	}
 
+	// all done
 	return buf.String()
 }
 
-func expandSequence(input string, entry int, isChars bool, i, patternEnd, preambleStart, postscriptEnd int) string {
+func expandSequence(entry int, isChars bool, preamble, postscript string) string {
 	// we'll build our substitution here
 	var buf strings.Builder
 
-	// do we have a preamble to add?
-	if preambleStart < i {
-		buf.WriteString(input[preambleStart:i])
+	// may be empty
+	if len(preamble) > 0 {
+		buf.WriteString(preamble)
 	}
 
 	// we always have a sequence entry to add
@@ -99,9 +129,9 @@ func expandSequence(input string, entry int, isChars bool, i, patternEnd, preamb
 		buf.WriteString(strconv.Itoa(entry))
 	}
 
-	// do we have a postscript to add?
-	if postscriptEnd > patternEnd+1 {
-		buf.WriteString(input[patternEnd+1 : postscriptEnd])
+	// may also be empty
+	if len(postscript) > 0 {
+		buf.WriteString(postscript)
 	}
 
 	return buf.String()
@@ -118,10 +148,14 @@ func findPreambleStart(input string, preambleStart int) int {
 }
 
 func findPostscriptEnd(input string, postscriptEnd int) int {
-	for ; postscriptEnd < len(input); postscriptEnd++ {
-		if input[postscriptEnd] == ' ' {
+	var r rune
+	w := 0
+	for postscriptEnd < len(input) {
+		r, w = utf8.DecodeRuneInString(input[postscriptEnd:])
+		if r == ' ' {
 			return postscriptEnd
 		}
+		postscriptEnd += w
 	}
 
 	return postscriptEnd
@@ -129,24 +163,32 @@ func findPostscriptEnd(input string, postscriptEnd int) int {
 
 func matchAndExpandPattern(input string, i int) (string, bool) {
 	// are we looking at a pattern?
-	patternEnd, ok := matchPattern(input, i)
+	patternEnd, ok := matchPattern(input[i:])
 	if !ok {
 		return input, false
 	}
 
 	// is it really a pattern though?
-	patternParts, ok := parsePattern(input[i : patternEnd+1])
+	patternParts, ok := parsePattern(input[i : i+patternEnd])
 	if !ok {
 		return input, false
 	}
 
 	// if we get here, then yes it is
+	preamble := ""
 	preambleStart := findPreambleStart(input, i)
-	postscriptEnd := findPostscriptEnd(input, patternEnd)
+	if preambleStart < i {
+		preamble = input[preambleStart:i]
+	}
+	postscript := ""
+	postscriptEnd := findPostscriptEnd(input, i+patternEnd)
+	if postscriptEnd > i+patternEnd {
+		postscript = input[i+patternEnd : postscriptEnd]
+	}
 
 	var exp []string
 	for _, part := range patternParts {
-		exp = append(exp, expandPattern(input, part, i, patternEnd, preambleStart, postscriptEnd))
+		exp = append(exp, expandPattern(preamble, part, postscript))
 	}
 
 	var buf strings.Builder
@@ -154,7 +196,7 @@ func matchAndExpandPattern(input string, i int) (string, bool) {
 		buf.WriteString(input[:preambleStart])
 	}
 	buf.WriteString(strings.Join(exp, " "))
-	if postscriptEnd < len(input) {
+	if postscriptEnd+1 < len(input) {
 		buf.WriteRune(' ')
 		buf.WriteString(input[postscriptEnd+1:])
 	}
@@ -164,29 +206,37 @@ func matchAndExpandPattern(input string, i int) (string, bool) {
 
 func matchAndExpandSequence(input string, i int) (string, bool) {
 	// are we looking at a sequence?
-	seqEnd, ok := matchSequence(input, i)
+	seqEnd, ok := matchSequence(input[i:])
 	if !ok {
 		return input, false
 	}
 
 	// but is it really a sequence?
-	braceSeq, ok := parseSequence(input[i : seqEnd+1])
+	braceSeq, ok := parseSequence(input[i : i+seqEnd])
 	if !ok {
 		return input, false
 	}
 
 	// if we get here, then yes it is
+	preamble := ""
 	preambleStart := findPreambleStart(input, i)
-	postscriptEnd := findPostscriptEnd(input, seqEnd)
+	if preambleStart < i {
+		preamble = input[preambleStart:i]
+	}
+	postscript := ""
+	postscriptEnd := findPostscriptEnd(input, i+seqEnd)
+	if postscriptEnd > i+seqEnd {
+		postscript = input[i+seqEnd : postscriptEnd]
+	}
 
 	var exp []string
 	if braceSeq.incr > 0 {
 		for j := braceSeq.start; j <= braceSeq.end; j += braceSeq.incr {
-			exp = append(exp, expandSequence(input, j, braceSeq.chars, i, seqEnd, preambleStart, postscriptEnd))
+			exp = append(exp, expandSequence(j, braceSeq.chars, preamble, postscript))
 		}
 	} else {
 		for j := braceSeq.start; j >= braceSeq.end; j += braceSeq.incr {
-			exp = append(exp, expandSequence(input, j, braceSeq.chars, i, seqEnd, preambleStart, postscriptEnd))
+			exp = append(exp, expandSequence(j, braceSeq.chars, preamble, postscript))
 		}
 	}
 
@@ -204,39 +254,56 @@ func matchAndExpandSequence(input string, i int) (string, bool) {
 	return buf.String(), true
 }
 
-func matchPattern(input string, start int) (int, bool) {
+func matchPattern(input string) (int, bool) {
 	// are we looking at the start of a pattern?
-	if input[start] != '{' {
+	if input[0] != '{' {
 		return 0, false
 	}
 
+	var r rune
+	w := 0
+	inEscape := false
 	braceDepth := 0
-	for i := start; i < len(input); i++ {
-		if input[i] == '\\' {
+
+	for i := 0; i < len(input); {
+		r, w = utf8.DecodeRuneInString(input[i:])
+
+		if inEscape {
+			inEscape = false
+			i += w
+		} else if r == '\\' {
 			// skip over escaped character
-			i++
-		} else if input[i] == '$' {
+			inEscape = true
+			i += w
+		} else if r == '$' {
 			varEnd, ok := matchVar(input[i:])
 			if ok {
-				i += varEnd - 1
+				i += varEnd
+			} else {
+				i += w
 			}
-		} else if input[i] == '{' {
+		} else if r == '{' {
 			braceDepth++
-		} else if input[i] == '}' {
+			i += w
+		} else if r == '}' {
 			braceDepth--
+
+			i += w
 
 			if braceDepth == 0 {
 				return i, true
 			}
+		} else {
+			i += w
 		}
 	}
 
 	return 0, false
 }
 
-func matchSequence(input string, start int) (int, bool) {
+func matchSequence(input string) (int, bool) {
 	// are we looking at the start of a sequence?
-	if input[start] != '{' {
+	if input[0] != '{' {
 		return 0, false
 	}
 
@@ -247,23 +314,31 @@ func matchSequence(input string, start int) (int, bool) {
 	//
 	// no escape chars, no vars to worry about, no nesting either
 
+	var r rune
+	w := 0
 	braceDepth := 0
-	for i := start; i < len(input); i++ {
-		if input[i] == '{' {
+	for i := 0; i < len(input); {
+		// grab the next character
+		r, w = utf8.DecodeRuneInString(input[i:])
+
+		// what are we looking at?
+		if r == '{' {
 			braceDepth++
+			i += w
 
 			// no nesting allowed!
 			if braceDepth > 1 {
 				return 0, false
 			}
-		} else if input[i] == '}' {
+		} else if r == '}' {
 			braceDepth--
+			i += w
 
 			if braceDepth == 0 {
 				return i, true
 			}
-		} else if isSequenceChar(input[i]) {
-			continue
+		} else if isSequenceChar(r) {
+			i += w
 		} else {
 			return 0, false
 		}
@@ -272,7 +347,7 @@ func matchSequence(input string, start int) (int, bool) {
 	return 0, false
 }
 
-func isSequenceChar(c byte) bool {
+func isSequenceChar(c rune) bool {
 	return c == '.' || c == '-' || '0' <= c && c <= '9' || 'a' <= c && c <= 'z' || 'A' <= c && c <= 'Z'
 }
 
