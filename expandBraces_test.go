@@ -121,6 +121,46 @@ func TestExpandBracesSingleSequence(t *testing.T) {
 	assert.Equal(t, expectedResult, actualResult)
 }
 
+func TestExpandBracesMalformedVariable(t *testing.T) {
+	t.Parallel()
+
+	// ----------------------------------------------------------------
+	// setup your test
+
+	testData := "so is ${++"
+	expectedResult := "so is ${++"
+
+	// ----------------------------------------------------------------
+	// perform the change
+
+	actualResult := expandBraces(testData)
+
+	// ----------------------------------------------------------------
+	// test the results
+
+	assert.Equal(t, expectedResult, actualResult)
+}
+
+func TestExpandBracesMalformedVariableInsidePattern(t *testing.T) {
+	t.Parallel()
+
+	// ----------------------------------------------------------------
+	// setup your test
+
+	testData := "so is {${++"
+	expectedResult := "so is {${++"
+
+	// ----------------------------------------------------------------
+	// perform the change
+
+	actualResult := expandBraces(testData)
+
+	// ----------------------------------------------------------------
+	// test the results
+
+	assert.Equal(t, expectedResult, actualResult)
+}
+
 func TestExpandBracesPatternAndSequence(t *testing.T) {
 	t.Parallel()
 
@@ -148,19 +188,19 @@ func TestMatchPatternSingleSet(t *testing.T) {
 	// setup your test
 
 	testData := "{b,c,d}"
-	expectedResult := len(testData) - 1
+	expectedResult := len(testData)
 
 	// ----------------------------------------------------------------
 	// perform the change
 
-	actualResult, ok := matchPattern(testData, 0)
+	actualResult, ok := matchPattern(testData)
 
 	// ----------------------------------------------------------------
 	// test the results
 
 	assert.True(t, ok)
 	assert.Equal(t, expectedResult, actualResult)
-	assert.Equal(t, testData, testData[:actualResult+1])
+	assert.Equal(t, testData, testData[:actualResult])
 }
 
 func TestMatchPatternNestedSet(t *testing.T) {
@@ -170,19 +210,19 @@ func TestMatchPatternNestedSet(t *testing.T) {
 	// setup your test
 
 	testData := "{ucb/{ex,edit}/tmp1,lib/{ex?.?*,how_ex}/tmp2}"
-	expectedResult := len(testData) - 1
+	expectedResult := len(testData)
 
 	// ----------------------------------------------------------------
 	// perform the change
 
-	actualResult, ok := matchPattern(testData, 0)
+	actualResult, ok := matchPattern(testData)
 
 	// ----------------------------------------------------------------
 	// test the results
 
 	assert.True(t, ok)
 	assert.Equal(t, expectedResult, actualResult)
-	assert.Equal(t, testData, testData[:actualResult+1])
+	assert.Equal(t, testData, testData[:actualResult])
 }
 
 func TestMatchPatternNoOpeningBrace(t *testing.T) {
@@ -197,7 +237,7 @@ func TestMatchPatternNoOpeningBrace(t *testing.T) {
 	// ----------------------------------------------------------------
 	// perform the change
 
-	actualResult, ok := matchPattern(testData, 0)
+	actualResult, ok := matchPattern(testData)
 
 	// ----------------------------------------------------------------
 	// test the results
@@ -213,19 +253,19 @@ func TestMatchPatternSkipEscapedBraces(t *testing.T) {
 	// setup your test
 
 	testData := "{this is \\{ a \\}pattern}"
-	expectedResult := len(testData) - 1
+	expectedResult := len(testData)
 
 	// ----------------------------------------------------------------
 	// perform the change
 
-	actualResult, ok := matchPattern(testData, 0)
+	actualResult, ok := matchPattern(testData)
 
 	// ----------------------------------------------------------------
 	// test the results
 
 	assert.True(t, ok)
 	assert.Equal(t, expectedResult, actualResult)
-	assert.Equal(t, testData, testData[:actualResult+1])
+	assert.Equal(t, testData, testData[:actualResult])
 }
 
 func TestMatchPatternSkipDollarVars(t *testing.T) {
@@ -235,19 +275,19 @@ func TestMatchPatternSkipDollarVars(t *testing.T) {
 	// setup your test
 
 	testData := "{this is ${a} pattern}"
-	expectedResult := len(testData) - 1
+	expectedResult := len(testData)
 
 	// ----------------------------------------------------------------
 	// perform the change
 
-	actualResult, ok := matchPattern(testData, 0)
+	actualResult, ok := matchPattern(testData)
 
 	// ----------------------------------------------------------------
 	// test the results
 
 	assert.True(t, ok)
 	assert.Equal(t, expectedResult, actualResult)
-	assert.Equal(t, testData, testData[:actualResult+1])
+	assert.Equal(t, testData, testData[:actualResult])
 }
 
 func TestMatchPatternIgnoresUnterminatedPatterns(t *testing.T) {
@@ -262,7 +302,7 @@ func TestMatchPatternIgnoresUnterminatedPatterns(t *testing.T) {
 	// ----------------------------------------------------------------
 	// perform the change
 
-	actualResult, ok := matchPattern(testData, 0)
+	actualResult, ok := matchPattern(testData)
 
 	// ----------------------------------------------------------------
 	// test the results
@@ -278,19 +318,19 @@ func TestMatchSequenceSingleSetWithLowerCaseChars(t *testing.T) {
 	// setup your test
 
 	testData := "{a..z}"
-	expectedResult := len(testData) - 1
+	expectedResult := len(testData)
 
 	// ----------------------------------------------------------------
 	// perform the change
 
-	actualResult, ok := matchSequence(testData, 0)
+	actualResult, ok := matchSequence(testData)
 
 	// ----------------------------------------------------------------
 	// test the results
 
 	assert.True(t, ok)
 	assert.Equal(t, expectedResult, actualResult)
-	assert.Equal(t, testData, testData[:actualResult+1])
+	assert.Equal(t, testData, testData[:actualResult])
 }
 
 func TestMatchSequenceSingleSetWithUpperCaseChars(t *testing.T) {
@@ -300,19 +340,19 @@ func TestMatchSequenceSingleSetWithUpperCaseChars(t *testing.T) {
 	// setup your test
 
 	testData := "{A..Z}"
-	expectedResult := len(testData) - 1
+	expectedResult := len(testData)
 
 	// ----------------------------------------------------------------
 	// perform the change
 
-	actualResult, ok := matchSequence(testData, 0)
+	actualResult, ok := matchSequence(testData)
 
 	// ----------------------------------------------------------------
 	// test the results
 
 	assert.True(t, ok)
 	assert.Equal(t, expectedResult, actualResult)
-	assert.Equal(t, testData, testData[:actualResult+1])
+	assert.Equal(t, testData, testData[:actualResult])
 }
 
 func TestMatchSequenceSingleSetWithNumbers(t *testing.T) {
@@ -322,19 +362,19 @@ func TestMatchSequenceSingleSetWithNumbers(t *testing.T) {
 	// setup your test
 
 	testData := "{1..99}"
-	expectedResult := len(testData) - 1
+	expectedResult := len(testData)
 
 	// ----------------------------------------------------------------
 	// perform the change
 
-	actualResult, ok := matchSequence(testData, 0)
+	actualResult, ok := matchSequence(testData)
 
 	// ----------------------------------------------------------------
 	// test the results
 
 	assert.True(t, ok)
 	assert.Equal(t, expectedResult, actualResult)
-	assert.Equal(t, testData, testData[:actualResult+1])
+	assert.Equal(t, testData, testData[:actualResult])
 }
 
 func TestMatchSequenceSingleSetWithIterator(t *testing.T) {
@@ -344,19 +384,19 @@ func TestMatchSequenceSingleSetWithIterator(t *testing.T) {
 	// setup your test
 
 	testData := "{1..99..3}"
-	expectedResult := len(testData) - 1
+	expectedResult := len(testData)
 
 	// ----------------------------------------------------------------
 	// perform the change
 
-	actualResult, ok := matchSequence(testData, 0)
+	actualResult, ok := matchSequence(testData)
 
 	// ----------------------------------------------------------------
 	// test the results
 
 	assert.True(t, ok)
 	assert.Equal(t, expectedResult, actualResult)
-	assert.Equal(t, testData, testData[:actualResult+1])
+	assert.Equal(t, testData, testData[:actualResult])
 }
 
 func TestMatchSequenceSingleSetWithNegativeIterator(t *testing.T) {
@@ -366,19 +406,19 @@ func TestMatchSequenceSingleSetWithNegativeIterator(t *testing.T) {
 	// setup your test
 
 	testData := "{1..99..-3}"
-	expectedResult := len(testData) - 1
+	expectedResult := len(testData)
 
 	// ----------------------------------------------------------------
 	// perform the change
 
-	actualResult, ok := matchSequence(testData, 0)
+	actualResult, ok := matchSequence(testData)
 
 	// ----------------------------------------------------------------
 	// test the results
 
 	assert.True(t, ok)
 	assert.Equal(t, expectedResult, actualResult)
-	assert.Equal(t, testData, testData[:actualResult+1])
+	assert.Equal(t, testData, testData[:actualResult])
 }
 
 func TestMatchSequenceMustStartWithBrace(t *testing.T) {
@@ -393,7 +433,7 @@ func TestMatchSequenceMustStartWithBrace(t *testing.T) {
 	// ----------------------------------------------------------------
 	// perform the change
 
-	actualResult, ok := matchSequence(testData, 0)
+	actualResult, ok := matchSequence(testData)
 
 	// ----------------------------------------------------------------
 	// test the results
@@ -414,7 +454,7 @@ func TestMatchSequenceRejectsNestedBraces(t *testing.T) {
 	// ----------------------------------------------------------------
 	// perform the change
 
-	actualResult, ok := matchSequence(testData, 0)
+	actualResult, ok := matchSequence(testData)
 
 	// ----------------------------------------------------------------
 	// test the results
@@ -435,7 +475,7 @@ func TestMatchSequenceRejectsMismatchedBraces(t *testing.T) {
 	// ----------------------------------------------------------------
 	// perform the change
 
-	actualResult, ok := matchSequence(testData, 0)
+	actualResult, ok := matchSequence(testData)
 
 	// ----------------------------------------------------------------
 	// test the results
