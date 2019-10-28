@@ -420,8 +420,8 @@ _Command substitution_ is __not supported__.
 
 There are no plans to add support for command substitution at this time.
 
-* Command substition needs [word splitting](#word-splitting) implementing first
-* Calling external programs is a possible security risk, especially in the kind of systems programming that Golang is often used for
+* Command substition needs [word splitting](#word-splitting) implementing first.
+* If the input string has come from user input, it should be treated as _untrusted_ to avoid security problems. Calling arbitrary external programs from string expansion is asking for trouble.
 
 If we add support in a future version, we'll make it send the command name and arguments to a callback that you provide.
 
