@@ -54,6 +54,10 @@ result, err := shellexpand.Expand(input, cb)
   - [What Is Escape Sequence Expansion?](#what-is-escape-sequence-expansion)
   - [Rough Grammar](#rough-grammar-2)
   - [Status](#status-2)
+- [Quote Removal](#quote-removal)
+  - [What Is Quote Removal?](#what-is-quote-removal)
+  - [Why Do Shells Perform Quote Removal?](#why-do-shells-perform-quote-removal)
+  - [Status](#status-3)
 
 ## Why Use ShellExpand?
 
@@ -407,4 +411,28 @@ _Escape sequence expansion_ is **not supported**.
 There are no plans to add support for escape sequence expansion at the moment.
 
 Why? Many escape sequences exist for working with interactive shells. There's no direct target to translate them to in a Golang library. Many (all?) of the rest are already supported by Golang's `fmt` package.
+
+## Quote Removal
+
+### What Is Quote Removal?
+
+_Quote removal_ is the removal of:
+
+* the `\` in front of escaped characters
+* single quotes surrounding [words](#word)
+* double quotes surrounding [words](#word)
+
+### Why Do Shells Perform Quote Removal?
+
+If a [word](#word) contains spaces - for example, a long filename on Windows or MacOS - you have to surround it with either single or double quotes. That's how a UNIX shell knows that the filename is a single word.
+
+The quotes aren't actually part of the filename on disk. The UNIX shell has to remove them, otherwise
+
+### Status
+
+_Quote removal_ is partially supported in `ShellExpand` v1.0.0.
+
+* the `\` in front of escaped characters is removed
+  - this was required for our unit tests (which compares results in a real UNIX shell and our code) to work
+* single and double quotes surrounding words are not removed (because [word splitting](#word-splitting) is not supported).
 
