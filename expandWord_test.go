@@ -49,7 +49,7 @@ func TestExpandWordReturnsErrorIfWordExpansionProducesError(t *testing.T) {
 
 	testData := "${alfred#abc[}"
 	expectedResult := ""
-	varFuncs := VarFuncs{
+	cb := ExpansionCallbacks{
 		LookupVar: func(key string) (string, bool) {
 			return "foo", true
 		},
@@ -58,7 +58,7 @@ func TestExpandWordReturnsErrorIfWordExpansionProducesError(t *testing.T) {
 	// ----------------------------------------------------------------
 	// perform the change
 
-	actualResult, err := expandWord(testData, varFuncs)
+	actualResult, err := expandWord(testData, cb)
 
 	// ----------------------------------------------------------------
 	// test the results

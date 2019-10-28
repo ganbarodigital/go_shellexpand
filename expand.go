@@ -41,16 +41,16 @@ package shellexpand
 // This is a replacement for Golang's `os.Expand()` that supports full
 // UNIX shell string expansion. It is not a drop-in replacement, but it
 // should be straight-forward to migrate from `os.Expand()`
-func Expand(input string, varFuncs VarFuncs) (string, error) {
+func Expand(input string, cb ExpansionCallbacks) (string, error) {
 	// step 1: brace expansion
 	input = expandBraces(input)
 
 	// step 2: tilde expansion
-	input = ExpandTilde(input, varFuncs)
+	input = ExpandTilde(input, cb)
 
 	// step 3: parameter & variable expansion
 	var err error
-	input, err = expandParameters(input, varFuncs)
+	input, err = expandParameters(input, cb)
 	if err != nil {
 		return "", err
 	}

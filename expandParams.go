@@ -97,7 +97,7 @@ import (
 //
 // it's up to the caller to ensure lookupVar() can provide a value for any
 // of these params
-func expandParameters(input string, varFuncs VarFuncs) (string, error) {
+func expandParameters(input string, cb ExpansionCallbacks) (string, error) {
 	// keep track of whether we're dealing with an escaped character
 	// or not
 	inEscape := false
@@ -134,7 +134,7 @@ func expandParameters(input string, varFuncs VarFuncs) (string, error) {
 					continue
 				}
 
-				replacement, err := expandParameter(input[i:varEnd], paramDesc, varFuncs)
+				replacement, err := expandParameter(input[i:varEnd], paramDesc, cb)
 				if err != nil {
 					return input, err
 				}
@@ -155,9 +155,9 @@ func expandParameters(input string, varFuncs VarFuncs) (string, error) {
 	return buf.String(), nil
 }
 
-type paramExpandFunc func(string, string, paramDesc, VarFuncs) (string, bool, error)
+type paramExpandFunc func(string, string, paramDesc, ExpansionCallbacks) (string, bool, error)
 
-func expandParameter(original string, paramDesc paramDesc, varFuncs VarFuncs) (string, error) {
+func expandParameter(original string, paramDesc paramDesc, cb ExpansionCallbacks) (string, error) {
 	paramExpandFuncs := map[int]paramExpandFunc{
 		paramExpandToValue:                   expandParamToValue,
 		paramExpandWithDefaultValue:          expandParamWithDefaultValue,
@@ -188,14 +188,14 @@ func expandParameter(original string, paramDesc paramDesc, varFuncs VarFuncs) (s
 
 	// step 1: we need to expand the paramName first, to support any
 	// possible use of indirection
-	paramName, ok := expandParamName(paramDesc, varFuncs.LookupVar)
+	paramName, ok := expandParamName(paramDesc, cb.LookupVar)
 	if !ok {
 		return "", nil
 	}
 
 	// special case
 	if paramDesc.kind == paramExpandNoOfPositionalParams {
-		buf, ok = varFuncs.LookupVar("$#")
+		buf, ok = cb.LookupVar("$#")
 		return buf, nil
 	}
 
@@ -205,14 +205,14 @@ func expandParameter(original string, paramDesc paramDesc, varFuncs VarFuncs) (s
 	// this is complicated by some parameters ($*, $@, and arrays if we
 	// ever add support for them in the future) having the expansion applied
 	// to each part of their value
-	for paramValue := range expandParamValue(paramName, varFuncs.LookupVar) {
+	for paramValue := range expandParamValue(paramName, cb.LookupVar) {
 		expandFunc, ok := paramExpandFuncs[paramDesc.kind]
 		if !ok {
 			return "", nil
 		}
 
 		var err error
-		buf, ok, err = expandFunc(paramName, paramValue, paramDesc, varFuncs)
+		buf, ok, err = expandFunc(paramName, paramValue, paramDesc, cb)
 		if err != nil {
 			return "", err
 		}
@@ -236,49 +236,49 @@ func expandParamName(paramDesc paramDesc, lookupVar LookupVar) (string, bool) {
 	return varName, ok
 }
 
-func expandParamToValue(paramName, paramValue string, paramDesc paramDesc, varFuncs VarFuncs) (string, bool, error) {
+func expandParamToValue(paramName, paramValue string, paramDesc paramDesc, cb ExpansionCallbacks) (string, bool, error) {
 	// nothing else to do
 	return paramValue, true, nil
 }
 
-func expandParamWithDefaultValue(paramName, paramValue string, paramDesc paramDesc, varFuncs VarFuncs) (string, bool, error) {
+func expandParamWithDefaultValue(paramName, paramValue string, paramDesc paramDesc, cb ExpansionCallbacks) (string, bool, error) {
 	// do we need to return the default value?
 	if paramValue != "" {
 		return paramValue, true, nil
 	}
 
-	retval, err := expandWord(paramDesc.parts[1], varFuncs)
+	retval, err := expandWord(paramDesc.parts[1], cb)
 	return retval, true, err
 }
 
-func expandParamSetDefaultValue(paramName, paramValue string, paramDesc paramDesc, varFuncs VarFuncs) (string, bool, error) {
+func expandParamSetDefaultValue(paramName, paramValue string, paramDesc paramDesc, cb ExpansionCallbacks) (string, bool, error) {
 	// do we need to do anything?
 	if paramValue != "" {
 		return paramValue, true, nil
 	}
 
 	// at this point, we need to assign a new value
-	word, err := expandWord(paramDesc.parts[1], varFuncs)
+	word, err := expandWord(paramDesc.parts[1], cb)
 	if err != nil {
 		return "", false, err
 	}
-	err = varFuncs.AssignToVar(paramName, word)
+	err = cb.AssignToVar(paramName, word)
 	if err != nil {
 		return "", false, err
 	}
 
 	// all done
-	retval, success := varFuncs.LookupVar(paramName)
+	retval, success := cb.LookupVar(paramName)
 	return retval, success, nil
 }
 
-func expandParamWriteError(paramName, paramValue string, paramDesc paramDesc, varFuncs VarFuncs) (string, bool, error) {
+func expandParamWriteError(paramName, paramValue string, paramDesc paramDesc, cb ExpansionCallbacks) (string, bool, error) {
 	// do we have a value?
 	if paramValue != "" {
 		return paramValue, true, nil
 	}
 
-	word, err := expandWord(paramDesc.parts[1], varFuncs)
+	word, err := expandWord(paramDesc.parts[1], cb)
 	if err != nil {
 		return "", false, err
 	}
@@ -286,13 +286,13 @@ func expandParamWriteError(paramName, paramValue string, paramDesc paramDesc, va
 	return paramName + ": " + word, true, nil
 }
 
-func expandParamAlternativeValue(paramName, paramValue string, paramDesc paramDesc, varFuncs VarFuncs) (string, bool, error) {
+func expandParamAlternativeValue(paramName, paramValue string, paramDesc paramDesc, cb ExpansionCallbacks) (string, bool, error) {
 	// do we need to return the alternative value?
 	if paramValue == "" {
 		return paramValue, true, nil
 	}
 
-	word, err := expandWord(paramDesc.parts[1], varFuncs)
+	word, err := expandWord(paramDesc.parts[1], cb)
 	if err != nil {
 		return "", false, err
 	}
@@ -300,7 +300,7 @@ func expandParamAlternativeValue(paramName, paramValue string, paramDesc paramDe
 	return word, true, nil
 }
 
-func expandParamSubstring(paramName, paramValue string, paramDesc paramDesc, varFuncs VarFuncs) (string, bool, error) {
+func expandParamSubstring(paramName, paramValue string, paramDesc paramDesc, cb ExpansionCallbacks) (string, bool, error) {
 	start, err := strconv.Atoi(paramDesc.parts[1])
 	if err != nil {
 		return paramValue, true, nil
@@ -314,7 +314,7 @@ func expandParamSubstring(paramName, paramValue string, paramDesc paramDesc, var
 	return paramValue[start:], true, nil
 }
 
-func expandParamSubstringLength(paramName, paramValue string, paramDesc paramDesc, varFuncs VarFuncs) (string, bool, error) {
+func expandParamSubstringLength(paramName, paramValue string, paramDesc paramDesc, cb ExpansionCallbacks) (string, bool, error) {
 	// where do we start from?
 	start, err := strconv.Atoi(paramDesc.parts[1])
 	if err != nil {
@@ -340,17 +340,17 @@ func expandParamSubstringLength(paramName, paramValue string, paramDesc paramDes
 	return paramValue[start:end], true, nil
 }
 
-func expandParamPrefixNames(paramName, paramValue string, paramDesc paramDesc, varFuncs VarFuncs) (string, bool, error) {
-	varNames := varFuncs.MatchVarNames(paramName)
+func expandParamPrefixNames(paramName, paramValue string, paramDesc paramDesc, cb ExpansionCallbacks) (string, bool, error) {
+	varNames := cb.MatchVarNames(paramName)
 	sort.Strings(varNames)
 	return strings.Join(varNames, " "), true, nil
 }
 
-func expandParamLength(paramName, paramValue string, paramDesc paramDesc, varFuncs VarFuncs) (string, bool, error) {
+func expandParamLength(paramName, paramValue string, paramDesc paramDesc, cb ExpansionCallbacks) (string, bool, error) {
 	return strconv.Itoa(len(paramValue)), true, nil
 }
 
-func expandParamRemovePrefixShortestMatch(paramName, paramValue string, paramDesc paramDesc, varFuncs VarFuncs) (string, bool, error) {
+func expandParamRemovePrefixShortestMatch(paramName, paramValue string, paramDesc paramDesc, cb ExpansionCallbacks) (string, bool, error) {
 	g := glob.NewGlob(paramDesc.parts[1])
 
 	pos, success, err := g.MatchShortestPrefix(paramValue)
@@ -364,7 +364,7 @@ func expandParamRemovePrefixShortestMatch(paramName, paramValue string, paramDes
 	return paramValue, true, nil
 }
 
-func expandParamRemovePrefixLongestMatch(paramName, paramValue string, paramDesc paramDesc, varFuncs VarFuncs) (string, bool, error) {
+func expandParamRemovePrefixLongestMatch(paramName, paramValue string, paramDesc paramDesc, cb ExpansionCallbacks) (string, bool, error) {
 	g := glob.NewGlob(paramDesc.parts[1])
 
 	pos, success, err := g.MatchLongestPrefix(paramValue)
@@ -378,7 +378,7 @@ func expandParamRemovePrefixLongestMatch(paramName, paramValue string, paramDesc
 	return paramValue, true, nil
 }
 
-func expandParamRemoveSuffixShortestMatch(paramName, paramValue string, paramDesc paramDesc, varFuncs VarFuncs) (string, bool, error) {
+func expandParamRemoveSuffixShortestMatch(paramName, paramValue string, paramDesc paramDesc, cb ExpansionCallbacks) (string, bool, error) {
 	g := glob.NewGlob(paramDesc.parts[1])
 
 	pos, success, err := g.MatchShortestSuffix(paramValue)
@@ -395,7 +395,7 @@ func expandParamRemoveSuffixShortestMatch(paramName, paramValue string, paramDes
 	return paramValue, true, nil
 }
 
-func expandParamRemoveSuffixLongestMatch(paramName, paramValue string, paramDesc paramDesc, varFuncs VarFuncs) (string, bool, error) {
+func expandParamRemoveSuffixLongestMatch(paramName, paramValue string, paramDesc paramDesc, cb ExpansionCallbacks) (string, bool, error) {
 	g := glob.NewGlob(paramDesc.parts[1])
 
 	pos, success, err := g.MatchLongestSuffix(paramValue)
@@ -410,7 +410,7 @@ func expandParamRemoveSuffixLongestMatch(paramName, paramValue string, paramDesc
 	return paramValue, true, nil
 }
 
-func expandParamUppercaseFirstChar(paramName, paramValue string, paramDesc paramDesc, varFuncs VarFuncs) (string, bool, error) {
+func expandParamUppercaseFirstChar(paramName, paramValue string, paramDesc paramDesc, cb ExpansionCallbacks) (string, bool, error) {
 	for pos, firstChar := range paramValue {
 		// empty pattern?
 		if len(paramDesc.parts[1]) == 0 {
@@ -433,7 +433,7 @@ func expandParamUppercaseFirstChar(paramName, paramValue string, paramDesc param
 	return "", true, nil
 }
 
-func expandParamUppercaseAllChars(paramName, paramValue string, paramDesc paramDesc, varFuncs VarFuncs) (string, bool, error) {
+func expandParamUppercaseAllChars(paramName, paramValue string, paramDesc paramDesc, cb ExpansionCallbacks) (string, bool, error) {
 	// special case
 	if len(paramDesc.parts[1]) == 0 {
 		return strings.ToUpper(paramValue), true, nil
@@ -459,7 +459,7 @@ func expandParamUppercaseAllChars(paramName, paramValue string, paramDesc paramD
 	return buf.String(), true, nil
 }
 
-func expandParamLowercaseFirstChar(paramName, paramValue string, paramDesc paramDesc, varFuncs VarFuncs) (string, bool, error) {
+func expandParamLowercaseFirstChar(paramName, paramValue string, paramDesc paramDesc, cb ExpansionCallbacks) (string, bool, error) {
 	for pos, firstChar := range paramValue {
 		// empty pattern?
 		if len(paramDesc.parts[1]) == 0 {
@@ -482,7 +482,7 @@ func expandParamLowercaseFirstChar(paramName, paramValue string, paramDesc param
 	return "", true, nil
 }
 
-func expandParamLowercaseAllChars(paramName, paramValue string, paramDesc paramDesc, varFuncs VarFuncs) (string, bool, error) {
+func expandParamLowercaseAllChars(paramName, paramValue string, paramDesc paramDesc, cb ExpansionCallbacks) (string, bool, error) {
 	// special case
 	if len(paramDesc.parts[1]) == 0 {
 		return strings.ToLower(paramValue), true, nil

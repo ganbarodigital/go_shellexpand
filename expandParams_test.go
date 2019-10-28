@@ -51,7 +51,7 @@ func TestExpandParameterReturnsEmptyStringForUnsupportedParamOp(t *testing.T) {
 		kind:  1000,
 		parts: []string{"okay"},
 	}
-	varFuncs := VarFuncs{
+	cb := ExpansionCallbacks{
 		LookupVar: func(key string) (string, bool) {
 			return "yeah", true
 		},
@@ -61,7 +61,7 @@ func TestExpandParameterReturnsEmptyStringForUnsupportedParamOp(t *testing.T) {
 	// ----------------------------------------------------------------
 	// perform the change
 
-	actualResult, err := expandParameter("$OKAY", testData, varFuncs)
+	actualResult, err := expandParameter("$OKAY", testData, cb)
 
 	// ----------------------------------------------------------------
 	// test the results

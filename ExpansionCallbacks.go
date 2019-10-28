@@ -35,8 +35,8 @@
 
 package shellexpand
 
-// VarFuncs tell shellexpand how to work with your variable backing store
-type VarFuncs struct {
+// ExpansionCallbacks tell shellexpand how to work with your variable backing store
+type ExpansionCallbacks struct {
 	// AssignToVar is called whenever we need to set a variable in
 	// your backing store
 	AssignToVar AssignVar

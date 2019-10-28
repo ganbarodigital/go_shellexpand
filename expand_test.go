@@ -1541,7 +1541,7 @@ func testExpandTestCase(t *testing.T, testData expandTestData) {
 	// ----------------------------------------------------------------
 	// to run the test, we need to create some helper methods
 
-	varFuncs := VarFuncs{
+	cb := ExpansionCallbacks{
 		AssignToVar: func(key string, value string) error {
 			if len(testData.vars) == 0 {
 				testData.vars = make(map[string]string)
@@ -1593,10 +1593,10 @@ func testExpandTestCase(t *testing.T, testData expandTestData) {
 
 	// do we need more specific behaviour for this test?
 	if testData.assignToVar != nil {
-		varFuncs.AssignToVar = testData.assignToVar
+		cb.AssignToVar = testData.assignToVar
 	}
 	if testData.lookupVar != nil {
-		varFuncs.LookupVar = testData.lookupVar
+		cb.LookupVar = testData.lookupVar
 	}
 
 	// shorthand
@@ -1611,7 +1611,7 @@ func testExpandTestCase(t *testing.T, testData expandTestData) {
 	shellRawResult, _ := cmd.CombinedOutput()
 	shellActualResult := strings.TrimSpace(string(shellRawResult))
 
-	internalActualResult, internalActualError := Expand(input, varFuncs)
+	internalActualResult, internalActualError := Expand(input, cb)
 	// special case - the result is a side effect, not a direct string
 	// expansion
 	if testData.actualResult != nil {

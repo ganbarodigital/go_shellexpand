@@ -47,7 +47,7 @@ func TestExpandTildeHomedir(t *testing.T) {
 	// ----------------------------------------------------------------
 	// setup your test
 
-	varFuncs := VarFuncs{
+	cb := ExpansionCallbacks{
 		LookupVar: func(key string) (string, bool) {
 			if key == "HOME" {
 				return "/home/stuart", true
@@ -65,7 +65,7 @@ func TestExpandTildeHomedir(t *testing.T) {
 	// ----------------------------------------------------------------
 	// perform the change
 
-	actualResult := ExpandTilde(testData, varFuncs)
+	actualResult := ExpandTilde(testData, cb)
 
 	// ----------------------------------------------------------------
 	// test the results
@@ -79,7 +79,7 @@ func TestExpandTildePwd(t *testing.T) {
 	// ----------------------------------------------------------------
 	// setup your test
 
-	varFuncs := VarFuncs{
+	cb := ExpansionCallbacks{
 		LookupVar: func(key string) (string, bool) {
 			if key == "PWD" {
 				return "/tmp", true
@@ -97,7 +97,7 @@ func TestExpandTildePwd(t *testing.T) {
 	// ----------------------------------------------------------------
 	// perform the change
 
-	actualResult := ExpandTilde(testData, varFuncs)
+	actualResult := ExpandTilde(testData, cb)
 
 	// ----------------------------------------------------------------
 	// test the results
@@ -111,7 +111,7 @@ func TestExpandTildeOldPwd(t *testing.T) {
 	// ----------------------------------------------------------------
 	// setup your test
 
-	varFuncs := VarFuncs{
+	cb := ExpansionCallbacks{
 		LookupVar: func(key string) (string, bool) {
 			if key == "OLDPWD" {
 				return "/tmp", true
@@ -129,7 +129,7 @@ func TestExpandTildeOldPwd(t *testing.T) {
 	// ----------------------------------------------------------------
 	// perform the change
 
-	actualResult := ExpandTilde(testData, varFuncs)
+	actualResult := ExpandTilde(testData, cb)
 
 	// ----------------------------------------------------------------
 	// test the results
@@ -143,7 +143,7 @@ func TestExpandTildeUserHomedir(t *testing.T) {
 	// ----------------------------------------------------------------
 	// setup your test
 
-	varFuncs := VarFuncs{
+	cb := ExpansionCallbacks{
 		LookupVar: func(key string) (string, bool) {
 			return "should not be called", true
 		},
@@ -160,7 +160,7 @@ func TestExpandTildeUserHomedir(t *testing.T) {
 	// ----------------------------------------------------------------
 	// perform the change
 
-	actualResult := ExpandTilde(testData, varFuncs)
+	actualResult := ExpandTilde(testData, cb)
 
 	// ----------------------------------------------------------------
 	// test the results
@@ -174,7 +174,7 @@ func TestExpandTildeDoesNotModifyStringsWithoutTildePrefixes(t *testing.T) {
 	// ----------------------------------------------------------------
 	// setup your test
 
-	varFuncs := VarFuncs{
+	cb := ExpansionCallbacks{
 		LookupVar: func(key string) (string, bool) {
 			return "invalid key", true
 		},
@@ -188,7 +188,7 @@ func TestExpandTildeDoesNotModifyStringsWithoutTildePrefixes(t *testing.T) {
 	// ----------------------------------------------------------------
 	// perform the change
 
-	actualResult := ExpandTilde(testData, varFuncs)
+	actualResult := ExpandTilde(testData, cb)
 
 	// ----------------------------------------------------------------
 	// test the results
@@ -202,7 +202,7 @@ func TestExpandTildeIgnoresTildeInsideVars(t *testing.T) {
 	// ----------------------------------------------------------------
 	// setup your test
 
-	varFuncs := VarFuncs{
+	cb := ExpansionCallbacks{
 		LookupVar: func(key string) (string, bool) {
 			return "invalid key", true
 		},
@@ -216,7 +216,7 @@ func TestExpandTildeIgnoresTildeInsideVars(t *testing.T) {
 	// ----------------------------------------------------------------
 	// perform the change
 
-	actualResult := ExpandTilde(testData, varFuncs)
+	actualResult := ExpandTilde(testData, cb)
 
 	// ----------------------------------------------------------------
 	// test the results
@@ -230,7 +230,7 @@ func TestExpandTildeIgnoresEscapedTilde(t *testing.T) {
 	// ----------------------------------------------------------------
 	// setup your test
 
-	varFuncs := VarFuncs{
+	cb := ExpansionCallbacks{
 		LookupVar: func(key string) (string, bool) {
 			return "invalid key", true
 		},
@@ -244,7 +244,7 @@ func TestExpandTildeIgnoresEscapedTilde(t *testing.T) {
 	// ----------------------------------------------------------------
 	// perform the change
 
-	actualResult := ExpandTilde(testData, varFuncs)
+	actualResult := ExpandTilde(testData, cb)
 
 	// ----------------------------------------------------------------
 	// test the results
@@ -258,7 +258,7 @@ func TestExpandTildeIgnoresWhenHomedirNotSet(t *testing.T) {
 	// ----------------------------------------------------------------
 	// setup your test
 
-	varFuncs := VarFuncs{
+	cb := ExpansionCallbacks{
 		LookupVar: func(key string) (string, bool) {
 			return "invalid key", false
 		},
@@ -272,7 +272,7 @@ func TestExpandTildeIgnoresWhenHomedirNotSet(t *testing.T) {
 	// ----------------------------------------------------------------
 	// perform the change
 
-	actualResult := ExpandTilde(testData, varFuncs)
+	actualResult := ExpandTilde(testData, cb)
 
 	// ----------------------------------------------------------------
 	// test the results
@@ -286,7 +286,7 @@ func TestExpandTildeIgnoresWhenPwdNotSet(t *testing.T) {
 	// ----------------------------------------------------------------
 	// setup your test
 
-	varFuncs := VarFuncs{
+	cb := ExpansionCallbacks{
 		LookupVar: func(key string) (string, bool) {
 			return "invalid key", false
 		},
@@ -300,7 +300,7 @@ func TestExpandTildeIgnoresWhenPwdNotSet(t *testing.T) {
 	// ----------------------------------------------------------------
 	// perform the change
 
-	actualResult := ExpandTilde(testData, varFuncs)
+	actualResult := ExpandTilde(testData, cb)
 
 	// ----------------------------------------------------------------
 	// test the results
@@ -314,7 +314,7 @@ func TestExpandTildeIgnoresWhenOldPwdNotSet(t *testing.T) {
 	// ----------------------------------------------------------------
 	// setup your test
 
-	varFuncs := VarFuncs{
+	cb := ExpansionCallbacks{
 		LookupVar: func(key string) (string, bool) {
 			return "invalid key", false
 		},
@@ -328,7 +328,7 @@ func TestExpandTildeIgnoresWhenOldPwdNotSet(t *testing.T) {
 	// ----------------------------------------------------------------
 	// perform the change
 
-	actualResult := ExpandTilde(testData, varFuncs)
+	actualResult := ExpandTilde(testData, cb)
 
 	// ----------------------------------------------------------------
 	// test the results
@@ -342,7 +342,7 @@ func TestExpandTildeIgnoresWhenUsernameNotKnown(t *testing.T) {
 	// ----------------------------------------------------------------
 	// setup your test
 
-	varFuncs := VarFuncs{
+	cb := ExpansionCallbacks{
 		LookupVar: func(key string) (string, bool) {
 			return "should not be called", true
 		},
@@ -356,7 +356,7 @@ func TestExpandTildeIgnoresWhenUsernameNotKnown(t *testing.T) {
 	// ----------------------------------------------------------------
 	// perform the change
 
-	actualResult := ExpandTilde(testData, varFuncs)
+	actualResult := ExpandTilde(testData, cb)
 
 	// ----------------------------------------------------------------
 	// test the results
@@ -601,7 +601,7 @@ func TestMatchAndExpandTildeIgnoresNonPrefix(t *testing.T) {
 	// ----------------------------------------------------------------
 	// setup your test
 
-	varFuncs := VarFuncs{
+	cb := ExpansionCallbacks{
 		LookupVar: func(key string) (string, bool) {
 			return "invalid key", true
 		},
@@ -615,7 +615,7 @@ func TestMatchAndExpandTildeIgnoresNonPrefix(t *testing.T) {
 	// ----------------------------------------------------------------
 	// perform the change
 
-	actualResult, ok := matchAndExpandTilde(testData, varFuncs)
+	actualResult, ok := matchAndExpandTilde(testData, cb)
 
 	// ----------------------------------------------------------------
 	// test the results
