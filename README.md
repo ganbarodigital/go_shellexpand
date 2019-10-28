@@ -627,7 +627,9 @@ _Quote removal_ is the removal of:
 
 If a [word](#word) contains spaces - for example, a long filename on Windows or MacOS - you have to surround it with either single or double quotes. That's how a UNIX shell knows that the filename is a single word.
 
-The quotes aren't actually part of the filename on disk. The UNIX shell has to remove them, otherwise
+The quotes aren't actually part of the filename on disk. The UNIX shell has to remove the quotes before passing the filename to whatever command is being called.
+
+UNIX shells remove the `\` in front of escaped characters in case the command being called also supports some form of [escape sequence expansion](#escape-sequence-expansion).
 
 ### Status
 
