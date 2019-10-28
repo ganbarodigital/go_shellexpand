@@ -54,6 +54,7 @@ result, err := shellexpand.Expand(input, cb)
   - [What Is Command Substitution?](#what-is-command-substitution)
   - [Status](#status-2)
 - [Arithmetic Expansion](#arithmetic-expansion)
+  - [What Is Arithmetic Expansion?](#what-is-arithmetic-expansion)
   - [Rough Grammar](#rough-grammar-2)
   - [Status](#status-3)
 - [Process Substitution](#process-substitution)
@@ -427,9 +428,41 @@ If we add support in a future version, we'll make it send the command name and a
 
 ## Arithmetic Expansion
 
+### What Is Arithmetic Expansion?
+
+_Arithmetic expansion_ is how UNIX shells support math operations.
+
+```bash
+#!/usr/bin/env bash
+
+short_names=$(git branches | grep "^feature/" | sed 's ^feature/  g')
+
+local width=0
+local branch
+for branch in $short_names; do
+        local len=${#branch}
+        width=$(max $width $len)
+done
+width=$(($width+3))
+```
+
 ### Rough Grammar
 
+_Arithmetic expansion_ is of the form:
+
+```
+$((expression))
+```
+
+where `expression` is a topic for another day :)
+
 ### Status
+
+_Arithmetic expansion_ is __not supported__.
+
+The main reason it isn't supported at the minute is that we haven't had time to add it yet. It's something you can (and arguably, should) handle in native Golang code instead.
+
+We plan to add for v2.0.
 
 ## Process Substitution
 
