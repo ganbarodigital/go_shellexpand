@@ -578,7 +578,7 @@ If/when we add word splitting, we'll either have to change the API for [`shellex
 
 ### What Is Escape Sequence Expansion?
 
-_Escape sequence expansion_ is
+_Escape sequence expansion_ turns escape sequences (listed in the table below) into other characters. Many of these characters are interpreted by UNIX terminals as commands.
 
 ### Rough Grammar
 
