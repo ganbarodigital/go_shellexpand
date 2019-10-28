@@ -380,7 +380,6 @@ Here's a list of all the different types of UNIX shell parameter expansion that 
 Syntax                        | Name                              | Status
 ------------------------------|-----------------------------------|-------
 `$PARAM` / `${PARAM}`         | expand-to-value                   | supported
-`${PARAM}`                    | expand-to-value                   | supported
 `${PARAM:-word}`              | expand-with-default-value         | supported
 `${PARAM:=word}`              | expand-assign-default-value       | supported
 `${PARAM:?word}`              | expand-write-error                | supported
