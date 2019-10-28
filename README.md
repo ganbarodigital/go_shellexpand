@@ -40,6 +40,12 @@ result, err := shellexpand.Expand(input, cb)
   - [Rough Grammar](#rough-grammar)
   - [Other Notes](#other-notes)
   - [Status](#status)
+- [Tilde Expansion](#tilde-expansion)
+  - [What Is Tilde Expansion?](#what-is-tilde-expansion)
+  - [Why Use Tilde Expansion?](#why-use-tilde-expansion)
+  - [Rough Grammar](#rough-grammar-1)
+  - [Other Notes](#other-notes-1)
+  - [Status](#status-1)
 
 ## Why Use ShellExpand?
 
@@ -237,4 +243,77 @@ where:
 _Brace expansion_ is fully supported in v1.0.0 and later.
 
 If you find any bugs in brace expansion, please [let us know](#reporting-problems).
+
+## Tilde Expansion
+
+### What Is Tilde Expansion?
+
+_Tilde expansion_ turns `~` into the path to a user's home directory.
+
+```golang
+input := "~/.storyplayer/storyplayer.json"
+cb := ExpansionCallbacks{
+    // you need to provide this
+    LookupHomeDir: func(...),
+}
+output, err := shellexpand.Expand(input)
+
+// on my system, output would be: /home/stuart/.storyplayer/storyplayer.json
+```
+
+The `~` can be followed by a username.
+
+```golang
+input := "~stuart/.storyplayer/storyplayer.json"
+cb := ExpansionCallbacks{
+    // you need to provide this
+    LookupHomeDir: func(...),
+}
+output, err := shellexpand.Expand(input)
+
+// on my system, output would be: /home/stuart/.storyplayer/storyplayer.json
+```
+
+The `~` can be followed by a `+` or `-`. A `+` is replaced by the value of `PWD`, and a `-` is replaced by the value of `OLDPWD`.
+
+```golang
+input := "~+/storyplayer.json"
+cb := ExpansionCallbacks{
+    // you need to provide this
+    LookupVar: func(...),
+}
+output, err := shellexpand.Expand(input)
+
+// on my system, output would be: (current working directory)/storyplayer.json
+```
+
+### Why Use Tilde Expansion?
+
+Many programs these days create/maintain/support a config file stored in the user's home directory. Tilde expansion is a very easy way
+
+### Rough Grammar
+
+Tilde expansion takes the form:
+
+`~(+|-|username|<blank>)[/path/to/folder/or/file]`
+
+where:
+
+* `~` must be the first character of the [word](#word)
+* `~+` is replaced by the value of `PWD` via a call to [LookupVar](#expansioncallbackslookupvar)
+* `~-` is replaced by the value of `OLDPWD` via a call to [LookupVar](#expansioncallbackslookupvar)
+* `~username` is replaced by user's home directory, via a call to [LookupHomeDir](#expansioncallbackslookuphomedir)
+* `~` on its own is replaced by the value of `HOME` via a call to [LookupVar](#expansioncallbackslookupvar)
+
+The `/path/to/folder/or/file` is optional.
+
+### Other Notes
+
+* Tilde expansion does not check that the expanded filepath is valid, or that whatever it points to exists.
+
+### Status
+
+_Tilde expansion_ is fully supported in v1.0.0 or later.
+
+If you find any bugs in tilde expansion, please [let us know](#reporting-problems).
 
