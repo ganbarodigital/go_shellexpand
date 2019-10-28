@@ -52,6 +52,8 @@ result, err := shellexpand.Expand(input, cb)
   - [Supported Parameter Expansions](#supported-parameter-expansions)
   - [Indirection](#indirection)
   - [Positional Parameter Support](#positional-parameter-support)
+  - [$@ Expansion](#-expansion)
+  - [Using $* And $@ In Parameter Expansion](#using--and--in-parameter-expansion)
 - [Command Substitution](#command-substitution)
   - [What Is Command Substitution?](#what-is-command-substitution)
   - [Status](#status-2)
@@ -431,6 +433,31 @@ We support (almost) all parameter expansion involving positional parameter.
 * When we're expanding `$*` and `$#`, we _always_ get the value of `$#` first. We then use `$#` to work out how many positional parameters currently exist, and then we get each of them in turn.
 * We never retrieve `$*` and `$@` by name via your [expansion callbacks](#expansion-callbacks).
 * These variables are all treated as read-only by UNIX shells. We don't enforce that explicitly (yet).
+
+### $@ Expansion
+
+In UNIX shell scripts, `$*` and `$@` sometimes expand to different results. If you use `$@` inside double quotes, that expands to an array of words.
+
+We don't implement support for arrays in _ShellExpand_. `$*` and `$@` currently both expand to the same results.
+
+If/when we implement [word splitting](#word-splitting), `$*` and `$@` will start to expand the same way they do in shell scripts. That will probably break backwards compatibility of your code.
+
+### Using $* And $@ In Parameter Expansion
+
+Several of the parameter expansion operations behave differently if you apply them to `$*` or `$@`. Instead of being applied to the string as a whole, `$*` or `$@` is expanded first, and then the operation is applied to each chunk of that expanded string in turn.
+
+For example:
+
+```golang
+input := "${*%*.doc}"
+cb := ExpansionCallbacks{
+    // you need to supply this
+    LookupVar: func(...)
+}
+output, err := shellexpand.Expand(input)
+```
+
+will do remove-shortest-suffix from each word in the expansion of `$*`.
 
 ## Command Substitution
 
