@@ -50,6 +50,7 @@ result, err := shellexpand.Expand(input, cb)
   - [What Is Parameter Expansion?](#what-is-parameter-expansion)
   - [Why Use Parameter Expansion?](#why-use-parameter-expansion)
   - [Supported Parameter Expansions](#supported-parameter-expansions)
+  - [Indirection](#indirection)
 - [Command Substitution](#command-substitution)
   - [What Is Command Substitution?](#what-is-command-substitution)
   - [Status](#status-2)
@@ -395,6 +396,24 @@ Syntax                        | Name                              | Status
 `${PARAM,pattern}`            | expand-lowercase-first-char       | supported
 `${PARAM,,pattern}`           | expand-lowercase-all-chars        | supported
 `${PARAM@operator}`           | expand-parameter-transform        | not supported
+
+### Indirection
+
+Most parameter expansions support something called _indirection_.
+
+```bash
+#!/usr/bin/env bash
+
+PARAM1=PARAM2
+PARAM2=foo
+
+# this echoes the value of $PARAM2
+echo ${!PARAM1}
+```
+
+If the first character after the opening brace is a `!` (pling), then the value of the named parameter (`$PARAM1` in our example) is used as the name of the parameter to apply the expansion to.
+
+_ShellExpand_ supports all the _indirection_ expansions that we know if. If you find a case where indirection doesn't work in the same way that a UNIX shell does, please [let us know](#reporting-problems).
 
 ## Command Substitution
 
