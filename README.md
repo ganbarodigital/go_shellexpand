@@ -46,6 +46,10 @@ result, err := shellexpand.Expand(input, cb)
   - [Rough Grammar](#rough-grammar-1)
   - [Other Notes](#other-notes-1)
   - [Status](#status-1)
+- [Escape Sequence Expansion](#escape-sequence-expansion)
+  - [What Is Escape Sequence Expansion?](#what-is-escape-sequence-expansion)
+  - [Rough Grammar](#rough-grammar-2)
+  - [Status](#status-2)
 
 ## Why Use ShellExpand?
 
@@ -316,4 +320,43 @@ The `/path/to/folder/or/file` is optional.
 _Tilde expansion_ is fully supported in v1.0.0 or later.
 
 If you find any bugs in tilde expansion, please [let us know](#reporting-problems).
+
+## Escape Sequence Expansion
+
+### What Is Escape Sequence Expansion?
+
+_Escape sequence expansion_ is
+
+### Rough Grammar
+
+An escape sequence is a `\` (forward-slash) followed by one or more characters. The supported characters are in this table:
+
+Escape Sequence | Shell Expansion
+----------------|----------------
+`\a`            | alert (bell)
+`\b`            | backspace
+`\e` and `\E`   | ANSI escape sequence
+`\f`            | form feed
+`\n`            | new line
+`\r`            | carriage return
+`\t`            | horizontal tab
+`\v`            | vertical tab
+`\'`            | escaped single quote
+`\"`            | escaped double quote
+`\?`            | escaped question mark
+`\nnn`          | the 8-bit character for the octal number `nnn`
+`\xNN`          | the 8-bit character for the hexadecimal `XX`
+`\uHHHH`        | the Unicode character for the hexadecimal `HHHH`
+`\UHHHHHHHH`    | the Unicode character for the hexadecimal `HHHHHHHH`
+`\cX`           | a `control-X` character
+
+Any other sequence starting with a `\` is treated as [an escaped character](#escaped-character).
+
+### Status
+
+_Escape sequence expansion_ is **not supported**.
+
+There are no plans to add support for escape sequence expansion at the moment.
+
+Why? Many escape sequences exist for working with interactive shells. There's no direct target to translate them to in a Golang library. Many (all?) of the rest are already supported by Golang's `fmt` package.
 
