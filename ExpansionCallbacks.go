@@ -35,6 +35,21 @@
 
 package shellexpand
 
+// AssignVar sets a key to a given value. If it cannot do so, it reports
+// an error to explain why
+type AssignVar func(string, string) error
+
+// LookupVar is a mapping function. Given a key, it returns either:
+//
+// (matching value, true), or
+// ("", false)
+type LookupVar func(string) (string, bool)
+
+// MatchVarNames returns a list of names that match the given search term
+//
+// The search term is a prefix
+type MatchVarNames func(string) []string
+
 // ExpansionCallbacks tell shellexpand how to work with your variable backing store
 type ExpansionCallbacks struct {
 	// AssignToVar is called whenever we need to set a variable in
