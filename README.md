@@ -50,14 +50,35 @@ result, err := shellexpand.Expand(input, cb)
   - [What Is Parameter Expansion?](#what-is-parameter-expansion)
   - [Why Use Parameter Expansion?](#why-use-parameter-expansion)
   - [Supported Parameter Expansions](#supported-parameter-expansions)
-- [Escape Sequence Expansion](#escape-sequence-expansion)
-  - [What Is Escape Sequence Expansion?](#what-is-escape-sequence-expansion)
+- [Command Substitution](#command-substitution)
   - [Rough Grammar](#rough-grammar-2)
   - [Status](#status-2)
+- [Arithmetic Expansion](#arithmetic-expansion)
+  - [Rough Grammar](#rough-grammar-3)
+  - [Status](#status-3)
+- [Process Substitution](#process-substitution)
+  - [Rough Grammar](#rough-grammar-4)
+  - [Status](#status-4)
+- [Word Splitting](#word-splitting)
+  - [Rough Grammar](#rough-grammar-5)
+  - [Status](#status-5)
+- [Pathname Expansion](#pathname-expansion)
+  - [Rough Grammar](#rough-grammar-6)
+  - [Status](#status-6)
+- [Escape Sequence Expansion](#escape-sequence-expansion)
+  - [What Is Escape Sequence Expansion?](#what-is-escape-sequence-expansion)
+  - [Rough Grammar](#rough-grammar-7)
+  - [Status](#status-7)
 - [Quote Removal](#quote-removal)
   - [What Is Quote Removal?](#what-is-quote-removal)
   - [Why Do Shells Perform Quote Removal?](#why-do-shells-perform-quote-removal)
-  - [Status](#status-3)
+  - [Status](#status-8)
+- [Common Terms](#common-terms)
+  - [Escaped Character](#escaped-character)
+  - [Glob Pattern](#glob-pattern)
+  - [Word](#word)
+- [Reporting Problems](#reporting-problems)
+- [Inspirations](#inspirations)
 
 ## Why Use ShellExpand?
 
@@ -373,6 +394,36 @@ Syntax                        | Name                              | Status
 `${PARAM,,pattern}`           | expand-lowercase-all-chars        | supported
 `${PARAM@operator}`           | expand-parameter-transform        | not supported
 
+## Command Substitution
+
+### Rough Grammar
+
+### Status
+
+## Arithmetic Expansion
+
+### Rough Grammar
+
+### Status
+
+## Process Substitution
+
+### Rough Grammar
+
+### Status
+
+## Word Splitting
+
+### Rough Grammar
+
+### Status
+
+## Pathname Expansion
+
+### Rough Grammar
+
+### Status
+
 ## Escape Sequence Expansion
 
 ### What Is Escape Sequence Expansion?
@@ -436,3 +487,14 @@ _Quote removal_ is partially supported in `ShellExpand` v1.0.0.
   - this was required for our unit tests (which compares results in a real UNIX shell and our code) to work
 * single and double quotes surrounding words are not removed (because [word splitting](#word-splitting) is not supported).
 
+## Common Terms
+
+### Escaped Character
+
+### Glob Pattern
+
+### Word
+
+## Reporting Problems
+
+## Inspirations
