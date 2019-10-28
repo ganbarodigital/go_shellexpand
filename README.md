@@ -61,19 +61,20 @@ result, err := shellexpand.Expand(input, cb)
   - [What Is Process Substitution?](#what-is-process-substitution)
   - [Status](#status-4)
 - [Word Splitting](#word-splitting)
-  - [Rough Grammar](#rough-grammar-3)
+  - [What Is Word Splitting?](#what-is-word-splitting)
   - [Status](#status-5)
-- [Pathname Expansion](#pathname-expansion)
-  - [Rough Grammar](#rough-grammar-4)
   - [Status](#status-6)
+- [Pathname Expansion](#pathname-expansion)
+  - [Rough Grammar](#rough-grammar-3)
+  - [Status](#status-7)
 - [Escape Sequence Expansion](#escape-sequence-expansion)
   - [What Is Escape Sequence Expansion?](#what-is-escape-sequence-expansion)
-  - [Rough Grammar](#rough-grammar-5)
-  - [Status](#status-7)
+  - [Rough Grammar](#rough-grammar-4)
+  - [Status](#status-8)
 - [Quote Removal](#quote-removal)
   - [What Is Quote Removal?](#what-is-quote-removal)
   - [Why Do Shells Perform Quote Removal?](#why-do-shells-perform-quote-removal)
-  - [Status](#status-8)
+  - [Status](#status-9)
 - [Common Terms](#common-terms)
   - [Escaped Character](#escaped-character)
   - [Glob Pattern](#glob-pattern)
@@ -482,7 +483,25 @@ If we implement command substitution, we'll probably add process substitution at
 
 ## Word Splitting
 
-### Rough Grammar
+### What Is Word Splitting?
+
+_Word splitting_ is the algorithm that UNIX shells use to split up a line of text into separate chunks. These chunks are called [words](#word).
+
+The basic idea is that a line of text is split up using separator characters:
+
+* text surrounded by single quotes is treated as a single word (and immune from further expansion)
+* text surrounded by double quotes is also treated as a single word
+* the variable `IFS` is used to tell the UNIX shell what the separator characters are (they default to whitespace characters)
+
+### Status
+
+_Word splitting_ is currently __not supported__.
+
+We haven't implemented it simply because we haven't needed it yet.
+
+It's needed for [command substitution](#command-substitution) and [process substitution](#process-substitution): word splitting is required for the list of arguments to be passed into a process.
+
+If/when we add word splitting, we'll either have to change the API for [`shellexpand.Expand()`](#expand) (it will need to return a `[]Word` instead of a `string`), or we'll need to export a second function instead.
 
 ### Status
 
