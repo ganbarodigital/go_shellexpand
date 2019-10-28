@@ -401,7 +401,17 @@ Syntax                        | Name                              | Status
 _Command substitution_ calls an external program, and puts the output from that program in the returned string.
 
 ```bash
+#!/usr/bin/env bash
+
 CURRENT_BRACH=$(git branch --no-color | grep '^\* ' | grep -v 'no branch' | sed 's/^* //g')
+```
+
+or
+
+```bash
+#!/usr/bin/env bash
+
+CURRENT_BRACH=`git branch --no-color | grep '^\* ' | grep -v 'no branch' | sed 's/^* //g'`
 ```
 
 ### Status
