@@ -27,12 +27,12 @@ result, err := shellexpand.Expand(input, cb)
   - [Why UNIX Shell String Expansion?](#why-unix-shell-string-expansion)
 - [How Does It Work?](#how-does-it-work)
   - [Getting Started](#getting-started)
-  - [Expansion Callbacks](#expansion-callbacks)
-    - [ExpansionCallbacks.AssignToVar()](#expansioncallbacksassigntovar)
+  - [How Are Errors Handled?](#how-are-errors-handled)
+- [Expansion Callbacks](#expansion-callbacks)
+  - [ExpansionCallbacks.AssignToVar()](#expansioncallbacksassigntovar)
   - [ExpansionCallbacks.LookupVar()](#expansioncallbackslookupvar)
   - [ExpansionCallbacks.LookupHomeDir()](#expansioncallbackslookuphomedir)
   - [ExpansionCallbacks.MatchVarNames()](#expansioncallbacksmatchvarnames)
-  - [How Are Errors Handled?](#how-are-errors-handled)
 - [Supported Expansions](#supported-expansions)
 - [Brace Expansion](#brace-expansion)
 - [What Is Brace Expansion?](#what-is-brace-expansion)
@@ -88,7 +88,22 @@ Call `shellexpand.Expand()` to expand your string:
 output, err := shellexpand.Expand(input, cb)
 ```
 
-### Expansion Callbacks
+### How Are Errors Handled?
+
+As a general principle, when an expansion fails, the input string is returned unmodified - and no error is returned.
+
+That said, UNIX shells have grown organically over the last 40+ years, and there will be times where a failed expansion is simply removed from the input string instead ... and still no error returned.
+
+Our main unit tests are in [`expand_test.go`](expand_test.go), and each supported expansion is run through a real UNIX shell too, to confirm that `ShellExpand` is as 100% compatible as possible.
+
+Golang errors can come from two places:
+
+* they can be returned from your [expansion callbacks](#expansion-callbacks)
+* they can be caused by using invalid [glob patterns](#glob-pattern)
+
+We return all errors back to you. When we do, the contents of the string we return is undefined.
+
+## Expansion Callbacks
 
 The vast majority of supported string expansions need to look things up:
 
@@ -101,7 +116,7 @@ These callbacks are responsible for searching and updating what we call your _va
 
 There are four callbacks that you need to define:
 
-#### ExpansionCallbacks.AssignToVar()
+### ExpansionCallbacks.AssignToVar()
 
 ```golang
 func AssignToVar(key, value string) error
@@ -148,21 +163,6 @@ func MatchVarNames(prefix string) []string
 `ShellExpand` will call `MatchVarNames` when it needs to know which variable names start with the given prefix. This is needed for [parameter expansion](#parameter-expansion).
 
 Your callback must return a list of all variable names that start with the given prefix. If no names match, return an empty list.
-
-### How Are Errors Handled?
-
-As a general principle, when an expansion fails, the input string is returned unmodified - and no error is returned.
-
-That said, UNIX shells have grown organically over the last 40+ years, and there will be times where a failed expansion is simply removed from the input string instead ... and still no error returned.
-
-Our main unit tests are in [`expand_test.go`](expand_test.go), and each supported expansion is run through a real UNIX shell too, to confirm that `ShellExpand` is as 100% compatible as possible.
-
-Golang errors can come from two places:
-
-* they can be returned from your [expansion callbacks](#expansion-callbacks)
-* they can be caused by using invalid [glob patterns](#glob-pattern)
-
-We return all errors back to you. When we do, the contents of the string we return is undefined.
 
 ## Supported Expansions
 
