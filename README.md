@@ -735,4 +735,4 @@ _ShellExpand_ v1.x operates on the whole string. It doesn't implement [word spli
 
 ## Reporting Problems
 
-## Inspirations
+See our separate [CONTRIBUTING GUIDE](CONTRIBUTING.md).
