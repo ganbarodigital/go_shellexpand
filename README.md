@@ -607,9 +607,11 @@ _Pathname expansion_ is currently __not supported__.
 
 At the minute, we don't have any need for it in _ShellExpand_. It's main use is to generate arguments to external commands, and we haven't added support for that to date.
 
+Basic globbing support is available via Golang's `filepath.Match()`.
+
 If we add [command substitution](#command-substitution) and/or [process substitution](#process-substitution), then it will definitely make sense to implement pathname expansion.
 
-Basic globbing support is available via Golang's `filepath.Match()`.
+If you're interested in implementing pathname expansion, it would make sense to implement [word splitting](#word-splitting) first, and completing the implementation of [quote removal](#quote-removal).
 
 ## Escape Sequence Expansion
 
