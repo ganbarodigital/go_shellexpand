@@ -85,7 +85,6 @@ result, err := shellexpand.Expand(input, cb)
   - [Glob Pattern](#glob-pattern)
   - [Word](#word)
 - [Reporting Problems](#reporting-problems)
-- [Inspirations](#inspirations)
 
 ## Why Use ShellExpand?
 
