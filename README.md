@@ -58,17 +58,17 @@ result, err := shellexpand.Expand(input, cb)
   - [Rough Grammar](#rough-grammar-2)
   - [Status](#status-3)
 - [Process Substitution](#process-substitution)
-  - [Rough Grammar](#rough-grammar-3)
+  - [What Is Process Substitution?](#what-is-process-substitution)
   - [Status](#status-4)
 - [Word Splitting](#word-splitting)
-  - [Rough Grammar](#rough-grammar-4)
+  - [Rough Grammar](#rough-grammar-3)
   - [Status](#status-5)
 - [Pathname Expansion](#pathname-expansion)
-  - [Rough Grammar](#rough-grammar-5)
+  - [Rough Grammar](#rough-grammar-4)
   - [Status](#status-6)
 - [Escape Sequence Expansion](#escape-sequence-expansion)
   - [What Is Escape Sequence Expansion?](#what-is-escape-sequence-expansion)
-  - [Rough Grammar](#rough-grammar-6)
+  - [Rough Grammar](#rough-grammar-5)
   - [Status](#status-7)
 - [Quote Removal](#quote-removal)
   - [What Is Quote Removal?](#what-is-quote-removal)
@@ -466,9 +466,19 @@ We plan to add for v2.0.
 
 ## Process Substitution
 
-### Rough Grammar
+### What Is Process Substitution?
+
+_Process substitution_ is a way to obtain input from / send input to an external program that is running in the background (ie, an asynchronous operation).
 
 ### Status
+
+_Process substitution_ is __not supported__.
+
+All the reasons for not implementing [command substitution](#command-substitution) apply here.
+
+Additionally, it's a feature that's rarely used in the wild. We simply haven't needed it for our code at all.
+
+If we implement command substitution, we'll probably add process substitution at the same time, in a similar manner. It'll use Golang channels to communicate to/from your code.
 
 ## Word Splitting
 
