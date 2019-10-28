@@ -51,23 +51,23 @@ result, err := shellexpand.Expand(input, cb)
   - [Why Use Parameter Expansion?](#why-use-parameter-expansion)
   - [Supported Parameter Expansions](#supported-parameter-expansions)
 - [Command Substitution](#command-substitution)
-  - [Rough Grammar](#rough-grammar-2)
+  - [What Is Command Substitution?](#what-is-command-substitution)
   - [Status](#status-2)
 - [Arithmetic Expansion](#arithmetic-expansion)
-  - [Rough Grammar](#rough-grammar-3)
+  - [Rough Grammar](#rough-grammar-2)
   - [Status](#status-3)
 - [Process Substitution](#process-substitution)
-  - [Rough Grammar](#rough-grammar-4)
+  - [Rough Grammar](#rough-grammar-3)
   - [Status](#status-4)
 - [Word Splitting](#word-splitting)
-  - [Rough Grammar](#rough-grammar-5)
+  - [Rough Grammar](#rough-grammar-4)
   - [Status](#status-5)
 - [Pathname Expansion](#pathname-expansion)
-  - [Rough Grammar](#rough-grammar-6)
+  - [Rough Grammar](#rough-grammar-5)
   - [Status](#status-6)
 - [Escape Sequence Expansion](#escape-sequence-expansion)
   - [What Is Escape Sequence Expansion?](#what-is-escape-sequence-expansion)
-  - [Rough Grammar](#rough-grammar-7)
+  - [Rough Grammar](#rough-grammar-6)
   - [Status](#status-7)
 - [Quote Removal](#quote-removal)
   - [What Is Quote Removal?](#what-is-quote-removal)
@@ -396,9 +396,26 @@ Syntax                        | Name                              | Status
 
 ## Command Substitution
 
-### Rough Grammar
+### What Is Command Substitution?
+
+_Command substitution_ calls an external program, and puts the output from that program in the returned string.
+
+```bash
+CURRENT_BRACH=$(git branch --no-color | grep '^\* ' | grep -v 'no branch' | sed 's/^* //g')
+```
 
 ### Status
+
+_Command substitution_ is __not supported_.
+
+There are no plans to add support for command substitution at this time.
+
+Why?
+
+* Command substition needs [word splitting](#word-splitting) implementing first
+* Calling external programs is a possible security risk, especially in the kind of systems programming that Golang is often used for
+
+If we add support in a future version, we'll make it send the command name and arguments to a callback that you provide.
 
 ## Arithmetic Expansion
 
