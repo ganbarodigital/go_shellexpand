@@ -724,6 +724,15 @@ _ShellExpand_ uses the [Glob package](https://github.com/ganbarodigital/go_glob)
 
 ### Word
 
+When a UNIX shell splits up a text string into chunks, each of those chunks is called a _word_. UNIX shells normally use the spaces in a text string to split the chunks up, but you can surround text in single and double quotes to tell the shell where a chunk starts and ends.
+
+These chunks are the smallest units that UNIX shells work with:
+
+* When a shell script calls an external program, each chunk is passed as a separate parameter to that program.
+* When the shell script does string expansion, the shell actually expands each chunk at a time. It doesn't actually work on the string as a whole.
+
+_ShellExpand_ v1.x operates on the whole string. It doesn't implement [word splitting](#word-splitting). So far, we haven't needed it.
+
 ## Reporting Problems
 
 ## Inspirations
