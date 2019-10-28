@@ -54,6 +54,7 @@ result, err := shellexpand.Expand(input, cb)
   - [Positional Parameter Support](#positional-parameter-support)
   - [$@ Expansion](#-expansion)
   - [Using $* And $@ In Parameter Expansion](#using--and--in-parameter-expansion)
+  - [Special Parameters](#special-parameters)
 - [Command Substitution](#command-substitution)
   - [What Is Command Substitution?](#what-is-command-substitution)
   - [Status](#status-2)
@@ -178,7 +179,11 @@ func LookupVar(key string) (string, bool)
 
 __Please do not return `""` and `true` if the variable does not exist in your backing store.__ That behaviour may lead to undefined results from _ShellExpand_. Even if your own testing says that you can get away with it today, we do not guarantee you'll get the results you expect in a future release.
 
-(If you're familiar with Golang's `os.LookupEnv()`, `LookupVar` does the same job.)
+For [positional parameters](#positional-parameter-support) and [special parameters](#special-parameters), `key` will always start with a `$` sign.
+
+For all other parameters, _ShellExpand_ will strip away the `$` sign before calling `LookupVar()`.
+
+(If you're familiar with Golang's `os.LookupEnv()`, `LookupVar()` does the same job.)
 
 ### ExpansionCallbacks.LookupHomeDir()
 
@@ -458,6 +463,19 @@ output, err := shellexpand.Expand(input)
 ```
 
 will do remove-shortest-suffix from each word in the expansion of `$*`.
+
+### Special Parameters
+
+These parameters are all known as _special parameters_ in `man bash`:
+
+* `$?`
+* `$-`
+* `$$`
+* `$!`
+* `$0`
+* `$-`
+
+_ShellExpand_ will call your [LookupVar()](#expansioncallbackslookupvar) expansion callback to get their value. The variable name passed into `LookupVar()` will always start with a `$` sign.
 
 ## Command Substitution
 
