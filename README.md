@@ -491,6 +491,29 @@ _Quote removal_ is partially supported in `ShellExpand` v1.0.0.
 
 ### Escaped Character
 
+An _escaped character_ is any character that has a `\` (forward-slash) in front of it.
+
+They are used to tell _ShellExpand_ to treat the escaped character as a normal character (ie, just text).
+
+For example, in [brace expansion](#brace-expansion), a `{` (brace) on its own denotes the start of a brace pattern:
+
+```bash
+# ab{c,d,e}fg becomes 'abcfg abdfg abefg'
+```
+
+If you escape the brace, _ShellExpand_ no longer treats it as the start of a brace pattern
+
+```bash
+# ab\{c,d,e}fg remains `ab{c,d,e}fg`
+```
+
+All of our expansions should correctly support escaped characters. By correctly, we mean that it should:
+
+* always treat them as normal text
+* the result should be the same that a real UNIX shell would give you
+
+If you find any bugs related to this, please [let us know](#reporting-problems).
+
 ### Glob Pattern
 
 ### Word
