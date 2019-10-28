@@ -46,6 +46,10 @@ result, err := shellexpand.Expand(input, cb)
   - [Rough Grammar](#rough-grammar-1)
   - [Other Notes](#other-notes-1)
   - [Status](#status-1)
+- [Parameter Expansion](#parameter-expansion)
+  - [What Is Parameter Expansion?](#what-is-parameter-expansion)
+  - [Why Use Parameter Expansion?](#why-use-parameter-expansion)
+  - [Supported Parameter Expansions](#supported-parameter-expansions)
 - [Escape Sequence Expansion](#escape-sequence-expansion)
   - [What Is Escape Sequence Expansion?](#what-is-escape-sequence-expansion)
   - [Rough Grammar](#rough-grammar-2)
@@ -320,6 +324,50 @@ The `/path/to/folder/or/file` is optional.
 _Tilde expansion_ is fully supported in v1.0.0 or later.
 
 If you find any bugs in tilde expansion, please [let us know](#reporting-problems).
+
+## Parameter Expansion
+
+### What Is Parameter Expansion?
+
+_Parameter expansion_ replaces variable names with their values, and allows you to change those values before they're plugged back into the result string.
+
+Parameter expansion makes up the majority of UNIX shell string expansion (and, arguably, the majority of your average shell script's code too).
+
+### Why Use Parameter Expansion?
+
+In a word: convenience. Being able to assign a value to a variable, and then use that value whereever you need to ... that's one of the main reasons that shell scripts are so quick and easy to knock up.
+
+### Supported Parameter Expansions
+
+Here's a list of all the different types of UNIX shell parameter expansion that we know about. Most of them are fully supported by _ShellExpand_.
+
+Syntax                        | Name                              | Status
+------------------------------|-----------------------------------|-------
+`$PARAM` / `${PARAM}`         | expand-to-value                   | supported
+`${PARAM}`                    | expand-to-value                   | supported
+`${PARAM:-word}`              | expand-with-default-value         | supported
+`${PARAM:=word}`              | expand-assign-default-value       | supported
+`${PARAM:?word}`              | expand-write-error                | supported
+`${PARAM:+word}`              | expand-use-alternate-value        | supported
+`${PARAM:offset}`             | expand-to-substring               | supported
+`${PARAM:offset:length}`      | expand-to-substring-length        | supported
+`${!prefix*}` / `${!prefix@}` | expand-prefix-match-names         | supported
+`${!name[*]}` / `${!name[@]}` | list-of-array-keys                | not supported
+`${#PARAM}`                   | expand-parameter-length           | supported
+`${#*}` / `${#@}`             | expand-no-positional-params       | supported
+`${PARAM#pattern}`            | expand-remove-shortest-prefix     | supported
+`${PARAM##pattern}`           | expand-remove-longest-prefix      | supported
+`${PARAM%pattern}`            | expand-remove-shortest-suffix     | supported
+`${PARAM%%pattern}`           | expand-remove-longest-suffix      | supported
+`${PARAM/old/new}`            | expand-search-replace-all-matches | supported
+`${PARAM//old/new}`           | expand-search-replace-first-match | supported
+`${PARAM/#old/new}`           | expand-search-replace-prefix      | supported
+`${PARAM/%old/new}`           | expand-search-replace-suffix      | supported
+`${PARAM^pattern}`            | expand-uppercase-first-char       | supported
+`${PARAM^^pattern}`           | expand-uppercase-all-chars        | supported
+`${PARAM,pattern}`            | expand-lowercase-first-char       | supported
+`${PARAM,,pattern}`           | expand-lowercase-all-chars        | supported
+`${PARAM@operator}`           | expand-parameter-transform        | not supported
 
 ## Escape Sequence Expansion
 
