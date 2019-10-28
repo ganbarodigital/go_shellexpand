@@ -55,6 +55,7 @@ result, err := shellexpand.Expand(input, cb)
   - [$@ Expansion](#-expansion)
   - [Using $* And $@ In Parameter Expansion](#using--and--in-parameter-expansion)
   - [Special Parameters](#special-parameters)
+  - [Word Expansion](#word-expansion)
 - [Command Substitution](#command-substitution)
   - [What Is Command Substitution?](#what-is-command-substitution)
   - [Status](#status-2)
@@ -475,6 +476,12 @@ These parameters are all known as _special parameters_ in `man bash`:
 * `$-`
 
 _ShellExpand_ will call your [LookupVar()](#expansioncallbackslookupvar) expansion callback to get their value. The variable name passed into `LookupVar()` will always start with a `$` sign.
+
+### Word Expansion
+
+Some parameter expansion operators (see table above) take a [word](#word) as their right-hand side.
+
+_ShellExpand_ performs [tilde expansion](#tilde-expansion) and [parameter expansion](#parameter-expansion) on each word before it is used. (UNIX shells also perform [command substitution](#command-substitution) and [arithmetic expansion](#arithmetic-expansion) during word expansion. _ShellExpand_ doesn't support these today.)
 
 ## Command Substitution
 
