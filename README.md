@@ -33,6 +33,13 @@ result, err := shellexpand.Expand(input, cb)
   - [ExpansionCallbacks.LookupHomeDir()](#expansioncallbackslookuphomedir)
   - [ExpansionCallbacks.MatchVarNames()](#expansioncallbacksmatchvarnames)
   - [How Are Errors Handled?](#how-are-errors-handled)
+- [Supported Expansions](#supported-expansions)
+- [Brace Expansion](#brace-expansion)
+- [What Is Brace Expansion?](#what-is-brace-expansion)
+  - [Why Use Brace Expansion?](#why-use-brace-expansion)
+  - [Rough Grammar](#rough-grammar)
+  - [Other Notes](#other-notes)
+  - [Status](#status)
 
 ## Why Use ShellExpand?
 
@@ -150,4 +157,84 @@ Golang errors can come from two places:
 * they can be caused by using invalid [glob patterns](#glob-pattern)
 
 We return all errors back to you. When we do, the contents of the string we return is undefined.
+
+## Supported Expansions
+
+UNIX shells perform 10 different types of string expansion. This table tracks which ones we currently support, and what we (currently) plan to do about the rest of them.
+
+Expansion                                               | Status                    | Planned?
+--------------------------------------------------------|---------------------------|---------
+[Brace expansion](#brace-expansion)                     | fully supported           | n/a
+[Tilde expansion](#tilde-expansion)                     | fully supported           | n/a
+[Parameter expansion](#parameter-expansion)             | (almost) fully supported  | n/a
+[Command substitution](#command-substitution)           | not supported             | no plans to add
+[Arithmetic expansion](#arithmetic-expansion)           | not supported             | yes
+[Process substitution](#process-substitution)           | not supported             | no plans to add
+[Word splitting](#word-splitting)                       | not supported             | if there is a need
+[Pathname expansion](#pathname-expansion)               | not supported             | if there is a need
+[Quote removal](#quote-removal)                         | partial support           | depends on feedback
+[Escape sequence expansion](#escape-sequence-expansion) | not supported             | no plans to
+
+We have put more details about each of them below.
+
+## Brace Expansion
+
+## What Is Brace Expansion?
+
+_Brace expansion_ is a way to generate longer strings from simple patterns or range sequences.
+
+This example uses a `brace-pattern`:
+
+```golang
+input := "ab{c,d,e}fg"
+cb := ExpansionCallbacks{}
+output := shellexpand.Expand(input, cb)
+
+// output is: abcfg abdfg abefg
+```
+
+This example uses a `brace-sequence`:
+
+```golang
+input := "ab{c..e}fg"
+cb := ExpansionCallbacks{}
+output := shellexpand.Expand(input, cb)
+
+// output is: abcfe abdfg abefg
+```
+
+### Why Use Brace Expansion?
+
+It's commonly used in shell scripts to expand a list of filenames _without_ checking that they exist (ie, without relying on [pathname expansion](#pathname-expansion)).
+
+### Rough Grammar
+
+Brace expansion takes the form:
+
+`[preamble]((brace-pattern|brace-sequence)+)[postscript]`
+
+where:
+
+* `preamble` is optional text immediately before the `brace-pattern` or `brace-sequence`
+* `brace-pattern` is `{text,text[,text...]}`
+  * each `brace-pattern` is surrounded by braces
+  * each `brace-pattern` contains a comma-separated list of text to substitute in
+  * each `brace-pattern` must contain _at least_ two phrases to be a valid `brace-pattern`
+* `brace-sequence` is `{lo..hi[..incr]}` or `{hi..lo[..incr]}`
+  * `hi` and `lo` can be characters or number, as long as they're both the same type
+  * `incr` is optional, and must be a number
+  * `incr`'s sign is always auto-corrected to match the order you've put `hi` and `lo` in
+* `postscript` is optional text immediately after the `brace-pattern` or `brace-sequence`
+
+### Other Notes
+
+* Brace expansions can be nested.
+* Left-to-right order is preserved. The result of a brace expansion is never sorted.
+* You can escape the opening brace (ie do `\\{`) to prevent a brace triggering brace expansion.
+
+### Status
+
+_Brace expansion_ is fully supported in v1.0.0 and later.
+
+If you find any bugs in brace expansion, please [let us know](#reporting-problems).
 
