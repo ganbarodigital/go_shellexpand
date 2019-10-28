@@ -51,6 +51,7 @@ result, err := shellexpand.Expand(input, cb)
   - [Why Use Parameter Expansion?](#why-use-parameter-expansion)
   - [Supported Parameter Expansions](#supported-parameter-expansions)
   - [Indirection](#indirection)
+  - [Positional Parameter Support](#positional-parameter-support)
 - [Command Substitution](#command-substitution)
   - [What Is Command Substitution?](#what-is-command-substitution)
   - [Status](#status-2)
@@ -414,6 +415,22 @@ echo ${!PARAM1}
 If the first character after the opening brace is a `!` (pling), then the value of the named parameter (`$PARAM1` in our example) is used as the name of the parameter to apply the expansion to.
 
 _ShellExpand_ supports all the _indirection_ expansions that we know if. If you find a case where indirection doesn't work in the same way that a UNIX shell does, please [let us know](#reporting-problems).
+
+### Positional Parameter Support
+
+In UNIX shell scripts, `$1`, `$2` et al are known as _positional parameters_. In UNIX shells, they're originally set to the arguments that the shell script was called with, and then to the arguments passed into each function call in the shell script.
+
+(Note that, technically, `$0` isn't a positional parameter, even though it looks like it should be! We cover that below.)
+
+Additionally, `$#` is always the number of positional parameters that are set at any one time, and both `$*` and `$@` are (slightly different) expansions of all the positional parameters.
+
+We support (almost) all parameter expansion involving positional parameter.
+
+* We keep the `$` sign as part of the name of the variable, when we make calls to your [expansion callbacks](#expansion-callbacks). Normal variables, we strip off the `$`. During development, we decided that _positional parameters_ and [special parameters](#special-parameters) are much easier to read if we keep the `$` sign.
+* It's up to you to create the variables `$1`, `$2` etc __and__ `$#` in your variable backing store before you call `shellexpand.Expand()`.
+* When we're expanding `$*` and `$#`, we _always_ get the value of `$#` first. We then use `$#` to work out how many positional parameters currently exist, and then we get each of them in turn.
+* We never retrieve `$*` and `$@` by name via your [expansion callbacks](#expansion-callbacks).
+* These variables are all treated as read-only by UNIX shells. We don't enforce that explicitly (yet).
 
 ## Command Substitution
 
