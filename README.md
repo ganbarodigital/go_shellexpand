@@ -416,11 +416,9 @@ CURRENT_BRACH=`git branch --no-color | grep '^\* ' | grep -v 'no branch' | sed '
 
 ### Status
 
-_Command substitution_ is __not supported_.
+_Command substitution_ is __not supported__.
 
 There are no plans to add support for command substitution at this time.
-
-Why?
 
 * Command substition needs [word splitting](#word-splitting) implementing first
 * Calling external programs is a possible security risk, especially in the kind of systems programming that Golang is often used for
