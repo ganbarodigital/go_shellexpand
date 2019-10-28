@@ -707,6 +707,21 @@ If you find any bugs related to this, please [let us know](#reporting-problems).
 
 ### Glob Pattern
 
+A _glob pattern_ is a search and/or filter term that supports wildcards and character sets.
+
+In a glob pattern,
+
+* `?` matches any single character
+* `*` matches zero or more characters (exactly how many depends on whether you're doing a greedy or ungreedy match)
+* `[...]` matches any one of the characters in the set
+* any other character matches itself
+
+Glob patterns are mostly used as the search patterns for commands like `ls *.log` in the UNIX terminal. That's called [pathname expansion](#pathname-expansion).
+
+They're also used as the `pattern` in several [parameter expansion operations](#supported-parameter-expansions).
+
+_ShellExpand_ uses the [Glob package](https://github.com/ganbarodigital/go_glob).
+
 ### Word
 
 ## Reporting Problems
