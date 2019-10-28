@@ -69,18 +69,17 @@ result, err := shellexpand.Expand(input, cb)
 - [Word Splitting](#word-splitting)
   - [What Is Word Splitting?](#what-is-word-splitting)
   - [Status](#status-5)
-  - [Status](#status-6)
 - [Pathname Expansion](#pathname-expansion)
-  - [Rough Grammar](#rough-grammar-3)
-  - [Status](#status-7)
+  - [What Is Pathname Expansion?](#what-is-pathname-expansion)
+  - [Status](#status-6)
 - [Escape Sequence Expansion](#escape-sequence-expansion)
   - [What Is Escape Sequence Expansion?](#what-is-escape-sequence-expansion)
-  - [Rough Grammar](#rough-grammar-4)
-  - [Status](#status-8)
+  - [Rough Grammar](#rough-grammar-3)
+  - [Status](#status-7)
 - [Quote Removal](#quote-removal)
   - [What Is Quote Removal?](#what-is-quote-removal)
   - [Why Do Shells Perform Quote Removal?](#why-do-shells-perform-quote-removal)
-  - [Status](#status-9)
+  - [Status](#status-8)
 - [Common Terms](#common-terms)
   - [Escaped Character](#escaped-character)
   - [Glob Pattern](#glob-pattern)
@@ -590,13 +589,27 @@ It's needed for [command substitution](#command-substitution) and [process subst
 
 If/when we add word splitting, we'll either have to change the API for [`shellexpand.Expand()`](#expand) (it will need to return a `[]Word` instead of a `string`), or we'll need to export a second function instead.
 
-### Status
-
 ## Pathname Expansion
 
-### Rough Grammar
+### What Is Pathname Expansion?
+
+_Pathname expansion_ replaces a [glob pattern](#glob-pattern) with a list of matching filenames. It is often called _globbing_.
+
+```bash
+ls *.log
+```
+
+In this example, it isn't the `ls` command that lists all the files that end in `.log`. It's actually the UNIX shell that turns `*.log` into a list of files to pass on to `ls`.
 
 ### Status
+
+_Pathname expansion_ is currently __not supported__.
+
+At the minute, we don't have any need for it in _ShellExpand_. It's main use is to generate arguments to external commands, and we haven't added support for that to date.
+
+If we add [command substitution](#command-substitution) and/or [process substitution](#process-substitution), then it will definitely make sense to implement pathname expansion.
+
+Basic globbing support is available via Golang's `filepath.Match()`.
 
 ## Escape Sequence Expansion
 
