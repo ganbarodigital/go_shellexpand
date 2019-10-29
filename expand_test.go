@@ -111,6 +111,18 @@ func TestExpandEscapedBraces(t *testing.T) {
 	testExpandTestCase(t, testData)
 }
 
+func TestExpandBracesEscapedPattern(t *testing.T) {
+	// simple string, w/ escaped braces
+	testData := expandTestData{
+		vars: map[string]string{
+			"PARAM1": "foo",
+		},
+		input:          "a{b,\\\\,c}d",
+		expectedResult: "abd a\\d acd",
+	}
+	testExpandTestCase(t, testData)
+}
+
 func TestExpandBraceSequenceAlphasNoIterator(t *testing.T) {
 	// simple string, w/ alpha sequence
 	testData := expandTestData{

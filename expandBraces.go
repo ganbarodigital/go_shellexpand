@@ -377,7 +377,7 @@ func parseBracePattern(pattern string) ([]string, bool) {
 			// skip over the escaped character
 			inEscape = false
 			i += w
-		} else if r == '\\' {
+		} else if r == '\\' && !inEscape {
 			inEscape = true
 			i += w
 		} else if r == '{' {
