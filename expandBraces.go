@@ -170,7 +170,7 @@ func matchAndExpandBracePattern(input string, i int) (string, bool) {
 	}
 
 	// is it really a pattern though?
-	patternParts, ok := parsePattern(input[i : i+patternEnd])
+	patternParts, ok := parseBracePattern(input[i : i+patternEnd])
 	if !ok {
 		return input, false
 	}
@@ -352,7 +352,7 @@ func isSequenceChar(c rune) bool {
 	return c == '.' || c == '-' || '0' <= c && c <= '9' || 'a' <= c && c <= 'z' || 'A' <= c && c <= 'Z'
 }
 
-func parsePattern(pattern string) ([]string, bool) {
+func parseBracePattern(pattern string) ([]string, bool) {
 	var parts []string
 
 	// we can't do a simple `strings.Split()` here, because we have to

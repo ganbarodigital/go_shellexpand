@@ -496,7 +496,7 @@ func TestParsePatternSingleSet(t *testing.T) {
 	// ----------------------------------------------------------------
 	// perform the change
 
-	actualResult, ok := parsePattern(testData)
+	actualResult, ok := parseBracePattern(testData)
 
 	// ----------------------------------------------------------------
 	// test the results
@@ -517,7 +517,7 @@ func TestParsePatternNestedSet(t *testing.T) {
 	// ----------------------------------------------------------------
 	// perform the change
 
-	actualResult, ok := parsePattern(testData)
+	actualResult, ok := parseBracePattern(testData)
 
 	// ----------------------------------------------------------------
 	// test the results
@@ -538,7 +538,7 @@ func TestParsePatternWithEmptyPart(t *testing.T) {
 	// ----------------------------------------------------------------
 	// perform the change
 
-	actualResult, ok := parsePattern(testData)
+	actualResult, ok := parseBracePattern(testData)
 
 	// ----------------------------------------------------------------
 	// test the results
@@ -559,7 +559,7 @@ func TestParsePatternWithEscapedChars(t *testing.T) {
 	// ----------------------------------------------------------------
 	// perform the change
 
-	actualResult, ok := parsePattern(testData)
+	actualResult, ok := parseBracePattern(testData)
 
 	// ----------------------------------------------------------------
 	// test the results
@@ -580,7 +580,7 @@ func TestParsePatternWithMismatchedBraces(t *testing.T) {
 	// ----------------------------------------------------------------
 	// perform the change
 
-	actualResult, ok := parsePattern(testData)
+	actualResult, ok := parseBracePattern(testData)
 
 	// ----------------------------------------------------------------
 	// test the results
@@ -601,7 +601,7 @@ func TestParsePatternWithSinglePattern(t *testing.T) {
 	// ----------------------------------------------------------------
 	// perform the change
 
-	actualResult, ok := parsePattern(testData)
+	actualResult, ok := parseBracePattern(testData)
 
 	// ----------------------------------------------------------------
 	// test the results
