@@ -41,6 +41,7 @@ import (
 	"unicode/utf8"
 )
 
+// expandBraces performs UNIX shell brace expansion on the input string
 func expandBraces(input string) string {
 	// this is what we're assessing
 	var r rune
@@ -92,7 +93,7 @@ func expandBraces(input string) string {
 	return input
 }
 
-func expandPattern(preamble, part, postscript string) string {
+func expandBracePattern(preamble, part, postscript string) string {
 	// we'll build our substitution here
 	var buf strings.Builder
 
@@ -188,7 +189,7 @@ func matchAndExpandPattern(input string, i int) (string, bool) {
 
 	var exp []string
 	for _, part := range patternParts {
-		exp = append(exp, expandPattern(preamble, part, postscript))
+		exp = append(exp, expandBracePattern(preamble, part, postscript))
 	}
 
 	var buf strings.Builder
