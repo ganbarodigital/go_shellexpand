@@ -35,6 +35,8 @@
 
 package shellexpand
 
+import "unicode/utf8"
+
 // bracePair tracks the location of opening and closing braces
 // in a string
 type bracePair struct {
@@ -56,15 +58,25 @@ func matchBraces(input string) ([]bracePair, error) {
 	// keep track of where we are in the list
 	pairIndex := -1
 
+	var r rune
+	w := 0
+	inEscape := false
+
 	// search the string
-	for i := 0; i < len(input); i++ {
-		// find our '{'
-		if input[i] == '{' {
+	for i := 0; i < len(input); i += w {
+		// extract the next character
+		r, w = utf8.DecodeRuneInString(input[i:])
+
+		if inEscape {
+			inEscape = false
+		} else if r == '\\' && !inEscape {
+			inEscape = true
+		} else if r == '{' {
 			pairIndex++
 			braceStack = append(braceStack, bracePair{i, -1})
-		} else if input[i] == '}' {
+		} else if r == '}' {
 			if pairIndex < 0 {
-				return []bracePair{}, ErrMismatchedClosingBrace{i + 1}
+				return []bracePair{}, ErrMismatchedClosingBrace{i + w}
 			}
 
 			braceStack[pairIndex].end = i
