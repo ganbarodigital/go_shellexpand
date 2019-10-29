@@ -323,7 +323,7 @@ func TestMatchSequenceSingleSetWithLowerCaseChars(t *testing.T) {
 	// ----------------------------------------------------------------
 	// perform the change
 
-	actualResult, ok := matchSequence(testData)
+	actualResult, ok := matchBraceSequence(testData)
 
 	// ----------------------------------------------------------------
 	// test the results
@@ -345,7 +345,7 @@ func TestMatchSequenceSingleSetWithUpperCaseChars(t *testing.T) {
 	// ----------------------------------------------------------------
 	// perform the change
 
-	actualResult, ok := matchSequence(testData)
+	actualResult, ok := matchBraceSequence(testData)
 
 	// ----------------------------------------------------------------
 	// test the results
@@ -367,7 +367,7 @@ func TestMatchSequenceSingleSetWithNumbers(t *testing.T) {
 	// ----------------------------------------------------------------
 	// perform the change
 
-	actualResult, ok := matchSequence(testData)
+	actualResult, ok := matchBraceSequence(testData)
 
 	// ----------------------------------------------------------------
 	// test the results
@@ -389,7 +389,7 @@ func TestMatchSequenceSingleSetWithIterator(t *testing.T) {
 	// ----------------------------------------------------------------
 	// perform the change
 
-	actualResult, ok := matchSequence(testData)
+	actualResult, ok := matchBraceSequence(testData)
 
 	// ----------------------------------------------------------------
 	// test the results
@@ -411,7 +411,7 @@ func TestMatchSequenceSingleSetWithNegativeIterator(t *testing.T) {
 	// ----------------------------------------------------------------
 	// perform the change
 
-	actualResult, ok := matchSequence(testData)
+	actualResult, ok := matchBraceSequence(testData)
 
 	// ----------------------------------------------------------------
 	// test the results
@@ -433,7 +433,7 @@ func TestMatchSequenceMustStartWithBrace(t *testing.T) {
 	// ----------------------------------------------------------------
 	// perform the change
 
-	actualResult, ok := matchSequence(testData)
+	actualResult, ok := matchBraceSequence(testData)
 
 	// ----------------------------------------------------------------
 	// test the results
@@ -454,7 +454,7 @@ func TestMatchSequenceRejectsNestedBraces(t *testing.T) {
 	// ----------------------------------------------------------------
 	// perform the change
 
-	actualResult, ok := matchSequence(testData)
+	actualResult, ok := matchBraceSequence(testData)
 
 	// ----------------------------------------------------------------
 	// test the results
@@ -475,7 +475,7 @@ func TestMatchSequenceRejectsMismatchedBraces(t *testing.T) {
 	// ----------------------------------------------------------------
 	// perform the change
 
-	actualResult, ok := matchSequence(testData)
+	actualResult, ok := matchBraceSequence(testData)
 
 	// ----------------------------------------------------------------
 	// test the results

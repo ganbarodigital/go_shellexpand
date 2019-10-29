@@ -207,7 +207,7 @@ func matchAndExpandBracePattern(input string, i int) (string, bool) {
 
 func matchAndExpandBraceSequence(input string, i int) (string, bool) {
 	// are we looking at a sequence?
-	seqEnd, ok := matchSequence(input[i:])
+	seqEnd, ok := matchBraceSequence(input[i:])
 	if !ok {
 		return input, false
 	}
@@ -302,7 +302,7 @@ func matchBracePattern(input string) (int, bool) {
 	return 0, false
 }
 
-func matchSequence(input string) (int, bool) {
+func matchBraceSequence(input string) (int, bool) {
 	// are we looking at the start of a sequence?
 	if input[0] != '{' {
 		return 0, false
