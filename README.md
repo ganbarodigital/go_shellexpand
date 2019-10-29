@@ -221,7 +221,7 @@ Expansion                                               | Status                
 [Process substitution](#process-substitution)           | not supported             | no plans to add
 [Word splitting](#word-splitting)                       | not supported             | if there is a need
 [Pathname expansion](#pathname-expansion)               | not supported             | if there is a need
-[Quote removal](#quote-removal)                         | partial support           | depends on feedback
+[Quote removal](#quote-removal)                         | not supported             | if word splitting is implemented
 [Escape sequence expansion](#escape-sequence-expansion) | not supported             | no plans to
 
 We have put more details about each of them below.
@@ -671,11 +671,12 @@ UNIX shells remove the `\` in front of escaped characters in case the command be
 
 ### Status
 
-_Quote removal_ is partially supported in `ShellExpand` v1.0.0.
+_Quote removal_ is not supported in `ShellExpand` v1.0.0.
 
-* the `\` in front of escaped characters is removed
-  - this was required for our unit tests (which compares results in a real UNIX shell and our code) to work
-* single and double quotes surrounding words are not removed (because [word splitting](#word-splitting) is not supported).
+* the `\` in front of escaped characters is not removed during quote removal
+  * at the moment, these are getting removed during earlier expansion phases, and don't reach the `expandQuoteRemoval()` function
+* single and double quotes surrounding words are not removed
+  * we can't safely attempt this until [word splitting](#word-splitting) has been implemented
 
 ## Common Terms
 

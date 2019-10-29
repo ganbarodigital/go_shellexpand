@@ -61,7 +61,7 @@ func expandBraces(input string) string {
 			// skip over escaped character
 			inEscape = false
 			i += w
-		} else if r == '\\' {
+		} else if r == '\\' && !inEscape {
 			// next character is escaped
 			inEscape = true
 			i += w
@@ -272,7 +272,7 @@ func matchBracePattern(input string) (int, bool) {
 		if inEscape {
 			inEscape = false
 			i += w
-		} else if r == '\\' {
+		} else if r == '\\' && !inEscape {
 			// skip over escaped character
 			inEscape = true
 			i += w

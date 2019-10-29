@@ -64,7 +64,7 @@ func ExpandTilde(input string, cb ExpansionCallbacks) string {
 		if inEscape {
 			// skip over escaped character
 			inEscape = false
-		} else if c == '\\' {
+		} else if c == '\\' && !inEscape {
 			// skip over escaped characters
 			inEscape = true
 		} else if c == '$' {
@@ -144,7 +144,7 @@ func matchTildePrefix(input string) (int, bool) {
 		if inEscape {
 			// skip over escaped character
 			inEscape = false
-		} else if c == '\\' {
+		} else if c == '\\' && !inEscape {
 			// skip over escaped character
 			inEscape = true
 		} else if c == '/' || c == ' ' {

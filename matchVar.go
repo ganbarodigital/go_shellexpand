@@ -64,7 +64,7 @@ func matchVar(input string) (int, bool) {
 		// are we dealing with an escaped char?
 		if inEscape {
 			inEscape = false
-		} else if c == '\\' {
+		} else if c == '\\' && !inEscape {
 			// skip escaped chars
 			inEscape = true
 		} else if c == '{' {

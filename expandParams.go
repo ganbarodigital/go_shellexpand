@@ -118,7 +118,7 @@ func expandParameters(input string, cb ExpansionCallbacks) (string, error) {
 			inEscape = false
 			buf.WriteRune(c)
 			i += w
-		} else if c == '\\' {
+		} else if c == '\\' && !inEscape {
 			// skip over escaped characters
 			inEscape = true
 			i += w

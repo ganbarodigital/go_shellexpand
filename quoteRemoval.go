@@ -35,19 +35,12 @@
 
 package shellexpand
 
-import "strings"
-
 func expandQuoteRemoval(input string) string {
-	var buf strings.Builder
-
-	for _, c := range input {
-		switch c {
-		case '\\':
-			// do nothing
-		default:
-			buf.WriteRune(c)
-		}
-	}
-
-	return buf.String()
+	// for now, this is a placeholder
+	//
+	// we used to strip out `\\` from the input string.
+	//
+	// As we increased our test cases, we discovered that this interfered
+	// with any legitimate `\\` characters in the results.
+	return input
 }
