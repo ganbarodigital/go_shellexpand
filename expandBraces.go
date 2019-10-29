@@ -164,7 +164,7 @@ func findPostscriptEnd(input string, postscriptEnd int) int {
 
 func matchAndExpandBracePattern(input string, i int) (string, bool) {
 	// are we looking at a pattern?
-	patternEnd, ok := matchPattern(input[i:])
+	patternEnd, ok := matchBracePattern(input[i:])
 	if !ok {
 		return input, false
 	}
@@ -255,7 +255,7 @@ func matchAndExpandBraceSequence(input string, i int) (string, bool) {
 	return buf.String(), true
 }
 
-func matchPattern(input string) (int, bool) {
+func matchBracePattern(input string) (int, bool) {
 	// are we looking at the start of a pattern?
 	if input[0] != '{' {
 		return 0, false

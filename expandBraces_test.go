@@ -193,7 +193,7 @@ func TestMatchPatternSingleSet(t *testing.T) {
 	// ----------------------------------------------------------------
 	// perform the change
 
-	actualResult, ok := matchPattern(testData)
+	actualResult, ok := matchBracePattern(testData)
 
 	// ----------------------------------------------------------------
 	// test the results
@@ -215,7 +215,7 @@ func TestMatchPatternNestedSet(t *testing.T) {
 	// ----------------------------------------------------------------
 	// perform the change
 
-	actualResult, ok := matchPattern(testData)
+	actualResult, ok := matchBracePattern(testData)
 
 	// ----------------------------------------------------------------
 	// test the results
@@ -237,7 +237,7 @@ func TestMatchPatternNoOpeningBrace(t *testing.T) {
 	// ----------------------------------------------------------------
 	// perform the change
 
-	actualResult, ok := matchPattern(testData)
+	actualResult, ok := matchBracePattern(testData)
 
 	// ----------------------------------------------------------------
 	// test the results
@@ -258,7 +258,7 @@ func TestMatchPatternSkipEscapedBraces(t *testing.T) {
 	// ----------------------------------------------------------------
 	// perform the change
 
-	actualResult, ok := matchPattern(testData)
+	actualResult, ok := matchBracePattern(testData)
 
 	// ----------------------------------------------------------------
 	// test the results
@@ -280,7 +280,7 @@ func TestMatchPatternSkipDollarVars(t *testing.T) {
 	// ----------------------------------------------------------------
 	// perform the change
 
-	actualResult, ok := matchPattern(testData)
+	actualResult, ok := matchBracePattern(testData)
 
 	// ----------------------------------------------------------------
 	// test the results
@@ -302,7 +302,7 @@ func TestMatchPatternIgnoresUnterminatedPatterns(t *testing.T) {
 	// ----------------------------------------------------------------
 	// perform the change
 
-	actualResult, ok := matchPattern(testData)
+	actualResult, ok := matchBracePattern(testData)
 
 	// ----------------------------------------------------------------
 	// test the results
