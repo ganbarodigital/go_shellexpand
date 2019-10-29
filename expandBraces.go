@@ -114,7 +114,7 @@ func expandBracePattern(preamble, part, postscript string) string {
 	return buf.String()
 }
 
-func expandSequence(entry int, isChars bool, preamble, postscript string) string {
+func expandBraceSequence(entry int, isChars bool, preamble, postscript string) string {
 	// we'll build our substitution here
 	var buf strings.Builder
 
@@ -233,11 +233,11 @@ func matchAndExpandSequence(input string, i int) (string, bool) {
 	var exp []string
 	if braceSeq.incr > 0 {
 		for j := braceSeq.start; j <= braceSeq.end; j += braceSeq.incr {
-			exp = append(exp, expandSequence(j, braceSeq.chars, preamble, postscript))
+			exp = append(exp, expandBraceSequence(j, braceSeq.chars, preamble, postscript))
 		}
 	} else {
 		for j := braceSeq.start; j >= braceSeq.end; j += braceSeq.incr {
-			exp = append(exp, expandSequence(j, braceSeq.chars, preamble, postscript))
+			exp = append(exp, expandBraceSequence(j, braceSeq.chars, preamble, postscript))
 		}
 	}
 
