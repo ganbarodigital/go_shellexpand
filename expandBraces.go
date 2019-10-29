@@ -364,28 +364,43 @@ func parseBracePattern(pattern string) ([]string, bool) {
 	// where are we?
 	start := 1
 
+	var r rune
+	w := 0
+	inEscape := false
+
 	// find the next pattern
-	for i := 0; i < len(pattern); i++ {
-		switch pattern[i] {
-		case '\\':
-			// skip over escaped characters
-			i++
-		case '{':
+	for i := 0; i < len(pattern); {
+		// find the next unicode character
+		r, w = utf8.DecodeRuneInString(pattern[i:])
+
+		if inEscape {
+			// skip over the escaped character
+			inEscape = false
+			i += w
+		} else if r == '\\' {
+			inEscape = true
+			i += w
+		} else if r == '{' {
 			braceDepth++
-		case '}':
+			i += w
+		} else if r == '}' {
 			braceDepth--
 			// have we reached the end of the pattern?
 			if braceDepth == 0 {
 				parts = append(parts, pattern[start:i])
 				start = i + 1
 			}
-		case ',':
+			i += w
+		} else if r == ',' {
 			// are we in a sub-pattern?
 			if braceDepth == 1 {
 				// no, we are not :)
 				parts = append(parts, pattern[start:i])
 				start = i + 1
 			}
+			i += w
+		} else {
+			i += w
 		}
 	}
 
