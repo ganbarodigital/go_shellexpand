@@ -213,7 +213,7 @@ func matchAndExpandBraceSequence(input string, i int) (string, bool) {
 	}
 
 	// but is it really a sequence?
-	braceSeq, ok := parseSequence(input[i : i+seqEnd])
+	braceSeq, ok := parseBraceSequence(input[i : i+seqEnd])
 	if !ok {
 		return input, false
 	}
@@ -433,7 +433,7 @@ type braceSequence struct {
 	incr int
 }
 
-func parseSequence(pattern string) (braceSequence, bool) {
+func parseBraceSequence(pattern string) (braceSequence, bool) {
 	var retval braceSequence
 
 	// sequences are (relatively!) simple ... we can use strings.Split()

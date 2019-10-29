@@ -622,7 +622,7 @@ func TestParseSequenceSingleSetWithLowerCaseChars(t *testing.T) {
 	// ----------------------------------------------------------------
 	// perform the change
 
-	actualResult, ok := parseSequence(testData)
+	actualResult, ok := parseBraceSequence(testData)
 
 	// ----------------------------------------------------------------
 	// test the results
@@ -643,7 +643,7 @@ func TestParseSequenceSingleSetWithUpperCaseChars(t *testing.T) {
 	// ----------------------------------------------------------------
 	// perform the change
 
-	actualResult, ok := parseSequence(testData)
+	actualResult, ok := parseBraceSequence(testData)
 
 	// ----------------------------------------------------------------
 	// test the results
@@ -664,7 +664,7 @@ func TestParseSequenceSingleSetWithNumbers(t *testing.T) {
 	// ----------------------------------------------------------------
 	// perform the change
 
-	actualResult, ok := parseSequence(testData)
+	actualResult, ok := parseBraceSequence(testData)
 
 	// ----------------------------------------------------------------
 	// test the results
@@ -685,7 +685,7 @@ func TestParseSequenceSingleSetWithIterator(t *testing.T) {
 	// ----------------------------------------------------------------
 	// perform the change
 
-	actualResult, ok := parseSequence(testData)
+	actualResult, ok := parseBraceSequence(testData)
 
 	// ----------------------------------------------------------------
 	// test the results
@@ -706,7 +706,7 @@ func TestParseSequenceSingleSetWithNegativeIterator(t *testing.T) {
 	// ----------------------------------------------------------------
 	// perform the change
 
-	actualResult, ok := parseSequence(testData)
+	actualResult, ok := parseBraceSequence(testData)
 
 	// ----------------------------------------------------------------
 	// test the results
@@ -727,7 +727,7 @@ func TestParseSequenceSingleSetHighToLow(t *testing.T) {
 	// ----------------------------------------------------------------
 	// perform the change
 
-	actualResult, ok := parseSequence(testData)
+	actualResult, ok := parseBraceSequence(testData)
 
 	// ----------------------------------------------------------------
 	// test the results
@@ -748,7 +748,7 @@ func TestParseSequenceSingleSetHighToLowWithIncrement(t *testing.T) {
 	// ----------------------------------------------------------------
 	// perform the change
 
-	actualResult, ok := parseSequence(testData)
+	actualResult, ok := parseBraceSequence(testData)
 
 	// ----------------------------------------------------------------
 	// test the results
@@ -769,7 +769,7 @@ func TestParseSequenceRejectsMismatchedSequenceCharNum(t *testing.T) {
 	// ----------------------------------------------------------------
 	// perform the change
 
-	actualResult, ok := parseSequence(testData)
+	actualResult, ok := parseBraceSequence(testData)
 
 	// ----------------------------------------------------------------
 	// test the results
@@ -790,7 +790,7 @@ func TestParseSequenceRejectsMismatchedSequenceNumChar(t *testing.T) {
 	// ----------------------------------------------------------------
 	// perform the change
 
-	actualResult, ok := parseSequence(testData)
+	actualResult, ok := parseBraceSequence(testData)
 
 	// ----------------------------------------------------------------
 	// test the results
@@ -811,7 +811,7 @@ func TestParseSequenceRejectsNonIntegerIncrement(t *testing.T) {
 	// ----------------------------------------------------------------
 	// perform the change
 
-	actualResult, ok := parseSequence(testData)
+	actualResult, ok := parseBraceSequence(testData)
 
 	// ----------------------------------------------------------------
 	// test the results
