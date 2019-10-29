@@ -78,7 +78,7 @@ func expandBraces(input string) string {
 		} else if r == '{' {
 			// probably the start of something we can expand
 			var ok bool
-			input, ok = matchAndExpandSequence(input, i)
+			input, ok = matchAndExpandBraceSequence(input, i)
 			if !ok {
 				input, ok = matchAndExpandBracePattern(input, i)
 			}
@@ -205,7 +205,7 @@ func matchAndExpandBracePattern(input string, i int) (string, bool) {
 	return buf.String(), true
 }
 
-func matchAndExpandSequence(input string, i int) (string, bool) {
+func matchAndExpandBraceSequence(input string, i int) (string, bool) {
 	// are we looking at a sequence?
 	seqEnd, ok := matchSequence(input[i:])
 	if !ok {
