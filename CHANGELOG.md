@@ -2,6 +2,10 @@
 
 ## develop
 
+## v0.1.0
+
+Released Tuesday, 29th October 2019.
+
 ### New
 
 Features:
