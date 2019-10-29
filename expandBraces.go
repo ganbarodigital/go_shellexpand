@@ -80,7 +80,7 @@ func expandBraces(input string) string {
 			var ok bool
 			input, ok = matchAndExpandSequence(input, i)
 			if !ok {
-				input, ok = matchAndExpandPattern(input, i)
+				input, ok = matchAndExpandBracePattern(input, i)
 			}
 			i += w
 		} else {
@@ -162,7 +162,7 @@ func findPostscriptEnd(input string, postscriptEnd int) int {
 	return postscriptEnd
 }
 
-func matchAndExpandPattern(input string, i int) (string, bool) {
+func matchAndExpandBracePattern(input string, i int) (string, bool) {
 	// are we looking at a pattern?
 	patternEnd, ok := matchPattern(input[i:])
 	if !ok {
